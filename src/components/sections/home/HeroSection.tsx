@@ -61,7 +61,18 @@ const HomePage = () => {
 
   const handleSearch = () => {
     // Navigate with query params
-    const params = new URLSearchParams(filters);
+    const params = new URLSearchParams();
+
+    Object.entries(filters).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        // Handle array values (amenities)
+        value.forEach(item => params.append(key, item));
+      } else if (value) {
+        // Only add non-empty values
+        params.append(key, String(value));
+      }
+    });
+    
     navigate(`/properties/${filters.type}?${params.toString()}`);
   };
 

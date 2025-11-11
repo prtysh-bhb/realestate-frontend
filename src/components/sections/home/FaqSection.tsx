@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import {  useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 
 const testimonials = [
@@ -46,12 +46,12 @@ const testimonials = [
   },
 ];
 
-const TestimonialsSection = () => {
-  const sliderRef = useRef(null);
+const FaqSection = () => {
+  const sliderRef = useRef<HTMLDivElement | null>(null);;
   const [autoPlay, setAutoPlay] = useState(false);
 
   // Scroll the slider by width of 1 card set
-  const scroll = (direction) => {
+  const scroll = (direction: "left" | "right") => {
     const slider = sliderRef.current;
     if (!slider) return;
     const scrollAmount = slider.offsetWidth / 3; // show 3 per view
@@ -147,4 +147,4 @@ const TestimonialsSection = () => {
   );
 };
 
-export default TestimonialsSection;
+export default FaqSection;

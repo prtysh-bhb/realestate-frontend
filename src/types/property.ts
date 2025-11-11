@@ -32,6 +32,14 @@ export interface Property {
   is_favorite: boolean;
 }
 
+export interface Documents {
+  success: boolean;
+  message: string;
+  data: {
+    documents: [];
+  };
+}
+
 export interface DocumentFile {
   name: string;
   url: string;

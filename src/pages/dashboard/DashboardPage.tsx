@@ -2,9 +2,9 @@ import Header from "@/components/layout/public/Header";
 import Footer from "@/components/layout/public/Footer";
 import HeroSection from "@/components/sections/home/HeroSection";
 import RecommendedProperties from "@/components/sections/home/RecommendedProperties";
+import FaqSection from "@/components/sections/home/FaqSection";
 import ServicesSection from "@/components/sections/home/ServicesSection";
 import WhyChooseSection from "@/components/sections/home/WhyChooseSection";
-import FaqSection from "@/components/sections/home/FaqSection";
 
 export default function DashboardPage() {
   return (

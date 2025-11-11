@@ -1,7 +1,8 @@
 import api from "@/api/axios";
+import { Documents } from "@/types/property";
 
 export const getPropertyDocuments = (propertyId: number) =>
-  api.get(`/agent/properties/${propertyId}/documents`);
+  api.get<Documents>(`/agent/properties/${propertyId}/documents`);
 
 export const uploadPropertyDocuments = (propertyId: number, files: File[]) => {
   const formData = new FormData();
@@ -12,4 +13,8 @@ export const uploadPropertyDocuments = (propertyId: number, files: File[]) => {
 };
 
 export const deletePropertyDocument = (propertyId: number, index: number) =>
-  api.delete(`/agent/properties/${propertyId}/documents`, { data: { index } });
+  api.request({
+    method: 'DELETE',
+    url: `/agent/properties/${propertyId}/documents`,
+    data: { index }
+  });

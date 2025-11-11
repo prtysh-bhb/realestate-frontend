@@ -2,8 +2,35 @@
 // src/api/profileApi.ts
 import api  from "@/api/axios";
 
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  phone: string | null;
+  role: string;
+  avatar: string | null;
+  avatar_url: string | null;
+  bio: string | null;
+  company_name: string | null;
+  license_number: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  zipcode: string | null;
+  email_verified_at: string | null;
+  last_login_at: string | null;
+  created_at: string;
+}
+
+interface ProfileResponse{
+  success: boolean;
+  data: {
+    user: User;
+  };
+}
+
 /** Get current user profile */
-export const getProfile = () => api.get("/profile");
+export const getProfile = () => api.get<ProfileResponse>("/profile");
 
 /** Update user profile */
 export const updateProfile = (data: any) => api.put("/profile", data);

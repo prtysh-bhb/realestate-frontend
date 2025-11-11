@@ -144,9 +144,9 @@ const PropertyFilters = () => {
       bathrooms: '',
       min_area: '',
       max_area: '',
-      type: 'rent',
+      type: propType,
       amenities: [],
-      sortBy: 'Newest First'
+      sortBy: ''
     });
 
     handleApplyFilters();

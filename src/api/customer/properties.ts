@@ -26,6 +26,14 @@ export interface InquiryResponse {
   };
 }
 
+export interface InquiriesResponse {
+  success: boolean;
+  message: string;
+  data: {
+    inquiries: [];
+  };
+}
+
 export interface FavoritesResponse {
   success: boolean;
   message?: string;

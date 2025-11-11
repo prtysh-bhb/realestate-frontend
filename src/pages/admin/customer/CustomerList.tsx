@@ -44,7 +44,7 @@ const CustomerList = () => {
         if (filter === "active") params.is_active = 1;
         if (filter === "inactive") params.is_active = 0;
 
-        const data = await getCustomers(page, search, params);
+        const data = await getCustomers(page, search);
         if (data.success) {
           setCustomers(data.data.customers || []);
           setTotalPages(data.data.pagination.last_page || 1);
@@ -62,7 +62,7 @@ const CustomerList = () => {
     const params: Record<string, any> = { page, search };
     if (filter === "active") params.is_active = 1;
     if (filter === "inactive") params.is_active = 0;
-    const data = await getCustomers(page, search, params);
+    const data = await getCustomers(page, search);
     setCustomers(data.data.customers || []);
   };
 

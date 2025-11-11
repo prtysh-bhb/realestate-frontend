@@ -8,6 +8,7 @@ import api from "@/api/axios";
 import herohouse from "@/assets/hero-house.jpg";
 import Logo from "/public/vite.svg";
 import { toast } from "sonner"; // ✅ Import Sonner toast
+import { InquiryResponse } from "@/api/customer/properties";
 
 const ResetPasswordPage = () => {
   const [searchParams] = useSearchParams();
@@ -35,22 +36,20 @@ const ResetPasswordPage = () => {
     setLoading(true);
 
     try {
-      // ✅ Using toast.promise for smoother UX
-      const res = toast.promise(
-        api.post("/reset-password", {
-          token,
-          email,
-          password,
-          password_confirmation: confirmPassword,
-        }),
-        {
-          loading: "Resetting your password...",
-          success: "Password reset successful 🎉",
-          error: "Failed to reset password",
-        }
-      );
+      const response = await api.post<InquiryResponse>("/reset-password", {
+        token,
+        email,
+        password,
+        password_confirmation: confirmPassword,
+      });
 
-      setMessage(res.data.message || "Password reset successfully!");
+      await toast.promise(Promise.resolve(response), {
+        loading: "Resetting your password...",
+        success: "Password reset successful 🎉",
+        error: "Failed to reset password",
+      });
+
+      setMessage(response.data.message || "Password reset successfully!");
       setTimeout(() => navigate("/login"), 2000);
     } catch (err: any) {
       const msg = err.response?.data?.message || "Something went wrong";

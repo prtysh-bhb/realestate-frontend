@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
+import { JSX, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   MapPin,
@@ -40,7 +40,7 @@ const SingleProperty = () => {
     const fetchProperty = async () => {
       try {
         const res = await getSingleProperty(id!);
-        const data = res?.data?.property || res?.property || res;
+        const data = res?.data?.property;
         setProperty(data);
       } catch (err) {
         console.error("Failed to fetch property", err);

@@ -15,19 +15,22 @@ const Header = ({ onMenuClick }: HeaderProps) => {
 
   const avatarUrl = user?.avatar_url || "/default-avatar.png";
 
-  const profilePath =
-    user?.role === "admin"
-      ? "/admin/view-profile"
-      : user?.role === "agent"
-      ? "/agent/view-profile"
-      : "/customer/view-profile";
+  const role = user?.role || "customer";
 
-  const editProfilePath =
-    user?.role === "admin"
-      ? "/admin/profile"
-      : user?.role === "agent"
-      ? "/agent/profile"
-      : "/customer/profile";
+  const profilePathMap: Record<string, string> = {
+    admin: "/admin/view-profile",
+    agent: "/agent/view-profile",
+    customer: "/customer/view-profile",
+  };
+
+  const editProfilePathMap: Record<string, string> = {
+    admin: "/admin/profile",
+    agent: "/agents/profile",
+    customer: "/customer/profile",
+  };
+
+  const profilePath = profilePathMap[role];
+  const editProfilePath = editProfilePathMap[role];
 
   const handleLogout = () => {
     localStorage.removeItem("token");
