@@ -125,7 +125,7 @@ const PropertyCard: FC<PropertyCardProps> = ({ property, isFavorite = false, fet
               alt={property.agent.name}
               className="w-9 h-9 rounded-full object-cover"
               onError={(e) => {
-                  e.currentTarget.src = "/src/assets/user.jpg";
+                  e.currentTarget.src = "/assets/user.jpg";
               }}
             />
             <span className="text-md text-gray-700 font-medium">

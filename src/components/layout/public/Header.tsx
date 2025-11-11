@@ -51,7 +51,7 @@ const Header = () => {
           to="/"
           className="text-3xl font-extrabold tracking-tight transition-all"
         >
-          <img src="/src/assets/logo.jpg" className="w-20 h-15" alt="" />
+          <img src="/assets/logo.jpg" className="w-20 h-15" alt="" />
         </Link>
 
         {/* NAV LINKS (Desktop) */}

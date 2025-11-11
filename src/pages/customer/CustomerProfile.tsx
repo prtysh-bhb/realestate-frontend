@@ -321,7 +321,7 @@ const CustomerProfile = () => {
                     alt="Customer" 
                     className="w-32 h-32 rounded-full object-cover border-4 border-white shadow"
                     onError={(e) => {
-                        e.currentTarget.src = "/src/assets/user.jpg";
+                        e.currentTarget.src = "/assets/user.jpg";
                     }}
                   />
                   {/* <span className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 rounded-full border-2 border-white"></span> */}

@@ -76,7 +76,7 @@ const SignupPage = () => {
         {/* Left Section – Black Panel */}
         <div
           className="hidden lg:flex flex-col justify-center items-center text-white
-            bg-[url('/src/assets/login-image.jpg')] bg-center bg-cover bg-full w-[40%] p-10 relative
+            bg-[url('/assets/login-image.jpg')] bg-center bg-cover bg-full w-[40%] p-10 relative
             before:content-[''] before:absolute before:inset-0 before:bg-black before:opacity-50"
         >
           <h1 className="text-2xl font-semibold text-center z-2">

@@ -20,7 +20,7 @@ const Footer = () => {
           {/* Logo & Social */}
           <div className="flex flex-col gap-6 w-full md:w-[25%]">
             <div className="flex items-center gap-3">
-                <img src="/src/assets/logo.jpg" className="w-24 h-20" alt="" />
+                <img src="/assets/logo.jpg" className="w-24 h-20" alt="" />
             </div>
             <p className="text-sm leading-relaxed">
               Specializes in providing high-class tours for those in need.{" "}

@@ -118,11 +118,11 @@ const ProfileEditForm = () => {
             <div className="relative">
               <img 
                 id="avatar-preview" 
-                src={avatar || "/src/assets/user.jpg"} 
+                src={avatar || "/assets/user.jpg"} 
                 alt="Profile" 
                 className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
                 onError={(e) => {
-                  e.currentTarget.src = "/src/assets/user.jpg";
+                  e.currentTarget.src = "/assets/user.jpg";
                 }}
               />
               <button

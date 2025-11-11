@@ -121,7 +121,7 @@ const PropertyView = () => {
                 alt="Property main image" 
                 className="w-full h-80 object-cover rounded-lg"
                 onError={(e) => {
-                  e.currentTarget.src = "/src/assets/no_image_found.jpg";
+                  e.currentTarget.src = "/assets/no_image_found.jpg";
                 }}
               />
             </div>
@@ -142,11 +142,11 @@ const PropertyView = () => {
           </div>
           ) : (
             <img 
-                src={'/src/assets/no_image_found.jpg'} 
+                src={'/assets/no_image_found.jpg'} 
                 alt="Property main image" 
                 className="h-80 object-fill rounded-lg mx-auto"
                 onError={(e) => {
-                  e.currentTarget.src = "/src/assets/no_image_found.jpg";
+                  e.currentTarget.src = "/assets/no_image_found.jpg";
                 }}
               />
           )}
@@ -322,7 +322,7 @@ const PropertyView = () => {
                   alt="Agent" 
                   className="w-16 h-16 rounded-full object-cover"
                   onError={(e) => {
-                    e.currentTarget.src = "/src/assets/user.jpg";
+                    e.currentTarget.src = "/assets/user.jpg";
                   }}
                 />
                 <div>
