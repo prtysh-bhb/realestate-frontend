@@ -24,7 +24,7 @@ export interface LoginResponse {
   success: boolean;
   message: string;
   requires_2fa?: boolean;
-  user_id?: number;
+  email?: string;
   data?: {
     user: User;
     token: string;
@@ -69,10 +69,10 @@ export const login = async (email: string, password: string): Promise<LoginRespo
 
 
 export const verifyTwoFactorLogin = async (
-  user_id: number,
+  email: string,
   code: string
 ): Promise<Verify2FAResponse> => {
-  const res = await api.post<Verify2FAResponse>("/verify-login", { user_id, code });
+  const res = await api.post<Verify2FAResponse>("/verify-login", { email, code });
   return res.data;
 };
 

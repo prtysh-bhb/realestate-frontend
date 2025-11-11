@@ -82,7 +82,7 @@ const HomePage = () => {
       <div
         className="relative min-h-screen flex flex-col items-center justify-center text-center text-white bg-cover bg-bottom bg-fixed"
         style={{
-          backgroundImage: "url('assets/hero-banner.jpg')",
+          backgroundImage: "url('/assets/hero-banner.jpg')",
         }}
       >
         {/* Background overlay */}

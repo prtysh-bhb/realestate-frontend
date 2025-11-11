@@ -8,7 +8,7 @@ import { verifyTwoFactorLogin } from "@/api/auth";
 const TwoFactorPage = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const user_id = state?.user_id as number | undefined;
+  const user_email = state?.email as string | undefined;
 
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
@@ -16,13 +16,13 @@ const TwoFactorPage = () => {
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user_id) {
-      setError("Missing user id. Please login again.");
+    if (!user_email) {
+      setError("Missing user mail. Please login again.");
       return;
     }
     setLoading(true); setError("");
     try {
-      const res = await verifyTwoFactorLogin(user_id, code);
+      const res = await verifyTwoFactorLogin(user_email, code);
       if (res.success) {
         const { user, token } = res.data;
         localStorage.setItem("token", token);

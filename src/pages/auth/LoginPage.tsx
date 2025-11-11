@@ -11,7 +11,7 @@ import google from "/assets/Google.svg";
 import apple from "/assets/apple.svg";
 import facebook from "/assets/Facebook.svg";
 import bgImage from "/assets/hero-house.jpg";
-import Logo from "/vite.svg";
+import Logo from "/public/vite.svg";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -31,7 +31,7 @@ const LoginPage = () => {
 
       if (data.success && data.requires_2fa) {
         toast.info("Two-factor authentication required");
-        navigate("/two-factor", { state: { user_id: data.user_id } });
+        navigate("/two-factor", { state: { email: data.email } });
         return;
       }
 
