@@ -5,8 +5,8 @@ import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import api from "@/api/axios";
-import herohouse from "@/assets/hero-house.jpg";
-import Logo from "/public/vite.svg";
+import herohouse from "/assets/hero-house.jpg";
+import Logo from "/vite.svg";
 import { toast } from "sonner"; // ✅ Import Sonner toast
 import { InquiryResponse } from "@/api/customer/properties";
 

@@ -3,8 +3,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { forgotPassword } from "@/api/auth";
-import herohouse from "@/assets/hero-house.jpg";
-import Logo from "/public/vite.svg";
+import herohouse from "/assets/hero-house.jpg";
+import Logo from "/vite.svg";
 import { Link } from "react-router";
 import { toast } from "sonner"; // ✅ Import Sonner
 

@@ -7,8 +7,8 @@ import { register } from "@/api/auth";
 import { Eye, EyeOff } from "lucide-react";
 import { Link } from "react-router";
 import { toast } from "sonner"; // ✅ Import toast
-import bgImage from "@/assets/hero-house.jpg";
-import Logo from "/public/vite.svg";
+import bgImage from "/assets/hero-house.jpg";
+import Logo from "/vite.svg";
 
 const SignupPage = () => {
   const [name, setName] = useState("");

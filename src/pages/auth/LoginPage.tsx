@@ -7,11 +7,11 @@ import { useNavigate } from "react-router-dom";
 import { Link } from "react-router";
 import { login } from "@/api/auth";
 import { toast } from "sonner"; // ✅ Import Sonner toast
-import google from "@/assets/Google.svg";
-import apple from "@/assets/apple.svg";
-import facebook from "@/assets/Facebook.svg";
-import bgImage from "@/assets/hero-house.jpg";
-import Logo from "/public/vite.svg";
+import google from "/assets/Google.svg";
+import apple from "/assets/apple.svg";
+import facebook from "/assets/Facebook.svg";
+import bgImage from "/assets/hero-house.jpg";
+import Logo from "/vite.svg";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
