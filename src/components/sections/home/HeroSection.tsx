@@ -89,7 +89,7 @@ const HomePage = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/50 backdrop-blur-sm" />
 
         {/* Hero content */}
-        <div className="relative z-10 px-4 sm:px-8 max-w-6xl w-full">
+        <div className="relative z-10 px-4 sm:px-8 max-w-6xl w-full pt-24">
           <motion.h1
             className="text-4xl md:text-6xl font-extrabold mb-4 leading-tight drop-shadow-lg"
             initial={{ opacity: 0, y: 20 }}

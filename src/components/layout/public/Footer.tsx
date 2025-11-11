@@ -14,7 +14,7 @@ const Footer = () => {
   return (
     <footer className="bg-[#0b0d12] text-gray-300">
       {/* Top Section */}
-      <div className="max-w-7xl mx-auto px-2 py-16 border-b border-gray-700">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-16 border-b border-gray-700">
         {/* Brand Row */}
         <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-8">
           {/* Logo & Social */}
@@ -88,8 +88,8 @@ const Footer = () => {
         </div>
 
         {/* Social Icons */}
-        <div className="flex justify-center md:justify-end mt-10 space-x-5">
-          <span className="text-white font-medium">Follow Us:</span>
+        <div className="flex flex-wrap gap-2 justify-center md:justify-end mt-10 space-x-5">
+          <span className="text-white font-medium">Follow Us</span>
           <div className="flex space-x-4">
             {[Facebook, Linkedin, Twitter, Instagram, Youtube].map(
               (Icon, i) => (
