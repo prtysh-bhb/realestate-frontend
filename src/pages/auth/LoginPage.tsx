@@ -160,7 +160,7 @@ const LoginPage = () => {
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
-                <div className="flex justify-end mt-1">
+                <div className="flex justify-end mt-1 hidden">
                   <Link
                     to="/forgot-password"
                     className="text-xs text-blue-600 hover:underline"
