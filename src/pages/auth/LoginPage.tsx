@@ -12,8 +12,10 @@ import apple from "/assets/apple.svg";
 import facebook from "/assets/Facebook.svg";
 import bgImage from "/assets/hero-house.jpg";
 import Logo from "/public/vite.svg";
+import { useAuth } from "@/context/AuthContext";
 
 const LoginPage = () => {
+  const {fetchUserProfile} = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -41,6 +43,7 @@ const LoginPage = () => {
 
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(user));
+        fetchUserProfile();
 
         const role = user.role || "agent";
         localStorage.setItem("role", role);

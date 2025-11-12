@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Bell, Moon, Search, Menu, User, Pencil, LogOut } from "lucide-react";
+import { Bell, Moon, Search, Menu, User, Pencil, LogOut, MessageCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 
@@ -11,9 +11,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
   const { user } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const navigate = useNavigate();
-
-  const avatarUrl = user?.avatar_url || "/default-avatar.png";
+  const navigate = useNavigate();  
 
   const role = user?.role || "customer";
 
@@ -89,7 +87,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
         {/* Avatar + Dropdown */}
         <div className="relative" ref={dropdownRef}>
           <img
-            src={avatarUrl}
+            src={user?.avatar_url}
             alt="user"
             className="w-8 h-8 rounded-full border hover:scale-105 transition-transform cursor-pointer"
             onClick={() => setDropdownOpen((prev) => !prev)} 
@@ -124,6 +122,17 @@ const Header = ({ onMenuClick }: HeaderProps) => {
                     <Pencil size={16} /> Edit Profile
                   </Link>
                 </li>
+                {role == 'agent' && (
+                  <li>
+                    <Link
+                      to={'/agent/messages'}
+                      className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
+                      onClick={() => setDropdownOpen(false)}
+                    >
+                      <MessageCircle size={16} /> Messages
+                    </Link>
+                  </li>
+                )}
               </ul>
 
               <div className="border-t">

@@ -47,8 +47,17 @@ import PropertyView from "@/pages/customer/PropertyView";
 // Routing Utils
 import ProtectedRoute from "@/lib/ProtectedRoute";
 import PublicRoute from "@/lib/PublicRoute";
+import ChatScreen from "./pages/ChatScreen";
+import AgentChatPage from "./pages/admin/agents/profile/AgentChatPage";
 
 function App() {
+  const currentUser = {
+    id: '1',
+    name: 'John Doe',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80',
+    role: 'agent' as const,
+  };
+
   return (
     <BrowserRouter>
       <Routes>
@@ -89,6 +98,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <ProfileEditForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/messages"
+            element={
+              <ProtectedRoute>
+                <ChatScreen currentUser={currentUser} />
               </ProtectedRoute>
             }
           />
@@ -144,6 +162,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+            path="/agent/messages"
+            element={
+              <ProtectedRoute>
+                <AgentChatPage />
+              </ProtectedRoute>
+            }
+          />
 
         {/* ---------------- LEADS ---------------- */}
         <Route

@@ -1,5 +1,5 @@
 import { logout } from '@/api/auth';
-import { User, LogOut } from 'lucide-react';
+import { User, LogOut, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const handleLogout = (): void => {
@@ -22,6 +22,15 @@ const UserMenuItems = ({
             <User size={20} />
           </span>
           {'Profile'}
+        </Link>
+
+        <Link to={'/messages'}
+          className="flex items-center cursor-pointer w-full text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150 py-2"
+        >
+          <span className="mr-3 text-base">
+            <MessageCircle size={17} />
+          </span>
+          {'Messages'}
         </Link>
       </div>
 

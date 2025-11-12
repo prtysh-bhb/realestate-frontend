@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { ChevronDown } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import UserMenuItems from './UserMenuItems';
+import { useAuth } from '@/context/AuthContext';
 
 interface HeaderProps{
     scrolled: boolean;
@@ -10,7 +11,7 @@ interface HeaderProps{
 const UserDropdown = ({ scrolled }: HeaderProps) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const {user} = useAuth();
 
   // Close dropdown when clicking outside
   useEffect(() => {

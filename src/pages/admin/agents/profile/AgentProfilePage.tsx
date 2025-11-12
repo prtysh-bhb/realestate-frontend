@@ -14,9 +14,10 @@ import { toast } from "sonner";
 import { Loader2, UserCog, ShieldCheck, Trash2, ArrowLeft } from "lucide-react";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 
 const AgentProfilePage = () => {
-  const [user, setUser] = useState<any>({});
+  const { user, setUser } = useAuth();
   const [password, setPassword] = useState({
     current_password: "",
     new_password: "",
@@ -35,6 +36,7 @@ const AgentProfilePage = () => {
       const res = await getProfile();
       const data = res.data as { data: { user: any } };
       setUser(data.data.user);
+      
     } catch {
       toast.error("Failed to load profile");
     } finally {

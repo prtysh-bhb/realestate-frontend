@@ -32,7 +32,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
         {/* Scrollable Page Content */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
-          <div className="bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm p-0 md:p-4 min-h-[85vh] transition-colors duration-300">
+          <div className=" dark:bg-[#1f2937] rounded-2xl p-0 md:p-4 min-h-[85vh] transition-colors duration-300">
             {children}
           </div>
         </main>

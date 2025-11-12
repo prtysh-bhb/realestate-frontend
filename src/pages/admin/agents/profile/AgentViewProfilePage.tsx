@@ -17,9 +17,10 @@ import {
   Home,
 } from "lucide-react";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
+import { useAuth } from "@/context/AuthContext";
 
 const AgentViewProfilePage = () => {
-  const [user, setUser] = useState<any>(null);
+  const { user, setUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 

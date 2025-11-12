@@ -8,6 +8,7 @@ interface AuthContextType {
   token: string | null;
   setUser: (user: any) => void;
   setToken: (token: string) => void;
+  fetchUserProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -16,13 +17,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<any>(null);
   const [token, setToken] = useState(localStorage.getItem("token"));
 
-  useEffect(() => {
+  useEffect(() => {    
     if (token) fetchUserProfile();
   }, [token]);
 
   const fetchUserProfile = async () => {
     try {
       const res = await getProfile();
+      
       // Type assertion to specify expected structure
       const data = res.data as { data: { user: any } };
       setUser(data.data.user); // Laravel returns {data: {user: {..}}}
@@ -32,7 +34,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, setUser, setToken }}>
+    <AuthContext.Provider value={{ user, token, setUser, setToken, fetchUserProfile }}>
       {children}
     </AuthContext.Provider>
   );

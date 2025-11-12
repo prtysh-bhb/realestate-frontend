@@ -1,5 +1,6 @@
 import { getProfile, updateAvatar, updateProfile } from '@/api/auth';
 import Loader from '@/components/ui/Loader';
+import { useAuth } from '@/context/AuthContext';
 import { Camera } from 'lucide-react';
 import { useState, useRef, ChangeEvent, useEffect } from 'react';
 import { Link } from 'react-router-dom';
@@ -17,6 +18,7 @@ interface ProfileFormData {
 }
 
 const ProfileEditForm = () => {
+  const {setUser} = useAuth();
   const [avatar, setAvatar] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [formData, setFormData] = useState<ProfileFormData>({
@@ -44,6 +46,7 @@ const ProfileEditForm = () => {
     const fetchUser = async () => {
         const data = await getProfile();
         setFormData(data.data.user);
+        setUser(data.data.user);
         setAvatar(data.data.user.avatar_url);
         setLoading(false);
     };
@@ -76,6 +79,7 @@ const ProfileEditForm = () => {
     const response = await updateProfile(formData);
     
     if(response.success){
+      setUser(response.data.user);
       toast.success(response.message);
     }else{
       toast.error(response.message);

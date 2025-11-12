@@ -23,9 +23,10 @@ import {
 } from "lucide-react";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 
 const AdminProfilePage = () => {
-  const [user, setUser] = useState<any>({});
+  const { user, setUser } = useAuth();
   const [password, setPassword] = useState({
     current_password: "",
     new_password: "",
