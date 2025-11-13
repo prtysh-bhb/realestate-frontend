@@ -1,16 +1,19 @@
 import { logout } from '@/api/auth';
 import { User, LogOut } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
-const handleLogout = (): void => {
-  localStorage.clear();
-  window.location.href = "/";
-  logout();
-};
 
 const UserMenuItems = ({ 
   className = "" 
 }) => {
+  const navigate = useNavigate();
+  
+  const handleLogout = async () => {
+    await logout();
+    localStorage.clear();
+    navigate('/');
+  };
+
   return (
     <div className={className}>
       {/* Profile Menu Item */}

@@ -47,10 +47,12 @@ import PropertyView from "@/pages/customer/PropertyView";
 // Routing Utils
 import ProtectedRoute from "@/lib/ProtectedRoute";
 import PublicRoute from "@/lib/PublicRoute";
+import { ApiInterceptor } from "./api/ApiInterceptor";
 
 function App() {
   return (
     <BrowserRouter>
+    <ApiInterceptor />
       <Routes>
         {/* ---------------- AUTH ROUTES ---------------- */}
         <Route element={<PublicRoute />}>
