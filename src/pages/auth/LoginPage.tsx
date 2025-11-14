@@ -36,6 +36,8 @@ const LoginPage = () => {
         navigate("/two-factor", { state: { email: data.email } });
         return;
       }
+      console.log(data);
+      
 
       if (data.success && data.data?.token) {
         const user = data.data.user;
@@ -167,7 +169,7 @@ const LoginPage = () => {
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
-                <div className="flex justify-end mt-1 hidden">
+                <div className="flex justify-end mt-1">
                   <Link
                     to="/forgot-password"
                     className="text-xs text-blue-600 hover:underline"

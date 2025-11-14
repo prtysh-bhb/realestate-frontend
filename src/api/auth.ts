@@ -95,7 +95,7 @@ export const register = async (
 
 
 export const forgotPassword = async (email: string): Promise<any> => {
-  const res = await api.post("/forgot-password", { email });
+  const res = await api.post("/password/email", { email });
   return res.data;
 };
 

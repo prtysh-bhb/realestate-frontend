@@ -11,6 +11,10 @@ export const ApiInterceptor = () => {
     const interceptor = api.interceptors.response.use(
       (response) => response,
       (error) => {
+        if (error.config?.url === "/login" && error.config?.method === "post") {
+          return Promise.reject(error);
+        }
+        
         if (error.response?.status === 401) {
           if (!hasShownToast.current) {
             hasShownToast.current = true;

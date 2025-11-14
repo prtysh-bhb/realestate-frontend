@@ -36,7 +36,7 @@ const ResetPasswordPage = () => {
     setLoading(true);
 
     try {
-      const response = await api.post<InquiryResponse>("/reset-password", {
+      const response = await api.post<InquiryResponse>("/password/reset", {
         token,
         email,
         password,
@@ -49,14 +49,13 @@ const ResetPasswordPage = () => {
         error: "Failed to reset password",
       });
 
+      document.getElementById('reset_password_btn')?.setAttribute('disabled', 'true');
       setMessage(response.data.message || "Password reset successfully!");
-      setTimeout(() => navigate("/login"), 2000);
+      setTimeout(() => {navigate("/login");setLoading(false);}, 2000);
     } catch (err: any) {
       const msg = err.response?.data?.message || "Something went wrong";
       toast.error(msg);
       setError(msg);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -74,7 +73,7 @@ const ResetPasswordPage = () => {
 
       {/* Main Card */}
       <div
-        className="relative z-10 flex flex-col lg:flex-row w-[90%] max-w-5xl h-[600px] 
+        className="relative z-10 flex flex-col lg:flex-row w-[90%] max-w-5xl lg:h-[600px] 
                     rounded-2xl overflow-hidden shadow-2xl"
       >
         {/* Left Panel */}
@@ -136,6 +135,7 @@ const ResetPasswordPage = () => {
                 <Input
                   type="password"
                   value={password}
+                  maxLength={50}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="Enter new password"
@@ -150,6 +150,7 @@ const ResetPasswordPage = () => {
                 <Input
                   type="password"
                   value={confirmPassword}
+                  maxLength={50}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   placeholder="Confirm new password"
@@ -159,6 +160,7 @@ const ResetPasswordPage = () => {
               {/* Submit Button */}
               <Button
                 type="submit"
+                id="reset_password_btn"
                 className="w-full h-11 bg-blue-600 hover:bg-blue-700 font-medium text-white cursor-pointer"
                 disabled={loading}
               >
