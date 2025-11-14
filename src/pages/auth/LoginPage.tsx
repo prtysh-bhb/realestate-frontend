@@ -50,8 +50,10 @@ const LoginPage = () => {
 
         toast.success("Login successful!");
 
-        if (role === "admin" || role === "agent" || role === "customer") {
+        if (role === "admin") {
           navigate("/admin/dashboard");
+        } else if (role === "agent"){
+          navigate("/agent/dashboard");
         } else {
           navigate("/");
         }

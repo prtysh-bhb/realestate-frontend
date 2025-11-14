@@ -49,6 +49,7 @@ import ProtectedRoute from "@/lib/ProtectedRoute";
 import PublicRoute from "@/lib/PublicRoute";
 import ChatScreen from "./pages/ChatScreen";
 import AgentChatPage from "./pages/admin/agents/profile/AgentChatPage";
+import AgentDashboardPage from "./pages/admin/agents/AgentDashboardPage";
 
 function App() {
   const currentUser = {
@@ -77,7 +78,7 @@ function App() {
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["customer"]}>
               <DashboardPage />
             </ProtectedRoute>
           }
@@ -117,12 +118,22 @@ function App() {
           <Route path="/properties/view/:id" element={<PropertyView />} />
         </Route>
 
-        {/* ---------------- ADMIN & AGENT DASHBOARD ---------------- */}
+        {/* ---------------- ADMIN DASHBOARD ---------------- */}
         <Route
           path="/admin/dashboard"
           element={
-            <ProtectedRoute allowedRoles={["admin", "agent"]}>
+            <ProtectedRoute allowedRoles={["admin"]}>
               <AdminDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ---------------- AGENT DASHBOARD ---------------- */}
+        <Route
+          path="/agent/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["agent"]}>
+              <AgentDashboardPage />
             </ProtectedRoute>
           }
         />
@@ -173,27 +184,27 @@ function App() {
 
         {/* ---------------- LEADS ---------------- */}
         <Route
-          path="/admin/agents/lead"
+          path="/agent/lead"
           element={
-            <ProtectedRoute allowedRoles={["admin", "agent"]}>
+            <ProtectedRoute allowedRoles={["agent"]}>
               <LeadList />
             </ProtectedRoute>
           }
         />
         <Route
-          path="/admin/agents/lead/view/:id"
+          path="/agent/lead/view/:id"
           element={
-            <ProtectedRoute allowedRoles={["admin", "agent"]}>
+            <ProtectedRoute allowedRoles={["agent"]}>
               <ViewLead />
             </ProtectedRoute>
           }
         />
 
-        {/* ---------------- AGENT MANAGEMENT ---------------- */}
+        {/* ---------------- ADMIN AGENT MANAGEMENT ---------------- */}
         <Route
-          path="/admin/agents/agent-list"
+          path="/admin/agents"
           element={
-            <ProtectedRoute allowedRoles={["admin", "agent"]}>
+            <ProtectedRoute allowedRoles={["admin"]}>
               <AgentList />
             </ProtectedRoute>
           }
@@ -201,17 +212,17 @@ function App() {
         <Route
           path="/admin/agents/view/:id"
           element={
-            <ProtectedRoute allowedRoles={["admin", "agent"]}>
+            <ProtectedRoute allowedRoles={["admin"]}>
               <AgentProfilePage />
             </ProtectedRoute>
           }
         />
 
-        {/* ---------------- CUSTOMER MANAGEMENT ---------------- */}
+        {/* ---------------- ADMIN CUSTOMER MANAGEMENT ---------------- */}
         <Route
-          path="/admin/customers/customer-list"
+          path="/admin/customers"
           element={
-            <ProtectedRoute allowedRoles={["admin", "agent"]}>
+            <ProtectedRoute allowedRoles={["admin"]}>
               <CustomerList />
             </ProtectedRoute>
           }
@@ -225,36 +236,36 @@ function App() {
           }
         />
 
-        {/* ---------------- PROPERTIES (AGENT & ADMIN) ---------------- */}
+        {/* ---------------- PROPERTIES (AGENT) ---------------- */}
         {/* Agent-side */}
         <Route
-          path="/admin/agents/property/add"
+          path="/agent/property/add"
           element={
-            <ProtectedRoute allowedRoles={["agent", "admin"]}>
+            <ProtectedRoute allowedRoles={["agent"]}>
               <AddProperty />
             </ProtectedRoute>
           }
         />
         <Route
-          path="/admin/agents/property/list"
+          path="/agent/property/list"
           element={
-            <ProtectedRoute allowedRoles={["agent", "admin"]}>
+            <ProtectedRoute allowedRoles={["agent"]}>
               <PropertyList />
             </ProtectedRoute>
           }
         />
         <Route
-          path="/admin/agents/property/edit/:id"
+          path="/agent/property/edit/:id"
           element={
-            <ProtectedRoute allowedRoles={["agent", "admin"]}>
+            <ProtectedRoute allowedRoles={["agent"]}>
               <EditProperty />
             </ProtectedRoute>
           }
         />
         <Route
-          path="/admin/agents/property/view/:id"
+          path="/agent/property/view/:id"
           element={
-            <ProtectedRoute allowedRoles={["agent", "admin"]}>
+            <ProtectedRoute allowedRoles={["agent"]}>
               <ViewProperty />
             </ProtectedRoute>
           }

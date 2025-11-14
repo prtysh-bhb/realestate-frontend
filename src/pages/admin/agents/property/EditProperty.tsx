@@ -95,7 +95,7 @@ const EditProperty = () => {
 
       await updateProperty(Number(id), data, true);
       toast.success("Property updated successfully!");
-      navigate("/admin/agents/property/list");
+      navigate("/agent/property/list");
     } catch (err) {
       console.error(err);
       toast.error(" Failed to update property.");

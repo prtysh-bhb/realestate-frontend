@@ -74,7 +74,7 @@ const AddProperty = () => {
 
       await createProperty(data);
       toast.success("✅ Property created successfully!");
-      navigate("/admin/agents/property/list");
+      navigate("/agent/property/list");
     } catch (err) {
       console.error(err);
       toast.error("❌ Failed to create property");
