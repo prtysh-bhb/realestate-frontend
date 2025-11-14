@@ -24,6 +24,9 @@ dist-ssr
 # Build cache
 *.tsbuildinfo
 
+# Auto-generated type declarations
+*.config.d.ts
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
