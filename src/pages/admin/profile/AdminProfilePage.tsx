@@ -261,7 +261,7 @@ const AdminProfilePage = () => {
         {/* Password Change */}
         <div className="bg-white dark:bg-gray-800 shadow-sm border border-gray-100 rounded-xl p-6">
           <div className="flex items-center gap-2 mb-4">
-            <ShieldCheck className="text-green-500" />
+            <ShieldCheck className="text-blue-500" />
             <h3 className="font-semibold text-gray-800 dark:text-gray-100">
               Change Password
             </h3>
@@ -303,7 +303,7 @@ const AdminProfilePage = () => {
             />
           </div>
           <Button
-            className="mt-4 bg-green-600 hover:bg-green-700 text-white"
+            className="mt-4 bg-blue-600 hover:bg-blue-700 text-white"
             onClick={handlePasswordChange}
           >
             Update Password
