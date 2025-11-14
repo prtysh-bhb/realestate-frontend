@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { getAgentProperties, deleteProperty } from "@/api/agent/property";
+import type { Property } from "@/types/property";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
@@ -17,17 +18,6 @@ import {
   AlertTriangle,
   X,
 } from "lucide-react";
-
-interface Property {
-  id: number;
-  title: string;
-  price: number;
-  city?: string;
-  state?: string;
-  status: string;
-  approval_status?: string;
-  created_at?: string;
-}
 
 const PropertyList = () => {
   const [properties, setProperties] = useState<Property[]>([]);
