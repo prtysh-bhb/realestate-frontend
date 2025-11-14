@@ -42,7 +42,7 @@ const PropertyList = () => {
     try {
       setLoading(true);
       const data = await getAgentProperties();
-      setProperties(data?.properties ?? []);
+      setProperties(data?.data ?? []);
     } catch (err) {
       console.error(err);
       toast.error("Failed to load properties");

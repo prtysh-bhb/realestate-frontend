@@ -45,9 +45,9 @@ const ProfileEditForm = () => {
   useEffect(() => {
     const fetchUser = async () => {
         const data = await getProfile();
-        setFormData(data.data.user);
-        setUser(data.data.user);
-        setAvatar(data.data.user.avatar_url);
+        setFormData(data.data);
+        setUser(data.data);
+        setAvatar(data.data.avatar_url);
         setLoading(false);
     };
 
@@ -77,9 +77,9 @@ const ProfileEditForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const response = await updateProfile(formData);
-    
+
     if(response.success){
-      setUser(response.data.user);
+      setUser(response.data);
       toast.success(response.message);
     }else{
       toast.error(response.message);

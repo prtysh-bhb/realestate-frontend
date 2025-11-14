@@ -97,7 +97,7 @@ export const validatePropertyForm = (
         errors.images = `"${file.name}" exceeds the 5MB size limit`;
         break;
       }
-      if (!FILE_UPLOAD.ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      if (!(FILE_UPLOAD.ALLOWED_IMAGE_TYPES as readonly string[]).includes(file.type)) {
         errors.images = `"${file.name}" is not a valid image type`;
         break;
       }
@@ -195,7 +195,7 @@ export const validateImage = (
     };
   }
 
-  if (!FILE_UPLOAD.ALLOWED_IMAGE_TYPES.includes(file.type)) {
+  if (!(FILE_UPLOAD.ALLOWED_IMAGE_TYPES as readonly string[]).includes(file.type)) {
     return {
       valid: false,
       error: VALIDATION_MESSAGES.INVALID_FILE_TYPE,

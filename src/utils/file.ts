@@ -98,5 +98,5 @@ export const getFileExtension = (filename: string): string => {
  * Check if file is an image
  */
 export const isImageFile = (file: File): boolean => {
-  return FILE_UPLOAD.ALLOWED_IMAGE_TYPES.includes(file.type);
+  return (FILE_UPLOAD.ALLOWED_IMAGE_TYPES as readonly string[]).includes(file.type);
 };

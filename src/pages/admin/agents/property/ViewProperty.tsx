@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Trash2, AlertTriangle, X } from "lucide-react";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
-import { getPropertyById, deleteProperty, Property } from "@/api/agent/property";
+import { getPropertyById, deleteProperty } from "@/api/agent/property";
+import type { Property } from "@/types/property";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import PropertyDocuments from "./PropertyDocuments";
@@ -89,7 +90,7 @@ const ViewProperty = () => {
   const allImages =
     property.image_urls && property.image_urls.length > 0
       ? property.image_urls
-      : property.images?.map((img) => getImageUrl(img)) || [];
+      : [];
 
   return (
     <AdminLayout>
@@ -137,7 +138,7 @@ const ViewProperty = () => {
         {/* ---------- Image Gallery ---------- */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           {allImages.length > 0 ? (
-            allImages.map((img, i) => (
+            allImages.map((img: string, i: number) => (
               <img
                 key={i}
                 src={img}

@@ -73,7 +73,7 @@ const EditProperty = () => {
         };
 
         setFormData(normalizedProperty);
-        setImages(property?.images ?? []);
+        setImages(property?.image_urls ?? []);
 
         setAmenities(attrRes.data.amenities || []);
         setPropertyTypes(attrRes.data.property_types || []);
@@ -219,7 +219,7 @@ const EditProperty = () => {
       newImages.forEach((file) => data.append("images[]", file));
 
       // ✅ Submit to backend
-      await updateProperty(Number(id), data, true);
+      await updateProperty(Number(id), data);
 
       toast.success("Property updated successfully!");
       navigate("/admin/agents/property/list");

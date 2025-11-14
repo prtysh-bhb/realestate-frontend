@@ -52,7 +52,7 @@ export interface PropertyFormData {
   state: string;
   zipcode: string;
   type: PropertyType;
-  property_type: PropertyCategory;
+  property_type: PropertyCategory | "";
   bedrooms: string | number;
   bathrooms: string | number;
   area: string | number;

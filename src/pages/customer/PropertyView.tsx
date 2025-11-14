@@ -334,8 +334,8 @@ const PropertyView = () => {
                   }}
                 />
                 <div>
-                  <h3 className="font-bold text-lg">{property?.agent.name}</h3>
-                  <p className="text-gray-600">{property?.agent.email}</p>
+                  <h3 className="font-bold text-lg">{property?.agent?.name}</h3>
+                  <p className="text-gray-600">{property?.agent?.email}</p>
                 </div>
               </div>
               <button onClick={() => {
@@ -356,9 +356,9 @@ const PropertyView = () => {
                 <div className="flex justify-between">
                   <span className="text-gray-600">Status:</span>
                   <span className={`px-2 py-1 rounded text-sm font-semibold ${
-                    property?.status === 'active' 
+                    property?.status === 'published'
                       ? 'bg-green-100 text-green-800'
-                      : property?.status === 'inactive'
+                      : property?.status === 'sold' || property?.status === 'rented'
                       ? 'bg-red-100 text-red-800'
                       : 'bg-yellow-100 text-yellow-800'
                   }`}>

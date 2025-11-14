@@ -3,7 +3,6 @@
  * Centralized error handling for API calls and application errors
  */
 
-import type { AxiosError } from "axios";
 import type { ApiError, ErrorResponse } from "@/types/api";
 import { logger } from "./logger";
 
@@ -19,6 +18,26 @@ export class ApiException extends Error {
     super(message);
     this.name = "ApiException";
   }
+}
+
+/**
+ * Axios error interface
+ */
+interface AxiosError<T = unknown> extends Error {
+  config?: {
+    url?: string;
+    method?: string;
+  };
+  code?: string;
+  request?: unknown;
+  response?: {
+    data: T;
+    status: number;
+    statusText: string;
+    headers: unknown;
+  };
+  isAxiosError: boolean;
+  toJSON: () => object;
 }
 
 /**
