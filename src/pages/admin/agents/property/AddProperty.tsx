@@ -100,7 +100,7 @@ const AddProperty = () => {
 
   const handleAmenityChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { value, checked } = e.target;
-    setFormData((prev) => {
+    setFormData((prev: PropertyFormData) => {
       const newAmenities = checked
         ? [...prev.amenities, value]
         : prev.amenities.filter((a) => a !== value);

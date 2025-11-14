@@ -116,3 +116,11 @@ export interface Inquiry {
   updated_at: string;
   property?: Property;
 }
+
+export interface Documents {
+  success: boolean;
+  message: string;
+  data: {
+    documents: DocumentFile[];
+  };
+}

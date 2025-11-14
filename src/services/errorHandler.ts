@@ -3,7 +3,7 @@
  * Centralized error handling for API calls and application errors
  */
 
-import { AxiosError } from "axios";
+import type { AxiosError } from "axios";
 import type { ApiError, ErrorResponse } from "@/types/api";
 import { logger } from "./logger";
 

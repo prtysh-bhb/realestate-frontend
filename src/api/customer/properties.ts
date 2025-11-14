@@ -10,9 +10,15 @@ import type {
   FavoriteProperty,
   InquiryFormData,
   PropertyAttributesData,
+  PropertyAttribute,
+  Inquiry,
 } from "@/types/property";
 import type { ApiResponse, PaginatedResponse } from "@/types/api";
 import { handleApiError, getErrorMessage } from "@/services/errorHandler";
+
+// Re-export types for backward compatibility
+export type { PropertyFormData, InquiryFormData, PropertyAttribute } from "@/types/property";
+export type Attributes = PropertyAttribute;
 
 interface FavoritesResponseData {
   favorites: FavoriteProperty[];
@@ -35,6 +41,35 @@ interface PropertyListResponseData {
 
 interface InquiryResponseData {
   inquiry: Record<string, unknown>;
+}
+
+// Response types for API calls
+export interface InquiriesResponse {
+  success: boolean;
+  message: string;
+  data: {
+    inquiries: Inquiry[];
+    total?: number;
+    per_page?: number;
+    current_page?: number;
+    last_page?: number;
+  };
+}
+
+export interface InquiryResponse {
+  success: boolean;
+  message: string;
+  data: {
+    inquiry: Inquiry;
+  };
+}
+
+export interface PropertyResponse {
+  success: boolean;
+  message: string;
+  data: {
+    property: Property;
+  };
 }
 
 /**
