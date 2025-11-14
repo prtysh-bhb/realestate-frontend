@@ -14,12 +14,15 @@ export interface Property {
   zipcode?: string;
   type: string;
   property_type?: string;
-  bedrooms?: number;
-  bathrooms?: number;
-  area?: number;
+  bedrooms?: number | string;
+  bathrooms?: number | string;
+  area?: number | string;
   status: string;
   approval_status?: string;
   rejection_reason?: string | null;
+  amenities: [];
+  images: [];
+  image_urls: [];
   created_at?: string;
   updated_at?: string;
 }

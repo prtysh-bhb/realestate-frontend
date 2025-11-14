@@ -116,7 +116,7 @@ const PropertyList = () => {
             🏠 My Properties
           </h1>
           <Button
-            onClick={() => navigate("/admin/agents/property/add")}
+            onClick={() => navigate("/agent/property/add")}
             className="bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
           >
             + Add New Property
@@ -186,7 +186,7 @@ const PropertyList = () => {
                     size="sm"
                     className="flex items-center gap-1 text-blue-600 border-blue-200 hover:bg-blue-50 cursor-pointer"
                     onClick={() =>
-                      navigate(`/admin/agents/property/view/${property.id}`)
+                      navigate(`/agent/property/view/${property.id}`)
                     }
                   >
                     <Eye size={16} /> View
@@ -198,7 +198,7 @@ const PropertyList = () => {
                       size="sm"
                       className="text-blue-600 border-blue-200 hover:bg-blue-50 cursor-pointer"
                       onClick={() =>
-                        navigate(`/admin/agents/property/edit/${property.id}`)
+                        navigate(`/agent/property/edit/${property.id}`)
                       }
                     >
                       <Edit size={16} />

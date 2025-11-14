@@ -87,7 +87,7 @@ const AdminSidebar = ({
               {
                 name: "Agents List",
                 icon: List,
-                path: "/admin/agents/agent-list",
+                path: "/admin/agents",
               },
               {
                 name: "Add Properties*",
@@ -113,7 +113,7 @@ const AdminSidebar = ({
               {
                 name: "Customers List",
                 icon: List,
-                path: "/admin/customers/customer-list",
+                path: "/admin/customers",
               },
               {
                 name: "Customers Property List*",
@@ -159,12 +159,12 @@ const AdminSidebar = ({
               {
                 name: "Add Property",
                 icon: PlusCircle,
-                path: `/admin/agents/property/add`, // unique to this agent
+                path: `/agent/property/add`, // unique to this agent
               },
               {
                 name: "My Property List",
                 icon: Building2,
-                path: `/admin/agents/property/list`, // unique to this agent
+                path: `/agent/property/list`, // unique to this agent
               },
             ],
           },
@@ -185,7 +185,7 @@ const AdminSidebar = ({
               {
                 icon: ClipboardList,
                 name: "Leads",
-                path: "/admin/agents/lead",
+                path: "/agent/lead",
               },
             ],
           },

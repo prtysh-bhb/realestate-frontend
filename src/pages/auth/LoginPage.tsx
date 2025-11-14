@@ -50,8 +50,10 @@ const LoginPage = () => {
 
         toast.success("Login successful!");
 
-        if (role === "admin" || role === "agent" || role === "customer") {
+        if (role === "admin") {
           navigate("/admin/dashboard");
+        } else if (role === "agent"){
+          navigate("/agent/dashboard");
         } else {
           navigate("/");
         }
@@ -139,6 +141,7 @@ const LoginPage = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  maxLength={70}
                   className="h-10"
                 />
               </div>
@@ -151,6 +154,7 @@ const LoginPage = () => {
                 <Input
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
+                  maxLength={50}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required

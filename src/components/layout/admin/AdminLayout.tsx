@@ -1,5 +1,4 @@
 import { ReactNode, useState } from "react";
-import { Toaster } from "sonner";
 import AdminSidebar from "./AdminSidebar";
 import Header from "./Header";
 
@@ -36,14 +35,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             {children}
           </div>
         </main>
-        <Toaster
-        richColors
-        position="top-right"
-        toastOptions={{
-          duration: 3000,
-          style: { background: "#1b3664", color: "#fff" },
-        }}
-      />
       </div>
     </div>
   );

@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { register } from "@/api/auth";
 import { Eye, EyeOff } from "lucide-react";
 import { Link } from "react-router";
-import { toast } from "sonner"; // ✅ Import toast
+import { toast } from "sonner";
 import bgImage from "/assets/hero-house.jpg";
 import Logo from "/public/vite.svg";
 
@@ -20,6 +20,12 @@ const SignupPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
   const navigate = useNavigate();
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -27,9 +33,58 @@ const SignupPage = () => {
     setLoading(true);
     setError("");
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      toast.error("Passwords do not match"); // ⚠️ Toast for mismatch
+    // Reset field error state
+    setFieldErrors({
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    });
+
+    let hasError = false;
+    const newErrors: any = {};
+
+    if (!name.trim()) {
+      newErrors.name = "Full name is required.";
+      hasError = true;
+    }
+
+    if (name.length > 50) {
+      newErrors.name = "Full name can’t exceed 50 characters.";
+      hasError = true;
+    }
+
+    if (!email.trim()) {
+      newErrors.email = "Email is required.";
+      hasError = true;
+    }
+
+    if (email.length > 70) {
+      newErrors.name = "Email can’t exceed 70 characters.";
+      hasError = true;
+    }
+
+    if (!password.trim()) {
+      newErrors.password = "Password is required.";
+      hasError = true;
+    }
+
+    if (password.length > 50) {
+      newErrors.name = "Password can’t exceed 50 characters.";
+      hasError = true;
+    }
+
+    if (!confirmPassword.trim()) {
+      newErrors.confirmPassword = "Confirm your password.";
+      hasError = true;
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match.";
+      toast.error("Passwords do not match");
+      hasError = true;
+    }
+
+    if (hasError) {
+      setFieldErrors(newErrors);
       setLoading(false);
       return;
     }
@@ -40,7 +95,6 @@ const SignupPage = () => {
       if (data.success) {
         localStorage.setItem("token", data.data.token);
         localStorage.setItem("user", JSON.stringify(data.data.user));
-
         toast.success("Account created successfully! 🎉");
         navigate("/two-factor-setup");
       } else {
@@ -65,15 +119,10 @@ const SignupPage = () => {
         backgroundPosition: "center",
       }}
     >
-      {/* Background Blur Overlay */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-lg"></div>
 
-      {/* Main Signup Card */}
-      <div
-        className="relative z-10 flex flex-col lg:flex-row w-[90%] max-w-5xl h-[650px] 
-                    rounded-2xl overflow-hidden shadow-2xl"
-      >
-        {/* Left Section – Black Panel */}
+      <div className="relative z-10 flex flex-col lg:flex-row w-[90%] max-w-5xl h-[650px] rounded-2xl overflow-hidden shadow-2xl">
+        {/* Left Section */}
         <div
           className="hidden lg:flex flex-col justify-center items-center text-white
             bg-[url('/assets/login-image.jpg')] bg-center bg-cover bg-full w-[40%] p-10 relative
@@ -112,7 +161,7 @@ const SignupPage = () => {
               Fill in your details below to get started.
             </p>
 
-            <form onSubmit={handleSignup} className="space-y-5">
+            <form onSubmit={handleSignup} className="space-y-5" noValidate>
               {error && (
                 <p className="text-sm text-red-600 bg-red-50 p-2 rounded-md text-center">
                   {error}
@@ -129,8 +178,15 @@ const SignupPage = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Enter your name"
+                  maxLength={50}
                   required
+                  className={fieldErrors.name ? "border-red-500" : ""}
                 />
+                {fieldErrors.name && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {fieldErrors.name}
+                  </p>
+                )}
               </div>
 
               {/* Email */}
@@ -143,8 +199,15 @@ const SignupPage = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
+                  maxLength={70}
                   required
+                  className={fieldErrors.email ? "border-red-500" : ""}
                 />
+                {fieldErrors.email && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {fieldErrors.email}
+                  </p>
+                )}
               </div>
 
               {/* Password */}
@@ -158,7 +221,10 @@ const SignupPage = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="h-10 pr-10"
+                  maxLength={50}
+                  className={`h-10 pr-10 ${
+                    fieldErrors.password ? "border-red-500" : ""
+                  }`}
                 />
                 <button
                   type="button"
@@ -167,6 +233,11 @@ const SignupPage = () => {
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
+                {fieldErrors.password && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {fieldErrors.password}
+                  </p>
+                )}
               </div>
 
               {/* Confirm Password */}
@@ -178,13 +249,18 @@ const SignupPage = () => {
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={confirmPassword}
+                  maxLength={50}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  className="h-10 pr-10"
+                  className={`h-10 pr-10 ${
+                    fieldErrors.confirmPassword ? "border-red-500" : ""
+                  }`}
                 />
                 <button
                   type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  onClick={() =>
+                    setShowConfirmPassword(!showConfirmPassword)
+                  }
                   className="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
                 >
                   {showConfirmPassword ? (
@@ -193,6 +269,11 @@ const SignupPage = () => {
                     <Eye size={18} />
                   )}
                 </button>
+                {fieldErrors.confirmPassword && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {fieldErrors.confirmPassword}
+                  </p>
+                )}
               </div>
 
               {/* Role Selection */}
@@ -226,7 +307,6 @@ const SignupPage = () => {
                 </div>
               </div>
 
-              {/* Submit Button */}
               <Button
                 type="submit"
                 className="w-full h-11 bg-blue-600 hover:bg-blue-700 font-medium text-white cursor-pointer"

@@ -11,10 +11,14 @@ import {
 } from "lucide-react";
 import { FilterState } from "@/types/property";
 import { useNavigate } from "react-router-dom";
+import { Attributes, propertyAttributes } from "@/api/customer/properties";
 
 const HomePage = () => {
   const [activeTab, setActiveTab] = useState<"rent" | "sale">("rent");
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [amenities, setAmenities] = useState<Attributes[]>();
+  const [propertyTypes, setPropertyTypes] = useState<Attributes[]>();
+
   const navigate = useNavigate();
   const [filters, setFilters] = useState<FilterState>({
     keyword: '',
@@ -53,11 +57,19 @@ const HomePage = () => {
     });
   };
 
+  const fetchAttributes = async () => {
+    const attributeResponse = await propertyAttributes();
+
+    setAmenities(attributeResponse.data.amenities || []);
+    setPropertyTypes(attributeResponse.data.property_types || []);
+  }
+
   useEffect(() => {
     setFilters(prev => ({
       ...prev,
       type: activeTab,
     }));
+    fetchAttributes();
   }, [activeTab]);
 
   // Prevent body scroll when mobile drawer is open
@@ -196,9 +208,11 @@ const HomePage = () => {
               <label className="flex flex-start text-xl font-medium text-black">Property Type</label>
               <select id="property_type" value={filters?.property_type} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg p-3 mt-1 text-sm bg-gray-50 text-gray-700 outline-none cursor-pointer">
                 <option value="">Select Property Type</option>
-                <option value="apartment">Apartment</option>
-                <option value="villa">Villa</option>
-                <option value="commercial">Commercial</option>
+                {propertyTypes?.map((type) => (
+                  <option key={type.key} value={type.key}>
+                    {type.label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -230,6 +244,7 @@ const HomePage = () => {
               >
                 <AdvancedFiltersContent 
                   filters={filters}
+                  amenities={amenities ?? []}
                   handleInputChange={handleInputChange}
                   handleAmenityChange={handleAmenityChange}
                 />
@@ -276,6 +291,7 @@ const HomePage = () => {
               <div className="p-6">
                 <AdvancedFiltersContent 
                   filters={filters}
+                  amenities={amenities ?? []}
                   handleInputChange={handleInputChange}
                   handleAmenityChange={handleAmenityChange}
                 />
@@ -305,10 +321,12 @@ const HomePage = () => {
 // Extracted component for the advanced filters content
 const AdvancedFiltersContent = ({ 
   filters, 
+  amenities,
   handleInputChange, 
   handleAmenityChange 
 }: {
   filters: FilterState;
+  amenities: Attributes[];
   handleInputChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   handleAmenityChange: (e: ChangeEvent<HTMLInputElement>) => void;
 }) => {
@@ -407,30 +425,13 @@ const AdvancedFiltersContent = ({
       <div>
         <h3 className="text-sm font-bold mb-3">Amenities:</h3>
         <div className="grid md:grid-cols-4 sm:grid-cols-2 gap-3 text-sm text-gray-600">
-          {[
-            "Air Condition",
-            "Garage",
-            "Elevator",
-            "Swimming Pool",
-            "WiFi",
-            "Pet Friendly",
-            "Security",
-            "Parking",
-            "Garden",
-            "Furnishing",
-            "Heating",
-            "Floor",
-          ].map((item) => (
-            <label key={item} className="flex items-center gap-2">
-              <input 
-                type="checkbox" 
-                value={item} 
-                checked={filters.amenities.includes(item)} 
-                onChange={handleAmenityChange} 
-                className="accent-blue-600 rounded cursor-pointer" 
-              />
-              {item}
-            </label>
+          {amenities?.map((item) => (
+            <div key={item.key} className="flex items-center">
+              <label key={item.key} className="flex items-center text-sm gap-2">
+                <input type="checkbox" value={item.key} checked={filters.amenities.includes(item.key)} onChange={handleAmenityChange} className="accent-blue-600 rounded cursor-pointer" />
+                {item?.label ?? ""}
+              </label>
+            </div>
           ))}
         </div>
       </div>
