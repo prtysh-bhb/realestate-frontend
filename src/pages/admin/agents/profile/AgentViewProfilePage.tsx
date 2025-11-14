@@ -220,7 +220,7 @@ const AgentViewProfilePage = () => {
           {/* Footer Buttons */}
           <div className="flex justify-center gap-3 py-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
             <Button
-              onClick={() => navigate("/agents/profile")}
+              onClick={() => navigate("/agent/profile")}
               className="bg-green-600 hover:bg-green-700 text-white w-32 cursor-pointer"
             >
               Edit Profile

@@ -160,9 +160,9 @@ function App() {
 
         {/* ---------------- AGENT PROFILE ROUTES ---------------- */}
         <Route
-          path="/agents/profile"
+          path="/agent/profile"
           element={
-            <ProtectedRoute allowedRoles={["agent", "admin"]}>
+            <ProtectedRoute allowedRoles={["agent"]}>
               <AgenteditProfilePage />
             </ProtectedRoute>
           }
@@ -170,7 +170,7 @@ function App() {
         <Route
           path="/agent/view-profile"
           element={
-            <ProtectedRoute allowedRoles={["agent", "admin"]}>
+            <ProtectedRoute allowedRoles={["agent"]}>
               <AgentViewProfilePage />
             </ProtectedRoute>
           }
@@ -178,7 +178,7 @@ function App() {
         <Route
             path="/agent/messages"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["agent"]}>
                 <AgentChatPage />
               </ProtectedRoute>
             }
@@ -232,7 +232,7 @@ function App() {
         <Route
           path="/admin/customers/view/:id"
           element={
-            <ProtectedRoute allowedRoles={["admin", "agent"]}>
+            <ProtectedRoute allowedRoles={["admin"]}>
               <CustomerProfilePage />
             </ProtectedRoute>
           }

@@ -24,7 +24,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
 
   const editProfilePathMap: Record<string, string> = {
     admin: "/admin/profile",
-    agent: "/agents/profile",
+    agent: "/agent/profile",
     customer: "/customer/profile",
   };
 

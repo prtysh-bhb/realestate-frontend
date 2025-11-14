@@ -196,7 +196,7 @@ const PropertyView = () => {
                 {/* Price */}
                 <div className="text-left sm:text-right">
                   <p className="text-xl sm:text-2xl font-bold text-blue-500">
-                    ${formatAmount(property?.price ?? 0)}
+                    {formatAmount(property?.price ?? 0)}
                   </p>
                   <p className="text-gray-600 capitalize text-sm sm:text-base">
                     For {property?.type === "sale" ? "Sale" : "Rent"}

@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { MapPin, BedDouble, Bath, Ruler, DollarSign, Heart } from "lucide-react";
+import { MapPin, BedDouble, Bath, Ruler, Heart } from "lucide-react";
 import { Property } from "@/types/property";
 import { removeFavProperties, setFavProperties } from "@/api/customer/properties";
 import { toast } from "sonner";
@@ -134,7 +134,6 @@ const PropertyCard: FC<PropertyCardProps> = ({ property, isFavorite = false, fet
           </div>
 
           <p className="font-bold text-gray-800 text-xl flex items-center gap-1">
-            <DollarSign size={20} />
             {formatAmount(price)}
           </p>
         </div>

@@ -19,7 +19,8 @@ import {
   Eye,
   Calendar
 } from "lucide-react";
-import { formatAmount } from "@/helpers/customer_helper";
+import { formatAmount, formatReadableDate } from "@/helpers/customer_helper";
+import { Link } from "react-router-dom";
 
 export interface DashboardResponse {
   success: boolean;
@@ -212,14 +213,6 @@ const AgentDashboardPage = () => {
       textColor: "text-gray-700"
     },
   ];
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
 
   const getStatusBadge = (status: string) => {
     const statusConfig: { [key: string]: { color: string; bgColor: string } } = {
@@ -433,7 +426,7 @@ const AgentDashboardPage = () => {
               </div>
               <div className="space-y-4">
                 {recentProperties.map((property) => (
-                  <div key={property.id} className="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow flex items-center">
+                  <Link to={'/agent/property/view/'+property.id} key={property.id} className="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow flex items-center">
                     <div className="flex-1">
                       <h4 className="font-medium text-gray-900 truncate">{property.title}</h4>
                       <div className="flex items-center space-x-2 mt-1">
@@ -443,9 +436,9 @@ const AgentDashboardPage = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-gray-500">{formatDate(property.created_at)}</p>
+                      <p className="text-sm text-gray-500">{formatReadableDate(property.created_at)}</p>
                     </div>
-                  </div>
+                  </Link>
                 ))}
                 {recentProperties.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
@@ -466,15 +459,17 @@ const AgentDashboardPage = () => {
               <div className="space-y-4">
                 {recentInquiries.map((inquiry) => (
                   <div key={inquiry.id} className="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-900">{inquiry.customer.name}</h4>
-                        <p className="text-sm text-gray-600 truncate">{inquiry.customer.email}</p>
-                        <p className="text-sm text-gray-700 mt-1">{inquiry.property.title}</p>
+                    <Link to={'/agent/lead/view/'+inquiry.id}>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900">{inquiry.customer.name}</h4>
+                          <p className="text-sm text-gray-600 truncate">{inquiry.customer.email}</p>
+                          <p className="text-sm text-gray-700 mt-1">{inquiry.property.title}</p>
+                        </div>
+                        {getStatusBadge(inquiry.status)}
                       </div>
-                      {getStatusBadge(inquiry.status)}
-                    </div>
-                    <p className="text-xs text-gray-500 mt-2">{formatDate(inquiry.created_at)}</p>
+                    </Link>
+                    <p className="text-xs text-gray-500 mt-2">{formatReadableDate(inquiry.created_at)}</p>
                   </div>
                 ))}
                 {recentInquiries.length === 0 && (
@@ -496,7 +491,7 @@ const AgentDashboardPage = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {topProperties.map((property) => (
-                <div key={property.id} className="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+                <Link to={'/agent/property/view/'+property.id} key={property.id} className="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
                   <div className="flex items-start justify-between mb-3">
                     <h4 className="font-semibold text-gray-900 line-clamp-2">{property.title}</h4>
                     {getStatusBadge(property.status)}
@@ -517,7 +512,7 @@ const AgentDashboardPage = () => {
                       {property.inquiries_count > 5 ? 'Hot' : property.inquiries_count > 2 ? 'Warm' : 'Cold'}
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
               {topProperties.length === 0 && (
                 <div className="col-span-full text-center py-8 text-gray-500">
