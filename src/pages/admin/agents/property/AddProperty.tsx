@@ -30,7 +30,7 @@ const AddProperty = () => {
     state: "",
     zipcode: "",
     type: "sale",
-    property_type: "asdasd",
+    property_type: "",
     bedrooms: "",
     bathrooms: "",
     area: "",
