@@ -30,7 +30,7 @@ const AddProperty = () => {
     state: "",
     zipcode: "",
     type: "sale",
-    property_type: "",
+    property_type: "asdasd",
     bedrooms: "",
     bathrooms: "",
     area: "",
@@ -39,6 +39,7 @@ const AddProperty = () => {
   });
 
   const [images, setImages] = useState<FileList | null>(null);
+  const [video, setVideo] = useState<File | null>(null);
 
   const validatePropertyForm = (formData: any): boolean => {
     const newErrors: Record<string, string> = {};
@@ -150,6 +151,34 @@ const AddProperty = () => {
     }
   };
 
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.length) return;
+
+    const file = e.target.files[0];
+
+    // size limit: 50MB
+    if (file.size > 50 * 1024 * 1024) {
+      setErrors((prev) => ({
+        ...prev,
+        video: "Video exceeds 50MB size limit.",
+      }));
+      return;
+    }
+
+    // format validation
+    if (file.type !== "video/mp4") {
+      setErrors((prev) => ({
+        ...prev,
+        video: "Only MP4 video format is allowed.",
+      }));
+      return;
+    }
+
+    // valid → clear errors
+    setErrors((prev) => ({ ...prev, video: "" }));
+    setVideo(file);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validatePropertyForm(formData)) return;
@@ -171,6 +200,10 @@ const AddProperty = () => {
         Array.from(images).forEach((img) => {
           data.append("images[]", img);
         });
+      }
+
+      if(video){
+        data.append("video", video);
       }
 
       await createProperty(data);
@@ -390,6 +423,29 @@ const AddProperty = () => {
               />
               {errors.images && (
                 <p className="text-red-500 text-xs mt-1">{errors.images}</p>
+              )}
+            </div>
+
+            {/* Video */}
+            <h3 className="font-semibold text-gray-800 mt-10 mb-4">Add Property Video</h3>
+
+            <div className="mt-4">
+              <label className="block text-sm font-medium mb-1 text-gray-600">
+                Upload Video (MP4 only, max 1 file)
+              </label>
+
+              <Input
+                type="file"
+                name="video"
+                className={`border-gray-300 ${
+                  errors.video ? "border-red-500" : ""
+                }`}
+                accept="video/mp4"
+                onChange={handleVideoChange}
+              />
+
+              {errors.video && (
+                <p className="text-red-500 text-xs mt-1">{errors.video}</p>
               )}
             </div>
           </div>

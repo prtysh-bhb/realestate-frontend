@@ -51,6 +51,7 @@ import ChatScreen from "./pages/ChatScreen";
 import AgentChatPage from "./pages/admin/agents/profile/AgentChatPage";
 import AgentDashboardPage from "./pages/admin/agents/AgentDashboardPage";
 import { ApiInterceptor } from "./api/ApiInterceptor";
+import PricingPage from "./pages/customer/PricingPage";
 
 function App() {
   const currentUser = {
@@ -118,6 +119,7 @@ function App() {
           <Route path="/properties/rent" element={<PropertyFilters />} />
           <Route path="/properties/sale" element={<PropertyFilters />} />
           <Route path="/properties/view/:id" element={<PropertyView />} />
+          <Route path="/pricing" element={<PricingPage />} />
         </Route>
 
         {/* ---------------- ADMIN DASHBOARD ---------------- */}
