@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Eye, Edit, Trash2 } from "lucide-react";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
-import { getAgents, Agent } from "@/api/agent/agentlist";
+import { getAgents, Agent } from "@/api/agent/agentList";
 
 const AgentList = () => {
   const [agents, setAgents] = useState<Agent[]>([]);

@@ -1,13 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/**
+ * Authentication API
+ * API functions for user authentication and profile management
+ */
+
 import api from "./axios";
-
-
-export interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-}
+import type { User, UpdateProfileData } from "@/types/user";
+import type { LoginCredentials, RegisterData, AuthResponse } from "@/types/auth";
+import type { ApiResponse } from "@/types/api";
+import { handleApiError, getErrorMessage } from "@/services/errorHandler";
 
 export interface ProfileFormData {
   name: string;
@@ -40,7 +40,6 @@ export interface RegisterResponse {
   };
 }
 
-
 export interface Verify2FAResponse {
   success: boolean;
   message: string;
@@ -55,126 +54,211 @@ export interface TwoFactorSetupResponse {
   message?: string;
   data?: {
     secret?: string;
-    qr_code_url?: string; // From backend
+    qr_code_url?: string;
   };
 }
 
+export interface TwoFactorResponse {
+  success: boolean;
+  message?: string;
+}
 
+export interface ForgotPasswordResponse {
+  success: boolean;
+  message: string;
+}
 
-// 🔹 Login
+export interface ProfileResponse {
+  success: boolean;
+  message?: string;
+  data: User;
+}
+
+/**
+ * Login user
+ */
 export const login = async (email: string, password: string): Promise<LoginResponse> => {
-  const res = await api.post<LoginResponse>("/login", { email, password });
-  return res.data;
+  try {
+    const response = await api.post<LoginResponse>("/login", { email, password });
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
 };
 
-
+/**
+ * Verify two-factor authentication code during login
+ */
 export const verifyTwoFactorLogin = async (
   email: string,
   code: string
 ): Promise<Verify2FAResponse> => {
-  const res = await api.post<Verify2FAResponse>("/verify-login", { email, code });
-  return res.data;
+  try {
+    const response = await api.post<Verify2FAResponse>("/verify-login", { email, code });
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
 };
 
-
+/**
+ * Register new user
+ */
 export const register = async (
   name: string,
   email: string,
   password: string,
   role: string
 ): Promise<RegisterResponse> => {
-  const res = await api.post<RegisterResponse>("/register", {
-    name,
-    email,
-    password,
-    password_confirmation: password,
-    role,
-  });
-  return res.data;
+  try {
+    const response = await api.post<RegisterResponse>("/register", {
+      name,
+      email,
+      password,
+      password_confirmation: password,
+      role,
+    });
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
 };
 
-
-export const forgotPassword = async (email: string): Promise<any> => {
-  const res = await api.post("/forgot-password", { email });
-  return res.data;
+/**
+ * Request password reset
+ */
+export const forgotPassword = async (email: string): Promise<ForgotPasswordResponse> => {
+  try {
+    const response = await api.post<ForgotPasswordResponse>("/forgot-password", { email });
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
 };
 
-
-export const getCurrentUser = async (): Promise<any> => {
-  const res = await api.get("/user");
-  return res.data;
+/**
+ * Get current authenticated user
+ */
+export const getCurrentUser = async (): Promise<ApiResponse<User>> => {
+  try {
+    const response = await api.get<ApiResponse<User>>("/user");
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
 };
 
-export const getProfile = async (): Promise<any> => {
-  const res = await api.get("/profile");
-  return res.data;
+/**
+ * Get user profile
+ */
+export const getProfile = async (): Promise<ProfileResponse> => {
+  try {
+    const response = await api.get<ProfileResponse>("/profile");
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
 };
 
-export const updateProfile = async (formData: ProfileFormData): Promise<any> => {
-  try{
-    const res = await api.put("/profile", formData);
-    return res.data;
-  }catch(error: unknown){
-    const axiosError = error as any;
+/**
+ * Update user profile
+ */
+export const updateProfile = async (formData: ProfileFormData): Promise<ProfileResponse> => {
+  try {
+    const response = await api.put<ProfileResponse>("/profile", formData);
+    return response.data;
+  } catch (error) {
+    const errorMessage = getErrorMessage(error);
     return {
       success: false,
-      message:
-        axiosError.response?.data?.message || "Failed to update profile. Please try again.",
+      message: errorMessage || "Failed to update profile. Please try again.",
+      data: {} as User,
     };
   }
 };
 
-export const updateAvatar = async (avatar: string | File | null): Promise<any> => {
-  try{
-    const res = await api.post("/profile/avatar", { avatar }, {
+/**
+ * Update user avatar
+ */
+export const updateAvatar = async (avatar: File): Promise<ProfileResponse> => {
+  try {
+    const formData = new FormData();
+    formData.append("avatar", avatar);
+
+    const response = await api.post<ProfileResponse>("/profile/avatar", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
-      }
+      },
     });
-    return res.data;
-  }catch(error: unknown){
-    const axiosError = error as any;
+    return response.data;
+  } catch (error) {
+    const errorMessage = getErrorMessage(error);
     return {
       success: false,
-      message:
-        axiosError.response?.data?.message || "Failed to update profile. Please try again.",
+      message: errorMessage || "Failed to update avatar. Please try again.",
+      data: {} as User,
     };
   }
 };
 
-export const logout = async (): Promise<any> => {
-  const res = await api.post("/logout");
-  return res.data;
+/**
+ * Logout user
+ */
+export const logout = async (): Promise<ApiResponse<null>> => {
+  try {
+    const response = await api.post<ApiResponse<null>>("/logout");
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
 };
 
 /* ---------------------- 2FA SETUP ---------------------- */
 
-// Step 1: Request New QR Code for Setup
+/**
+ * Request new QR code for 2FA setup
+ */
 export const requestTwoFactorNewCode = async (): Promise<TwoFactorSetupResponse> => {
-  const res = await api.post<TwoFactorSetupResponse>("/2fa/setup");
-  return res.data;
+  try {
+    const response = await api.post<TwoFactorSetupResponse>("/2fa/setup");
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
 };
 
-// Step 2: Enable 2FA
-export const enableTwoFactor = async (
-  code: string
-): Promise<{ success: boolean; message?: string }> => {
-  const res = await api.post<{ success: boolean; message?: string }>("/2fa/enable", { code });
-  return res.data;
+/**
+ * Enable two-factor authentication
+ */
+export const enableTwoFactor = async (code: string): Promise<TwoFactorResponse> => {
+  try {
+    const response = await api.post<TwoFactorResponse>("/2fa/enable", { code });
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
 };
 
-// Step 3: Disable 2FA (optional)
-export const disableTwoFactor = async (
-  code: string
-): Promise<{ success: boolean; message?: string }> => {
-  const res = await api.post<{ success: boolean; message?: string }>("/2fa/disable", { code });
-  return res.data;
+/**
+ * Disable two-factor authentication
+ */
+export const disableTwoFactor = async (code: string): Promise<TwoFactorResponse> => {
+  try {
+    const response = await api.post<TwoFactorResponse>("/2fa/disable", { code });
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
 };
 
-// Step 4: Verify 2FA Code during login
-export const verifyTwoFactor = async (
-  code: string
-): Promise<{ success: boolean; message?: string }> => {
-  const res = await api.post<{ success: boolean; message?: string }>("/2fa/verify", { code });
-  return res.data;
+/**
+ * Verify 2FA code during login
+ */
+export const verifyTwoFactor = async (code: string): Promise<TwoFactorResponse> => {
+  try {
+    const response = await api.post<TwoFactorResponse>("/2fa/verify", { code });
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
 };

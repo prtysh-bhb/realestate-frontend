@@ -1,90 +1,22 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/**
+ * Customer Property API
+ * API functions for customer property browsing and favorites
+ */
+
 import api from "@/api/axios";
-import { FilterState, Property } from "@/types/property";
+import type {
+  FilterState,
+  Property,
+  FavoriteProperty,
+  InquiryFormData,
+  PropertyAttributesData,
+} from "@/types/property";
+import type { ApiResponse, PaginatedResponse } from "@/types/api";
+import { handleApiError, getErrorMessage } from "@/services/errorHandler";
 
-export interface Favorite {
-  id: number;
-  user_id: number;
-  property_id: number;
-  created_at: string;
-  updated_at: string;
-  property: Property;
-}
-
-export interface InquiryFormData {
-  name: string;
-  email: string;
-  phone: string;
-  message: string;
-}
-
-export interface InquiryResponse {
-  success: boolean;
-  message: string;
-  data: {
-    inquiry: [];
-  };
-}
-
-export interface InquiriesResponse {
-  success: boolean;
-  message: string;
-  data: {
-    inquiries: [];
-  };
-}
-
-export interface Attributes{
-  key: string;
-  label: string;
-}
-
-export interface PropertyFormData {
-  title: string;
-  description: string;
-  price: string|number;
-  location: string;
-  address: string;
-  city: string;
-  state: string;
-  zipcode: string;
-  type: string;
-  property_type: string;
-  bedrooms: string | number;
-  bathrooms: string | number;
-  area: string | number;
-  status: string;
-  amenities: string[];
-}
-
-export interface PropertyAttributesResponse {
-  success: boolean;
-  data: {
-    amenities: Attributes[];
-    property_types: Attributes[];
-  };
-}
-
-export interface FavoritesResponse {
-  success: boolean;
-  message?: string;
-  data: {
-    favorites: Favorite[];
-    pagination: {
-      total: number;
-      per_page: number;
-      current_page: number;
-      last_page: number;
-    };
-  };
-}
-
-export interface PropertyResponse {
-  success: boolean;
-  message?: string;
-  data: {
-    data: Property[];
-    property: Property;
+interface FavoritesResponseData {
+  favorites: FavoriteProperty[];
+  pagination: {
     total: number;
     per_page: number;
     current_page: number;
@@ -92,68 +24,138 @@ export interface PropertyResponse {
   };
 }
 
+interface PropertyListResponseData {
+  data: Property[];
+  property: Property;
+  total: number;
+  per_page: number;
+  current_page: number;
+  last_page: number;
+}
 
-/** 
- * Fetch properties (with pagination + search)
+interface InquiryResponseData {
+  inquiry: Record<string, unknown>;
+}
+
+/**
+ * Fetch favorite properties (with pagination)
  */
-export const getFavProperties = async (page = 1) => {
-  const response = await api.get<FavoritesResponse>("/customer/favorites", {
-    params: { page },
-  });
-
-  return response.data;
+export const getFavProperties = async (
+  page = 1
+): Promise<ApiResponse<FavoritesResponseData>> => {
+  try {
+    const response = await api.get<ApiResponse<FavoritesResponseData>>(
+      "/customer/favorites",
+      { params: { page } }
+    );
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
 };
 
-export const setFavProperties = async (id: number) => {
-   try{
-    const response = await api.post<FavoritesResponse>("/customer/favorites/"+id);
+/**
+ * Add property to favorites
+ */
+export const setFavProperties = async (
+  id: number
+): Promise<ApiResponse<FavoritesResponseData>> => {
+  try {
+    const response = await api.post<ApiResponse<FavoritesResponseData>>(
+      `/customer/favorites/${id}`
+    );
     return response.data;
-  }catch(error: unknown){
-    const axiosError = error as any;
+  } catch (error) {
+    const errorMessage = getErrorMessage(error);
     return {
       success: false,
-      message:
-        axiosError.response?.data?.message || "Failed to update favorites. Please try again.",
+      message: errorMessage || "Failed to update favorites. Please try again.",
+      data: { favorites: [], pagination: { total: 0, per_page: 10, current_page: 1, last_page: 1 } },
     };
   }
 };
 
-export const removeFavProperties = async (id: number) => {
-  try{
-    const response = await api.delete<FavoritesResponse>("/customer/favorites/"+id);
+/**
+ * Remove property from favorites
+ */
+export const removeFavProperties = async (
+  id: number
+): Promise<ApiResponse<FavoritesResponseData>> => {
+  try {
+    const response = await api.delete<ApiResponse<FavoritesResponseData>>(
+      `/customer/favorites/${id}`
+    );
     return response.data;
-  }catch(error: unknown){
-    const axiosError = error as any;
+  } catch (error) {
+    const errorMessage = getErrorMessage(error);
     return {
       success: false,
-      message:
-        axiosError.response?.data?.message || "Failed to delete favorites. Please try again.",
+      message: errorMessage || "Failed to delete favorites. Please try again.",
+      data: { favorites: [], pagination: { total: 0, per_page: 10, current_page: 1, last_page: 1 } },
     };
   }
 };
 
-export const getPropertiesByFilter = async (page = 1, filters: FilterState) => {
-  const response = await api.get<PropertyResponse>("/properties/search", {
-    params: { page, ...filters },
-  });
-
-  return response.data;
+/**
+ * Get properties by filter (with pagination and search)
+ */
+export const getPropertiesByFilter = async (
+  page = 1,
+  filters: FilterState
+): Promise<ApiResponse<PropertyListResponseData>> => {
+  try {
+    const response = await api.get<ApiResponse<PropertyListResponseData>>(
+      "/properties/search",
+      { params: { page, ...filters } }
+    );
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
 };
 
-export const getProperty = async (id: number) => {
-  const response = await api.get<PropertyResponse>("/properties/"+id);
-
-  return response.data;
+/**
+ * Get single property by ID
+ */
+export const getProperty = async (id: number): Promise<ApiResponse<PropertyListResponseData>> => {
+  try {
+    const response = await api.get<ApiResponse<PropertyListResponseData>>(`/properties/${id}`);
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
 };
 
-export const propertyInquiry = async (id: number, formData: InquiryFormData) => {
-  const response = await api.post<InquiryResponse>("/customer/inquiries/"+id, {...formData});
-
-  return response.data;
+/**
+ * Submit property inquiry
+ */
+export const propertyInquiry = async (
+  id: number,
+  formData: InquiryFormData
+): Promise<ApiResponse<InquiryResponseData>> => {
+  try {
+    const response = await api.post<ApiResponse<InquiryResponseData>>(
+      `/customer/inquiries/${id}`,
+      formData
+    );
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
 };
 
-export const propertyAttributes = async () => {
-  const response = await api.get<PropertyAttributesResponse>("/properties/attributes");
-
-  return response.data;
+/**
+ * Get property attributes (amenities, property types)
+ */
+export const propertyAttributes = async (): Promise<
+  ApiResponse<PropertyAttributesData>
+> => {
+  try {
+    const response = await api.get<ApiResponse<PropertyAttributesData>>(
+      "/properties/attributes"
+    );
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
 };
