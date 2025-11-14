@@ -1,201 +1,143 @@
 /**
- * ServicesSection Component
- * Professional services showcase with animated counters
- * Inspired by Zillow, Redfin, and modern real estate platforms
+ * Services Section - Premium Design
+ * Showcases key services with engaging visuals
  */
 
-import { useEffect, useState, useRef } from "react";
-import { Home, Key, House, ArrowRight, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
-
-const services = [
-  {
-    id: 1,
-    title: "Buy A New Home",
-    desc: "Discover your dream home effortlessly. Explore diverse properties and expert guidance for a seamless buying experience.",
-    icon: Home,
-    gradient: "from-primary-500 to-primary-600",
-    bgGradient: "from-primary-50 to-primary-100",
-  },
-  {
-    id: 2,
-    title: "Rent A Home",
-    desc: "Discover your perfect rental effortlessly. Explore a diverse variety of listings tailored precisely to suit your unique lifestyle needs.",
-    icon: Key,
-    gradient: "from-success-500 to-success-600",
-    bgGradient: "from-success-50 to-success-100",
-  },
-  {
-    id: 3,
-    title: "Sell A Home",
-    desc: "Sell confidently with expert guidance and effective strategies, showcasing your property's best features for a successful sale.",
-    icon: House,
-    gradient: "from-accent-500 to-accent-600",
-    bgGradient: "from-accent-50 to-accent-100",
-  },
-];
-
-const counters = [
-  { id: 1, value: 10000, label: "Properties Listed", suffix: "+" },
-  { id: 2, value: 500, label: "Expert Agents", suffix: "+" },
-  { id: 3, value: 5000, label: "Happy Clients", suffix: "+" },
-  { id: 4, value: 150, label: "Awards Won", suffix: "+" },
-];
+import { Search, Key, TrendingUp, Shield, Clock, Award, ArrowRight } from "lucide-react";
 
 const ServicesSection = () => {
-  const [counts, setCounts] = useState(counters.map(() => 0));
-  const [started, setStarted] = useState(false);
-  const counterRef = useRef(null);
-
-  // Intersection Observer to start animation when visible
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
-        if (entry.isIntersecting && !started) {
-          setStarted(true);
-        }
-      },
-      { threshold: 0.3 }
-    );
-
-    if (counterRef.current) observer.observe(counterRef.current);
-
-    return () => {
-      if (counterRef.current) observer.unobserve(counterRef.current);
-    };
-  }, [started]);
-
-  // Counter animation
-  useEffect(() => {
-    if (!started) return;
-
-    counters.forEach((counter, index) => {
-      let start = 0;
-      const end = counter.value;
-      const duration = 2000;
-      const incrementTime = 20;
-      const increment = end / (duration / incrementTime);
-
-      const timer = setInterval(() => {
-        start += increment;
-        if (start >= end) {
-          start = end;
-          clearInterval(timer);
-        }
-        setCounts((prev) => {
-          const newCounts = [...prev];
-          newCounts[index] = Math.floor(start);
-          return newCounts;
-        });
-      }, incrementTime);
-    });
-  }, [started]);
+  const services = [
+    {
+      icon: Search,
+      title: "Smart Property Search",
+      description: "Advanced filters and AI-powered recommendations to find your ideal property faster",
+      gradient: "from-blue-500 to-blue-600",
+      bgColor: "bg-blue-50",
+    },
+    {
+      icon: Key,
+      title: "Hassle-Free Rentals",
+      description: "Seamless rental process with verified listings and secure transactions",
+      gradient: "from-emerald-500 to-emerald-600",
+      bgColor: "bg-emerald-50",
+    },
+    {
+      icon: TrendingUp,
+      title: "Market Insights",
+      description: "Real-time market data and trends to make informed investment decisions",
+      gradient: "from-amber-500 to-amber-600",
+      bgColor: "bg-amber-50",
+    },
+    {
+      icon: Shield,
+      title: "Secure Transactions",
+      description: "End-to-end encryption and verified agents for complete peace of mind",
+      gradient: "from-purple-500 to-purple-600",
+      bgColor: "bg-purple-50",
+    },
+    {
+      icon: Clock,
+      title: "24/7 Support",
+      description: "Round-the-clock customer service to assist you at every step",
+      gradient: "from-rose-500 to-rose-600",
+      bgColor: "bg-rose-50",
+    },
+    {
+      icon: Award,
+      title: "Premium Quality",
+      description: "Curated listings from verified agents ensuring top-tier properties",
+      gradient: "from-indigo-500 to-indigo-600",
+      bgColor: "bg-indigo-50",
+    },
+  ];
 
   return (
-    <section className="relative px-6 md:px-20 py-24 bg-gradient-to-br from-secondary-50 via-white to-secondary-50 dark:from-secondary-950 dark:via-secondary-900 dark:to-secondary-950 overflow-hidden">
-      {/* Background pattern */}
+    <section className="py-24 bg-white relative overflow-hidden">
+      {/* Background Elements */}
       <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-20 left-10 w-64 h-64 bg-primary-400 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-64 h-64 bg-success-400 rounded-full blur-3xl" />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-72 h-72 bg-emerald-500 rounded-full blur-3xl"></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
         <motion.div
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
+          className="text-center mb-16"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary-100 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-full text-sm font-semibold mb-4">
-            <TrendingUp className="w-4 h-4" />
-            Our Services
-          </span>
-          <h2 className="text-4xl md:text-5xl font-bold text-secondary-900 dark:text-white mt-4 mb-4">
-            What We Do?
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-full mb-4">
+            <Award className="w-4 h-4 text-blue-600" />
+            <span className="text-sm font-semibold text-blue-600">
+              Our Services
+            </span>
+          </div>
+          <h2 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-4">
+            Why Choose{" "}
+            <span className="bg-gradient-to-r from-blue-600 to-emerald-500 bg-clip-text text-transparent">
+              EstateHub
+            </span>
           </h2>
-          <p className="text-lg text-secondary-600 dark:text-secondary-400 max-w-2xl mx-auto">
-            Professional real estate services tailored to your needs
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Experience excellence with our comprehensive real estate services designed for your success
           </p>
         </motion.div>
 
-        {/* Services Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+        {/* Services Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, index) => {
-            const IconComponent = service.icon;
+            const Icon = service.icon;
             return (
               <motion.div
-                key={service.id}
-                className="group relative bg-white dark:bg-secondary-900 rounded-2xl p-8 shadow-card hover:shadow-card-hover transition-all duration-500 border border-secondary-100 dark:border-secondary-800 overflow-hidden"
+                key={index}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ y: -8 }}
+                className="group relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl border border-gray-100 transition-all duration-500"
               >
-                {/* Background gradient on hover */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${service.bgGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-
-                <div className="relative z-10">
-                  {/* Icon */}
-                  <div className="flex justify-center mb-6">
-                    <div className={`p-5 rounded-2xl bg-gradient-to-br ${service.gradient} shadow-lg group-hover:scale-110 transition-transform duration-500`}>
-                      <IconComponent className="w-12 h-12 text-white" />
-                    </div>
-                  </div>
-
-                  {/* Content */}
-                  <h3 className="text-2xl font-bold text-secondary-900 dark:text-white mb-4 text-center">
-                    {service.title}
-                  </h3>
-                  <p className="text-secondary-600 dark:text-secondary-400 text-center mb-6 leading-relaxed">
-                    {service.desc}
-                  </p>
-
-                  {/* Learn More Link */}
-                  <div className="flex justify-center">
-                    <a
-                      href="#"
-                      className={`inline-flex items-center gap-2 font-semibold bg-gradient-to-r ${service.gradient} bg-clip-text text-transparent group-hover:gap-3 transition-all`}
-                    >
-                      Learn More
-                      <ArrowRight className="w-4 h-4 text-current group-hover:translate-x-1 transition-transform" style={{ color: 'inherit' }} />
-                    </a>
-                  </div>
+                {/* Icon */}
+                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${service.gradient} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500`}>
+                  <Icon className="w-8 h-8 text-white" />
                 </div>
+
+                {/* Content */}
+                <h3 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-blue-600 transition-colors">
+                  {service.title}
+                </h3>
+                <p className="text-gray-600 leading-relaxed mb-4">
+                  {service.description}
+                </p>
+
+                {/* Learn More Link */}
+                <div className="flex items-center gap-2 text-blue-600 font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <span>Learn more</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+
+                {/* Hover Border Effect */}
+                <div className="absolute inset-0 border-2 border-blue-500/0 group-hover:border-blue-500/20 rounded-3xl transition-all duration-500 pointer-events-none" />
               </motion.div>
             );
           })}
         </div>
 
-        {/* Achievement Counters */}
+        {/* CTA Section */}
         <motion.div
-          ref={counterRef}
-          className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="mt-16 text-center"
         >
-          {counters.map((counter, i) => (
-            <div
-              key={counter.id}
-              className="text-center p-6 rounded-2xl bg-white dark:bg-secondary-900 shadow-card border border-secondary-100 dark:border-secondary-800"
-            >
-              <div className="flex items-center justify-center gap-1 mb-2">
-                <h3 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">
-                  {counts[i].toLocaleString()}
-                </h3>
-                <span className="text-3xl font-bold text-primary-600 dark:text-primary-400">
-                  {counter.suffix}
-                </span>
-              </div>
-              <p className="text-secondary-700 dark:text-secondary-300 font-semibold uppercase tracking-wide text-sm">
-                {counter.label}
-              </p>
-            </div>
-          ))}
+          <button className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-2xl font-semibold shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 group">
+            <span>Get Started Today</span>
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          </button>
         </motion.div>
       </div>
     </section>

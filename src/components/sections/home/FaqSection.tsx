@@ -1,183 +1,192 @@
 /**
- * TestimonialsSection Component (FaqSection)
- * Professional testimonials carousel with smooth scrolling
- * Inspired by Zillow, Redfin, and modern real estate platforms
+ * Testimonials Section - Premium Design
+ * Features customer reviews and success stories
  */
 
-import { useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Star, MessageSquare, Quote } from "lucide-react";
 import { motion } from "framer-motion";
-
-const testimonials = [
-  {
-    id: 1,
-    name: "Liam Anderson",
-    role: "CEO Digital",
-    text: `I truly appreciate the professionalism and in-depth knowledge of the brokerage team. They not only helped me find the perfect home but also assisted with legal and financial aspects, making me feel confident and secure in my decision.`,
-    image: "https://randomuser.me/api/portraits/men/75.jpg",
-  },
-  {
-    id: 2,
-    name: "Adam Will",
-    role: "CEO Agency",
-    text: `My experience with property management services has exceeded expectations. They efficiently manage properties with a professional and attentive approach in every situation.`,
-    image: "https://randomuser.me/api/portraits/women/65.jpg",
-  },
-  {
-    id: 3,
-    name: "Sophia Turner",
-    role: "Investor",
-    text: `The team made my buying experience smooth and transparent. Their attention to detail and quick communication impressed me.`,
-    image: "https://randomuser.me/api/portraits/women/44.jpg",
-  },
-  {
-    id: 4,
-    name: "Noah Davis",
-    role: "Entrepreneur",
-    text: `Excellent service! From finding my dream property to handling documentation — everything was handled efficiently.`,
-    image: "https://randomuser.me/api/portraits/men/56.jpg",
-  },
-  {
-    id: 5,
-    name: "Ella Johnson",
-    role: "Home Owner",
-    text: `The agency helped me sell my home quickly and at a great price. Their team is reliable and trustworthy.`,
-    image: "https://randomuser.me/api/portraits/women/50.jpg",
-  },
-  {
-    id: 6,
-    name: "James Carter",
-    role: "Investor",
-    text: `I love how professional and transparent the process was. Highly recommended for anyone in real estate.`,
-    image: "https://randomuser.me/api/portraits/men/80.jpg",
-  },
-];
+import { Star, Quote, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState } from "react";
 
 const FaqSection = () => {
-  const sliderRef = useRef<HTMLDivElement | null>(null);
-  const [autoPlay, setAutoPlay] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Scroll the slider by width of 1 card set
-  const scroll = (direction: "left" | "right") => {
-    const slider = sliderRef.current;
-    if (!slider) return;
-    const scrollAmount = slider.offsetWidth / 3; // show 3 per view
-    slider.scrollBy({
-      left: direction === "left" ? -scrollAmount : scrollAmount,
-      behavior: "smooth",
-    });
+  const testimonials = [
+    {
+      name: "Sarah Johnson",
+      role: "Homeowner",
+      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400",
+      rating: 5,
+      text: "EstateHub made finding my dream home incredibly easy. The search filters are intuitive, and the agent support was exceptional. Highly recommended!",
+    },
+    {
+      name: "Michael Chen",
+      role: "Property Investor",
+      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+      rating: 5,
+      text: "As an investor, I need quick access to market data. This platform provides everything I need with real-time updates and detailed analytics.",
+    },
+    {
+      name: "Emily Rodriguez",
+      role: "First-time Buyer",
+      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
+      rating: 5,
+      text: "Being a first-time buyer was daunting, but EstateHub's team guided me through every step. The virtual tours saved me so much time!",
+    },
+    {
+      name: "David Thompson",
+      role: "Real Estate Agent",
+      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
+      rating: 5,
+      text: "The best platform for real estate professionals. The tools and features help me close deals faster and keep my clients happy.",
+    },
+    {
+      name: "Lisa Anderson",
+      role: "Renter",
+      image: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400",
+      rating: 5,
+      text: "Found my perfect apartment in just two days! The rental process was seamless, and all listings were verified and accurate.",
+    },
+  ];
+
+  const nextTestimonial = () => {
+    setCurrentIndex((prev) => (prev + 1) % testimonials.length);
+  };
+
+  const prevTestimonial = () => {
+    setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
   };
 
   return (
-    <section className="relative px-6 md:px-20 py-24 bg-gradient-to-br from-secondary-50 via-white to-secondary-50 dark:from-secondary-950 dark:via-secondary-900 dark:to-secondary-950 overflow-hidden">
-      {/* Background pattern */}
+    <section className="py-24 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
+      {/* Background Decoration */}
       <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-40 left-20 w-72 h-72 bg-primary-400 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-20 w-72 h-72 bg-accent-400 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-emerald-500 rounded-full blur-3xl"></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row items-start gap-12">
-          {/* Left section */}
-          <motion.div
-            className="md:w-1/3 flex-shrink-0"
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary-100 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-full text-sm font-semibold mb-4">
-              <MessageSquare className="w-4 h-4" />
-              Testimonials
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Section Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 rounded-full mb-4">
+            <Star className="w-4 h-4 text-amber-600" />
+            <span className="text-sm font-semibold text-amber-600">
+              Client Testimonials
             </span>
-            <h2 className="text-4xl md:text-5xl font-bold text-secondary-900 dark:text-white mt-4 mb-4">
-              What People Say
-            </h2>
-            <p className="text-secondary-600 dark:text-secondary-400 leading-relaxed mb-8">
-              Our seasoned team excels in real estate with years of successful
-              market navigation, offering informed decisions and optimal results.
+          </div>
+          <h2 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-4">
+            What Our{" "}
+            <span className="bg-gradient-to-r from-blue-600 to-emerald-500 bg-clip-text text-transparent">
+              Clients Say
+            </span>
+          </h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Join thousands of satisfied customers who found their perfect property with us
+          </p>
+        </motion.div>
+
+        {/* Testimonial Carousel */}
+        <div className="relative max-w-4xl mx-auto">
+          <motion.div
+            key={currentIndex}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.5 }}
+            className="bg-white rounded-3xl shadow-2xl border border-gray-100 p-8 md:p-12"
+          >
+            {/* Quote Icon */}
+            <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-6">
+              <Quote className="w-8 h-8 text-blue-600" />
+            </div>
+
+            {/* Rating Stars */}
+            <div className="flex gap-1 mb-6">
+              {[...Array(testimonials[currentIndex].rating)].map((_, i) => (
+                <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />
+              ))}
+            </div>
+
+            {/* Testimonial Text */}
+            <p className="text-xl text-gray-700 leading-relaxed mb-8">
+              "{testimonials[currentIndex].text}"
             </p>
 
-            {/* Navigation Buttons */}
-            <div className="flex gap-4">
-              <button
-                onClick={() => scroll("left")}
-                className="p-4 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white rounded-xl shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => scroll("right")}
-                className="p-4 bg-white dark:bg-secondary-900 border-2 border-secondary-200 dark:border-secondary-700 text-secondary-700 dark:text-secondary-300 rounded-xl hover:bg-secondary-50 dark:hover:bg-secondary-800 shadow-md hover:shadow-lg transition-all"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
+            {/* Author Info */}
+            <div className="flex items-center gap-4">
+              <img
+                src={testimonials[currentIndex].image}
+                alt={testimonials[currentIndex].name}
+                className="w-16 h-16 rounded-full object-cover border-4 border-white shadow-lg"
+              />
+              <div>
+                <h4 className="text-lg font-bold text-slate-900">
+                  {testimonials[currentIndex].name}
+                </h4>
+                <p className="text-gray-600">{testimonials[currentIndex].role}</p>
+              </div>
             </div>
           </motion.div>
 
-          {/* Testimonials Slider */}
-          <div className="flex-1 overflow-hidden">
-            <div
-              ref={sliderRef}
-              onMouseEnter={() => setAutoPlay(false)}
-              onMouseLeave={() => setAutoPlay(true)}
-              className="flex gap-6 overflow-x-auto scroll-smooth no-scrollbar py-4"
+          {/* Navigation Buttons */}
+          <div className="flex justify-center gap-4 mt-8">
+            <button
+              onClick={prevTestimonial}
+              className="w-12 h-12 bg-white rounded-full shadow-lg border border-gray-200 flex items-center justify-center hover:bg-blue-50 hover:border-blue-300 transition-all duration-300"
             >
-              {testimonials.map((t, index) => (
-                <motion.div
-                  key={t.id}
-                  className="group relative bg-white dark:bg-secondary-900 rounded-2xl p-8 shadow-card hover:shadow-card-hover transition-all duration-500 border border-secondary-100 dark:border-secondary-800 flex-shrink-0 w-[350px] md:w-[400px] overflow-hidden"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                >
-                  {/* Quote icon */}
-                  <div className="absolute top-6 right-6 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <Quote className="w-20 h-20 text-primary-600" />
-                  </div>
+              <ChevronLeft className="w-6 h-6 text-gray-700" />
+            </button>
+            <button
+              onClick={nextTestimonial}
+              className="w-12 h-12 bg-white rounded-full shadow-lg border border-gray-200 flex items-center justify-center hover:bg-blue-50 hover:border-blue-300 transition-all duration-300"
+            >
+              <ChevronRight className="w-6 h-6 text-gray-700" />
+            </button>
+          </div>
 
-                  <div className="relative z-10">
-                    {/* Stars */}
-                    <div className="flex mb-4 gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className="w-5 h-5 text-warning-500 fill-warning-500"
-                        />
-                      ))}
-                    </div>
-
-                    {/* Text */}
-                    <p className="text-secondary-700 dark:text-secondary-300 leading-relaxed mb-6 line-clamp-6">
-                      "{t.text}"
-                    </p>
-
-                    {/* Divider */}
-                    <div className="w-12 h-1 bg-gradient-to-r from-primary-600 to-primary-700 rounded-full mb-6" />
-
-                    {/* Author */}
-                    <div className="flex items-center gap-4">
-                      <img
-                        src={t.image}
-                        alt={t.name}
-                        className="w-14 h-14 rounded-full object-cover border-2 border-primary-200 dark:border-primary-800 shadow-md"
-                      />
-                      <div>
-                        <h4 className="font-bold text-secondary-900 dark:text-white text-lg">
-                          {t.name}
-                        </h4>
-                        <p className="text-sm text-secondary-500 dark:text-secondary-400">
-                          {t.role}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+          {/* Dots Indicator */}
+          <div className="flex justify-center gap-2 mt-6">
+            {testimonials.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentIndex(index)}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  index === currentIndex
+                    ? "w-8 bg-blue-600"
+                    : "w-2 bg-gray-300 hover:bg-gray-400"
+                }`}
+              />
+            ))}
           </div>
         </div>
+
+        {/* Trust Badges */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16"
+        >
+          {[
+            { label: "Customer Rating", value: "4.9/5" },
+            { label: "Happy Clients", value: "5,000+" },
+            { label: "Properties Sold", value: "15,000+" },
+            { label: "Expert Agents", value: "500+" },
+          ].map((stat, index) => (
+            <div key={index} className="text-center">
+              <div className="text-3xl font-bold text-slate-900 mb-2">
+                {stat.value}
+              </div>
+              <div className="text-gray-600">{stat.label}</div>
+            </div>
+          ))}
+        </motion.div>
       </div>
     </section>
   );

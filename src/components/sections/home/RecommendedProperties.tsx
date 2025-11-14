@@ -1,7 +1,6 @@
 /**
- * RecommendedProperties Component
- * Professional property showcase with category filters
- * Inspired by Zillow, Redfin, and modern real estate platforms
+ * Recommended Properties Section - Premium Design
+ * Showcases featured properties with elegant presentation
  */
 
 import { useState, useEffect } from "react";
@@ -9,37 +8,34 @@ import { getProperties } from "@/api/public/recomandedproperty";
 import PropertyCard from "./PropertyCard";
 import { Property } from "@/types/property";
 import { motion } from "framer-motion";
-import { Sparkles, AlertCircle, Loader2 } from "lucide-react";
+import { Sparkles, TrendingUp, Award, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const RecommendedProperties = () => {
   const [properties, setProperties] = useState<Property[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState("View All");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const categories = [
-    "View All",
-    "Apartment",
-    "Villa",
-    "Studio",
-    "House",
-    "Office",
+    { id: "all", label: "All Properties", icon: Sparkles },
+    { id: "apartment", label: "Apartments", icon: TrendingUp },
+    { id: "villa", label: "Villas", icon: Award },
+    { id: "house", label: "Houses", icon: TrendingUp },
   ];
 
-  // Fetch property data
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
     try {
+      setLoading(true);
       const res = await getProperties();
-
       const propertyArray: Property[] =
         res?.data?.properties && Array.isArray(res.data.properties)
           ? res.data.properties
           : [];
-
       setProperties(propertyArray);
     } catch (err: unknown) {
       console.error("Error fetching properties:", err);
@@ -52,139 +48,181 @@ const RecommendedProperties = () => {
     }
   };
 
-  // Filter logic
   const filteredProperties =
-    selectedCategory === "View All"
+    selectedCategory === "all"
       ? properties
       : properties.filter(
-          (p) =>
-            (typeof p.property_type === "string" &&
-              p.property_type.toLowerCase() ===
-                selectedCategory.toLowerCase()) ||
-            (typeof p.type === "string" &&
-              p.type.toLowerCase() === selectedCategory.toLowerCase())
+          (p) => p.property_type.toLowerCase() === selectedCategory
         );
 
-  // Loading UI
-  if (loading)
-    return (
-      <section className="relative py-24 bg-white dark:bg-secondary-950">
-        <div className="flex flex-col items-center justify-center gap-4">
-          <Loader2 className="w-12 h-12 text-primary-600 animate-spin" />
-          <p className="text-secondary-600 dark:text-secondary-400 font-medium">
-            Loading properties...
-          </p>
-        </div>
-      </section>
-    );
+  const displayedProperties = filteredProperties.slice(0, 6);
 
-  // Error UI
-  if (error)
+  if (error) {
     return (
-      <section className="relative py-24 bg-white dark:bg-secondary-950">
-        <div className="flex flex-col items-center justify-center gap-4 max-w-md mx-auto text-center px-6">
-          <div className="p-4 bg-accent-100 dark:bg-accent-900/20 rounded-full">
-            <AlertCircle className="w-8 h-8 text-accent-600 dark:text-accent-400" />
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-12 bg-white rounded-3xl shadow-lg border border-red-100">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Sparkles className="w-8 h-8 text-red-600" />
+            </div>
+            <p className="text-red-600 font-medium">{error}</p>
           </div>
-          <p className="text-accent-600 dark:text-accent-400 font-medium">{error}</p>
-          <button
-            onClick={fetchData}
-            className="px-6 py-2.5 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-semibold rounded-xl shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all"
-          >
-            Try Again
-          </button>
         </div>
       </section>
     );
+  }
 
   return (
-    <section className="relative py-24 px-6 md:px-20 bg-white dark:bg-secondary-950 overflow-hidden">
-      {/* Background pattern */}
+    <section className="py-24 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
+      {/* Background Decoration */}
       <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-20 right-20 w-96 h-96 bg-primary-400 rounded-full blur-3xl" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500 rounded-full blur-3xl"></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto">
-        {/* Header */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Section Header */}
         <motion.div
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
+          className="text-center mb-16"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary-100 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-full text-sm font-semibold mb-4">
-            <Sparkles className="w-4 h-4" />
-            Featured Properties
-          </span>
-          <h2 className="text-4xl md:text-5xl font-bold text-secondary-900 dark:text-white mt-4 mb-4">
-            Recommended For You
-          </h2>
-          <p className="text-lg text-secondary-600 dark:text-secondary-400 max-w-2xl mx-auto">
-            Handpicked properties matching your preferences
-          </p>
-
-          {/* Category Filter Tabs */}
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-6 py-2.5 rounded-xl font-semibold transition-all duration-300 ${
-                  selectedCategory === cat
-                    ? "bg-gradient-to-r from-primary-600 to-primary-700 text-white shadow-lg shadow-primary-500/30 scale-105"
-                    : "bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-200 dark:hover:bg-secondary-700 border border-secondary-200 dark:border-secondary-700"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-full mb-4">
+            <Sparkles className="w-4 h-4 text-blue-600" />
+            <span className="text-sm font-semibold text-blue-600">
+              Featured Listings
+            </span>
           </div>
+          <h2 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-4">
+            Discover Your{" "}
+            <span className="bg-gradient-to-r from-blue-600 to-emerald-500 bg-clip-text text-transparent">
+              Perfect Home
+            </span>
+          </h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Handpicked premium properties tailored to your lifestyle and budget
+          </p>
         </motion.div>
 
-        {/* Property Grid */}
+        {/* Category Filter */}
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
+          className="flex flex-wrap justify-center gap-4 mb-12"
         >
-          {Array.isArray(filteredProperties) && filteredProperties.length > 0 ? (
-            filteredProperties.map((p, index) => (
+          {categories.map((category, index) => {
+            const Icon = category.icon;
+            return (
+              <motion.button
+                key={category.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: 0.1 * index }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setSelectedCategory(category.id)}
+                className={`px-6 py-3 rounded-2xl font-semibold transition-all duration-300 flex items-center gap-2 ${
+                  selectedCategory === category.id
+                    ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/30"
+                    : "bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-blue-300"
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+                {category.label}
+              </motion.button>
+            );
+          })}
+        </motion.div>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(6)].map((_, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-3xl overflow-hidden shadow-lg animate-pulse"
+              >
+                <div className="aspect-[4/3] bg-gray-200"></div>
+                <div className="p-6 space-y-3">
+                  <div className="h-6 bg-gray-200 rounded-lg w-3/4"></div>
+                  <div className="h-4 bg-gray-200 rounded-lg w-1/2"></div>
+                  <div className="flex gap-4 pt-4">
+                    <div className="h-12 bg-gray-200 rounded-xl flex-1"></div>
+                    <div className="h-12 bg-gray-200 rounded-xl flex-1"></div>
+                    <div className="h-12 bg-gray-200 rounded-xl flex-1"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Properties Grid */}
+        {!loading && displayedProperties.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
+            {displayedProperties.map((property, index) => (
               <motion.div
-                key={p.id}
+                key={property.id}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.5, delay: 0.1 * index }}
               >
-                <PropertyCard
-                  property={p}
-                  isFavorite={p?.is_favorite ?? false}
-                  fetchProperties={fetchData}
-                />
+                <PropertyCard property={property} />
               </motion.div>
-            ))
-          ) : (
-            <div className="col-span-full text-center py-16">
-              <div className="inline-flex flex-col items-center gap-4">
-                <div className="p-4 bg-secondary-100 dark:bg-secondary-800 rounded-full">
-                  <Sparkles className="w-8 h-8 text-secondary-400" />
-                </div>
-                <p className="text-secondary-600 dark:text-secondary-400 text-lg font-medium">
-                  No properties found in this category
-                </p>
-                <button
-                  onClick={() => setSelectedCategory("View All")}
-                  className="text-primary-600 dark:text-primary-400 font-semibold hover:underline"
-                >
-                  View all properties
-                </button>
-              </div>
+            ))}
+          </motion.div>
+        )}
+
+        {/* Empty State */}
+        {!loading && displayedProperties.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="text-center py-16 bg-white rounded-3xl shadow-lg border border-gray-100"
+          >
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Sparkles className="w-10 h-10 text-gray-400" />
             </div>
-          )}
-        </motion.div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              No Properties Found
+            </h3>
+            <p className="text-gray-600 mb-8">
+              Try selecting a different category
+            </p>
+          </motion.div>
+        )}
+
+        {/* View All Button */}
+        {!loading && properties.length > 6 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="text-center mt-16"
+          >
+            <Link
+              to="/properties/sale"
+              className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-2xl font-semibold shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 group"
+            >
+              <span>View All Properties</span>
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </motion.div>
+        )}
       </div>
     </section>
   );
