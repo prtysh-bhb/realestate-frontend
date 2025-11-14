@@ -457,9 +457,6 @@ const AdminDashboardPage = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">Recent Users</h3>
-                <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                  View All
-                </button>
               </div>
               <div className="space-y-3">
                 {recentUsers.map((user) => (
@@ -488,9 +485,6 @@ const AdminDashboardPage = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">Recent Properties</h3>
-                <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                  View All
-                </button>
               </div>
               <div className="space-y-3">
                 {recentProperties.map((property) => (
@@ -529,14 +523,6 @@ const AdminDashboardPage = () => {
                     <div className="flex items-center justify-between text-xs text-gray-600">
                       <span>{formatAmount(property.price)}</span>
                       <span>{property.agent.name}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 mt-2">
-                      <button className="flex-1 bg-green-600 text-white py-1 px-2 rounded text-xs font-medium hover:bg-green-700">
-                        Approve
-                      </button>
-                      <button className="flex-1 bg-red-600 text-white py-1 px-2 rounded text-xs font-medium hover:bg-red-700">
-                        Reject
-                      </button>
                     </div>
                   </div>
                 ))}
