@@ -1,19 +1,24 @@
 import Header from "@/components/layout/public/Header";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ChangeEvent, useEffect, useState } from "react";
 import {
   Search,
   SlidersHorizontal,
   MapPin,
   Home,
+  X,
 } from "lucide-react";
 import { FilterState } from "@/types/property";
 import { useNavigate } from "react-router-dom";
+import { Attributes, propertyAttributes } from "@/api/customer/properties";
 
 const HomePage = () => {
   const [activeTab, setActiveTab] = useState<"rent" | "sale">("rent");
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [amenities, setAmenities] = useState<Attributes[]>();
+  const [propertyTypes, setPropertyTypes] = useState<Attributes[]>();
+
   const navigate = useNavigate();
   const [filters, setFilters] = useState<FilterState>({
     keyword: '',
@@ -52,12 +57,32 @@ const HomePage = () => {
     });
   };
 
+  const fetchAttributes = async () => {
+    const attributeResponse = await propertyAttributes();
+
+    setAmenities(attributeResponse.data.amenities || []);
+    setPropertyTypes(attributeResponse.data.property_types || []);
+  }
+
   useEffect(() => {
     setFilters(prev => ({
       ...prev,
       type: activeTab,
     }));
+    fetchAttributes();
   }, [activeTab]);
+
+  // Prevent body scroll when mobile drawer is open
+  useEffect(() => {
+    if (showAdvanced && window.innerWidth < 768) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showAdvanced]);
 
   const handleSearch = () => {
     // Navigate with query params
@@ -183,9 +208,11 @@ const HomePage = () => {
               <label className="flex flex-start text-xl font-medium text-black">Property Type</label>
               <select id="property_type" value={filters?.property_type} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg p-3 mt-1 text-sm bg-gray-50 text-gray-700 outline-none cursor-pointer">
                 <option value="">Select Property Type</option>
-                <option value="apartment">Apartment</option>
-                <option value="villa">Villa</option>
-                <option value="commercial">Commercial</option>
+                {propertyTypes?.map((type) => (
+                  <option key={type.key} value={type.key}>
+                    {type.label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -205,129 +232,207 @@ const HomePage = () => {
             </div>
           </motion.div>
 
-          {/* Advanced Filter Section */}
-          {showAdvanced && (
+          {/* Advanced Filter Section - Desktop/Tablet (dropdown below) */}
+          <AnimatePresence>
+            {showAdvanced && (
+              <motion.div
+                className="hidden md:block absolute bg-white rounded-2xl shadow-xl mt-4 p-6 md:p-8 left-8 right-8 text-left text-gray-700 overflow-hidden z-30"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <AdvancedFiltersContent 
+                  filters={filters}
+                  amenities={amenities ?? []}
+                  handleInputChange={handleInputChange}
+                  handleAmenityChange={handleAmenityChange}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Advanced Filter Section - Mobile (side drawer) */}
+      <AnimatePresence>
+        {showAdvanced && (
+          <>
+            {/* Backdrop */}
             <motion.div
-              className="absolute bg-white rounded-2xl shadow-xl mt-4 p-6 md:p-8 max-w-6xl mx-auto text-left text-gray-700 overflow-hidden"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              className="md:hidden fixed inset-0 bg-black/50 z-40"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              onClick={() => setShowAdvanced(false)}
+            />
+
+            {/* Sliding Drawer */}
+            <motion.div
+              className="md:hidden fixed top-0 right-0 h-full w-[85%] max-w-md bg-white shadow-2xl z-50 overflow-y-auto"
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
             >
-              {/* ✅ Working Price and Size Range */}
-              <div className="grid md:grid-cols-2 gap-6 mb-6">
-                {/* Price Range */}
-                <div>
-                  <label className="text-sm font-semibold text-gray-600 mb-2 block">
-                    Price Range <span className="text-gray-400">(USD)</span>
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="650000"
-                    step="0"
-                    id="max_price"
-                    value={filters?.max_price || 0}
-                    onChange={handleInputChange}
-                    className="w-full accent-blue-600 cursor-pointer"
-                  />
-                  <p className="text-sm text-gray-500 mt-1">
-                    Up to <b>${filters?.max_price.toLocaleString()}</b>
-                  </p>
-                </div>
-
-                {/* Size Range */}
-                <div>
-                  <label className="text-sm font-semibold text-gray-600 mb-2 block">
-                    Size Range <span className="text-gray-400">(SqFt)</span>
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1500"
-                    step="0"
-                    id="max_area"
-                    value={filters?.max_area || 0}
-                    onChange={handleInputChange}
-                    className="w-full accent-blue-600 cursor-pointer"
-                  />
-                  <p className="text-sm text-gray-500 mt-1">
-                    Up to <b>{filters?.max_area.toLocaleString()} SqFt</b>
-                  </p>
-                </div>
+              {/* Header */}
+              <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between z-10">
+                <h2 className="text-lg font-bold text-gray-800">Advanced Filters</h2>
+                <button
+                  onClick={() => setShowAdvanced(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <X size={20} className="text-gray-600" />
+                </button>
               </div>
 
-              {/* Dropdowns */}
-              <div className="grid md:grid-cols-3 gap-4 mb-6">
-                <div>
-                  <label className="text-sm font-semibold text-gray-600">
-                    City
-                  </label>
-                  <div className="w-full border border-gray-200 rounded-lg p-3 mt-1 text-sm bg-gray-50 outline-none cursor-pointer">
-                    <input
-                      type="text"
-                      id="city"
-                      value={filters?.city}
-                      onChange={handleInputChange}
-                      maxLength={50}
-                      placeholder="Search City..."
-                      className="bg-transparent outline-none text-sm w-full text-gray-700 cursor-pointer"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="text-sm font-semibold text-gray-600">
-                    Bathrooms
-                  </label>
-                  <select id="bathrooms" value={filters?.bathrooms} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg p-3 mt-1 text-sm bg-gray-50 outline-none cursor-pointer">
-                    <option value="">Select Bathrooms</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-sm font-semibold text-gray-600">
-                    Bedrooms
-                  </label>
-                  <select id="bedrooms" value={filters?.bedrooms} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg p-3 mt-1 text-sm bg-gray-50 outline-none cursor-pointer">
-                    <option value="">Select Bedrooms</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                  </select>
-                </div>
+              {/* Content */}
+              <div className="p-6">
+                <AdvancedFiltersContent 
+                  filters={filters}
+                  amenities={amenities ?? []}
+                  handleInputChange={handleInputChange}
+                  handleAmenityChange={handleAmenityChange}
+                />
               </div>
 
-              <div>
-                <h3 className="text-sm font-bold mb-3">Amenities:</h3>
-                <div className="grid md:grid-cols-4 sm:grid-cols-2 gap-3 text-sm text-gray-600 ">
-                  {[
-                    "Air Condition",
-                    "Garage",
-                    "Elevator",
-                    "Swimming Pool",
-                    "WiFi",
-                    "Pet Friendly",
-                    "Security",
-                    "Parking",
-                    "Garden",
-                    "Furnishing",
-                    "Heating",
-                    "Floor",
-                  ].map((item) => (
-                    <label key={item} className="flex items-center gap-2">
-                      <input type="checkbox" value={item} checked={filters.amenities.includes(item)} onChange={handleAmenityChange} className="accent-blue-600 rounded cursor-pointer" />
-                      {item}
-                    </label>
-                  ))}
-                </div>
+              {/* Footer - Apply Button */}
+              <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4">
+                <Button 
+                  onClick={() => {
+                    setShowAdvanced(false);
+                    handleSearch();
+                  }}
+                  className="w-full bg-[#134ef2] hover:bg-[#0d33f6] text-white"
+                  size="lg"
+                >
+                  Apply Filters
+                </Button>
               </div>
             </motion.div>
-          )}
+          </>
+        )}
+      </AnimatePresence>
+    </>
+  );
+};
+
+// Extracted component for the advanced filters content
+const AdvancedFiltersContent = ({ 
+  filters, 
+  amenities,
+  handleInputChange, 
+  handleAmenityChange 
+}: {
+  filters: FilterState;
+  amenities: Attributes[];
+  handleInputChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
+  handleAmenityChange: (e: ChangeEvent<HTMLInputElement>) => void;
+}) => {
+  return (
+    <>
+      {/* Price and Size Range */}
+      <div className="grid md:grid-cols-2 gap-6 mb-6">
+        {/* Price Range */}
+        <div>
+          <label className="text-sm font-semibold text-gray-600 mb-2 block">
+            Price Range <span className="text-gray-400">(USD)</span>
+          </label>
+          <input
+            type="range"
+            min="0"
+            max="650000"
+            step="0"
+            id="max_price"
+            value={filters?.max_price || 0}
+            onChange={handleInputChange}
+            className="w-full accent-blue-600 cursor-pointer"
+          />
+          <p className="text-sm text-gray-500 mt-1">
+            Up to <b>${Number(filters?.max_price || 0).toLocaleString()}</b>
+          </p>
+        </div>
+
+        {/* Size Range */}
+        <div>
+          <label className="text-sm font-semibold text-gray-600 mb-2 block">
+            Size Range <span className="text-gray-400">(SqFt)</span>
+          </label>
+          <input
+            type="range"
+            min="0"
+            max="1500"
+            step="0"
+            id="max_area"
+            value={filters?.max_area || 0}
+            onChange={handleInputChange}
+            className="w-full accent-blue-600 cursor-pointer"
+          />
+          <p className="text-sm text-gray-500 mt-1">
+            Up to <b>{Number(filters?.max_area || 0).toLocaleString()} SqFt</b>
+          </p>
+        </div>
+      </div>
+
+      {/* Dropdowns */}
+      <div className="grid md:grid-cols-3 gap-4 mb-6">
+        <div>
+          <label className="text-sm font-semibold text-gray-600">
+            City
+          </label>
+          <div className="w-full border border-gray-200 rounded-lg p-3 mt-1 text-sm bg-gray-50 outline-none cursor-pointer">
+            <input
+              type="text"
+              id="city"
+              value={filters?.city}
+              onChange={handleInputChange}
+              maxLength={50}
+              placeholder="Search City..."
+              className="bg-transparent outline-none text-sm w-full text-gray-700 cursor-pointer"
+            />
+          </div>
+        </div>
+        <div>
+          <label className="text-sm font-semibold text-gray-600">
+            Bathrooms
+          </label>
+          <select id="bathrooms" value={filters?.bathrooms} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg p-3 mt-1 text-sm bg-gray-50 outline-none cursor-pointer">
+            <option value="">Select Bathrooms</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </div>
+        <div>
+          <label className="text-sm font-semibold text-gray-600">
+            Bedrooms
+          </label>
+          <select id="bedrooms" value={filters?.bedrooms} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg p-3 mt-1 text-sm bg-gray-50 outline-none cursor-pointer">
+            <option value="">Select Bedrooms</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Amenities */}
+      <div>
+        <h3 className="text-sm font-bold mb-3">Amenities:</h3>
+        <div className="grid md:grid-cols-4 sm:grid-cols-2 gap-3 text-sm text-gray-600">
+          {amenities?.map((item) => (
+            <div key={item.key} className="flex items-center">
+              <label key={item.key} className="flex items-center text-sm gap-2">
+                <input type="checkbox" value={item.key} checked={filters.amenities.includes(item.key)} onChange={handleAmenityChange} className="accent-blue-600 rounded cursor-pointer" />
+                {item?.label ?? ""}
+              </label>
+            </div>
+          ))}
         </div>
       </div>
     </>

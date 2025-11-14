@@ -50,6 +50,7 @@ import PublicRoute from "@/lib/PublicRoute";
 import ChatScreen from "./pages/ChatScreen";
 import AgentChatPage from "./pages/admin/agents/profile/AgentChatPage";
 import AgentDashboardPage from "./pages/admin/agents/AgentDashboardPage";
+import { ApiInterceptor } from "./api/ApiInterceptor";
 
 function App() {
   const currentUser = {
@@ -61,6 +62,7 @@ function App() {
 
   return (
     <BrowserRouter>
+    <ApiInterceptor />
       <Routes>
         {/* ---------------- AUTH ROUTES ---------------- */}
         <Route element={<PublicRoute />}>

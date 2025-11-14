@@ -3,37 +3,11 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Trash2, AlertTriangle, X } from "lucide-react";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
-import { getPropertyById, deleteProperty } from "@/api/agent/property";
+import { getPropertyById, deleteProperty, Property } from "@/api/agent/property";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import PropertyDocuments from "./PropertyDocuments";
-
-interface Property {
-  id: number;
-  title: string;
-  description?: string;
-  price: number;
-  location?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  zipcode?: string;
-  type: string;
-  property_type?: string;
-  bedrooms?: number;
-  bathrooms?: number;
-  area?: number;
-  status: string;
-  approval_status?: string;
-  rejection_reason?: string | null;
-  created_at?: string;
-  updated_at?: string;
-  amenities?: string[];
-  images?: string[];
-  image_urls?: string[];
-  primary_image?: string | null;
-  primary_image_url?: string | null;
-}
+import { Attributes, propertyAttributes } from "@/api/customer/properties";
 
 const getImageUrl = (path?: string | null) => {
   if (!path) return "https://placehold.co/800x400?text=No+Image";
@@ -46,9 +20,17 @@ const ViewProperty = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [property, setProperty] = useState<Property | null>(null);
+  const [amenities, setAmenities] = useState<Attributes[]>();
+  const [propertyTypes, setPropertyTypes] = useState<Attributes[]>();
   const [loading, setLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  const fetchPropertyAttributes = async () => {
+    const response = await propertyAttributes();
+    setAmenities(response.data.amenities);
+    setPropertyTypes(response.data.property_types);
+  };
 
   const handleBack = () => {
     if (window.history.length > 2) {
@@ -87,6 +69,7 @@ const ViewProperty = () => {
 
   useEffect(() => {
     fetchProperty();
+    fetchPropertyAttributes();
   }, [id]);
 
   if (loading)
@@ -181,7 +164,7 @@ const ViewProperty = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Info label="Price" value={`$${property.price.toLocaleString()}`} />
               <Info label="Type" value={property.type} />
-              <Info label="Property Type" value={property.property_type} />
+              <Info label="Property Type" value={propertyTypes?.find(a => a.key === property?.property_type)?.label ?? '-'} />
               <Info label="Bedrooms" value={property.bedrooms} />
               <Info label="Bathrooms" value={property.bathrooms} />
               <Info label="Area" value={`${property.area} sqft`} />
@@ -197,14 +180,18 @@ const ViewProperty = () => {
               <div className="border-t pt-4">
                 <p className="text-gray-500 text-sm mb-2">Amenities</p>
                 <div className="flex flex-wrap gap-2">
-                  {property.amenities.map((a, i) => (
-                    <span
-                      key={i}
-                      className="bg-blue-100 text-blue-700 text-sm px-3 py-1 rounded-full"
-                    >
-                      {a}
-                    </span>
-                  ))}
+                  {property.amenities.map((amenityKey: string, i: number) => {
+                    const amenity = amenities?.find(a => a.key === amenityKey);
+
+                    return (
+                      <span
+                        key={i}
+                        className="bg-blue-100 text-blue-700 text-sm px-3 py-1 rounded-full"
+                      >
+                        {amenity ? amenity.label : amenityKey}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             )}

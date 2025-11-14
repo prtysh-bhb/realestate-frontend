@@ -1,4 +1,4 @@
-import { getProperty, InquiryFormData, propertyInquiry } from '@/api/customer/properties';
+import { Attributes, getProperty, InquiryFormData, propertyAttributes, propertyInquiry } from '@/api/customer/properties';
 import Loader from '@/components/ui/Loader';
 import { DocumentFile, Property } from '@/types/property';
 import { CircleDot, Eye, File, FileImage, FileSpreadsheet, FileText, FileType } from 'lucide-react';
@@ -15,12 +15,20 @@ const PropertyView = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [property, setProperty] = useState<Property | null>(null);
+  const [amenities, setAmenities] = useState<Attributes[]>();
+  const [propertyTypes, setPropertyTypes] = useState<Attributes[]>();
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [images, setImages] = useState<string[]>([]);
   const [documents, setDocuments] = useState<DocumentFile[]>([]);
   const [selectedImage, setSelectedImage] = useState("");
   const isLogin = localStorage.getItem("token") ? true : false;
+
+  const fetchPropertyAttributes = async () => {
+    const response = await propertyAttributes();
+    setAmenities(response.data.amenities);
+    setPropertyTypes(response.data.property_types);
+  };
 
   const handleSubmitInquiry = async (inquiryData: InquiryFormData) => {
     const response = await propertyInquiry(Number(id), inquiryData);
@@ -82,6 +90,7 @@ const PropertyView = () => {
         }
     };
 
+    fetchPropertyAttributes();
     fetchProperty();
   }, [id]);
 
@@ -233,7 +242,7 @@ const PropertyView = () => {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Property Type:</span>
-                    <span className="font-semibold capitalize">{property?.property_type}</span>
+                    <span className="font-semibold capitalize">{propertyTypes?.find(a => a.key === property?.property_type)?.label ?? '-'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">City:</span>
@@ -258,19 +267,18 @@ const PropertyView = () => {
               <h2 className="text-xl font-bold text-gray-900 mb-4">Amenities</h2>
               {property?.amenities && property?.amenities?.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {property?.amenities?.map((amenity, index) => (
-                  <div 
-                    key={index}
-                    className={`flex items-center ${
-                      property.amenities.includes(amenity) ? 'text-gray-700' : 'text-gray-400'
-                    }`}
-                  >
-                    <CircleDot size={20} className='mr-2 text-blue-400' />
-                    <span className={property.amenities.includes(amenity) ? 'truncate max-w-[200px]' : 'line-through '}>
-                      {amenity}
-                    </span>
-                  </div>
-                ))}
+                {property?.amenities?.map((amenityKey: string, index: number) => {
+                  const amenity = amenities?.find(a => a.key === amenityKey);
+
+                  return (
+                    <div key={index} className="flex items-center text-gray-700">
+                      <CircleDot size={20} className="mr-2 text-blue-400" />
+                      <span className="truncate max-w-[200px]">
+                        {amenity ? amenity.label : amenityKey}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
               ) : (
                 <div className='text-gray-500 italic'>No amenities found.</div>

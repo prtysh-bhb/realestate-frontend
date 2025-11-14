@@ -141,6 +141,7 @@ const LoginPage = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  maxLength={70}
                   className="h-10"
                 />
               </div>
@@ -153,6 +154,7 @@ const LoginPage = () => {
                 <Input
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
+                  maxLength={50}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -165,7 +167,7 @@ const LoginPage = () => {
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
-                <div className="flex justify-end mt-1">
+                <div className="flex justify-end mt-1 hidden">
                   <Link
                     to="/forgot-password"
                     className="text-xs text-blue-600 hover:underline"
