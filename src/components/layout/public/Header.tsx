@@ -1,8 +1,15 @@
+/**
+ * Header Component
+ * Professional sticky navigation with glassmorphism
+ * Inspired by Zillow, Redfin, and modern real estate platforms
+ */
+
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Home as HomeIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import clsx from "clsx";
+import { motion, AnimatePresence } from "framer-motion";
 import UserDropdown from "@/pages/admin/customer/components/UserDropdown";
 import UserMenuItems from "@/pages/admin/customer/components/UserMenuItems";
 
@@ -27,112 +34,196 @@ const Header = () => {
       // reset when leaving dashboard
       setScrolled(true);
     }
-  }, []);
+  }, [isDashboard]);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [menuOpen]);
 
   const navLinks = [
-    { name: "Home", path: "/" },
+    { name: "Home", path: "/", icon: HomeIcon },
     { name: "For Rent", path: "/properties/rent" },
     { name: "For Sale", path: "/properties/sale" },
     { name: "Contact", path: "/contact" },
   ];
 
+  const isActive = (path: string) => location.pathname === path;
+
   return (
-    <header
-      className={clsx(
-        "fixed top-0 left-0 w-full z-50 transition-all duration-500",
-        scrolled
-          ? "bg-white/90 backdrop-blur-md border-b border-gray-200"
-          : "bg-transparent"
-      )}
-    >
-      <div className="px-4 sm:px-6 lg:px-8 flex justify-between items-center py-4">
-        {/* LOGO */}
-        <Link
-          to="/"
-          className="text-3xl font-extrabold tracking-tight transition-all"
-        >
-          <img src="/assets/logo.jpg" className="w-20 h-15" alt="" />
-        </Link>
-
-        {/* NAV LINKS (Desktop) */}
-        <nav
-          className={clsx(
-            "hidden md:flex space-x-8 font-medium transition-all",
-            scrolled ? "text-black" : "text-white"
-          )}
-        >
-          {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              to={link.path}
-              className="relative hover:text-blue-700 transition group"
-            >
-              {link.name}
-              <span className="absolute left-0 bottom-0 w-0 h-[2px] bg-blue-700 transition-all duration-300 group-hover:w-full"></span>
-            </Link>
-          ))}
-        </nav>
-
-        {/* LOGIN BUTTON (Desktop) */}
-        <div className="hidden md:block">
-        {!token ? (
-          <Button
-            onClick={() => navigate("/login")}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-5 py-2 transition-all cursor-pointer"
-          >
-            Login / Register
-          </Button>
-        ) : (
-          <UserDropdown scrolled={scrolled} />
-        )}
-        </div>
-
-        {/* MOBILE MENU ICON */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className={clsx(
-            "md:hidden transition",
-            scrolled ? "text-black hover:text-blue-600" : "text-white hover:text-blue-600"
-          )}
-        >
-          {menuOpen ? <X size={26} /> : <Menu size={26} />}
-        </button>
-      </div>
-
-      {/* MOBILE MENU DROPDOWN */}
-      <div
+    <>
+      <header
         className={clsx(
-          "md:hidden transition-all duration-500 overflow-hidden",
-          menuOpen ? "max-h-[400px] opacity-100" : "max-h-0 opacity-0"
+          "fixed top-0 left-0 w-full z-50 transition-all duration-500",
+          scrolled
+            ? "bg-white/95 dark:bg-secondary-900/95 backdrop-blur-xl shadow-lg border-b border-secondary-200 dark:border-secondary-800"
+            : "bg-transparent"
         )}
       >
-        <nav className="flex flex-col space-y-4 bg-white/95 border-t p-5 text-gray-700 font-medium">
-          {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              to={link.path}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-4">
+          {/* LOGO */}
+          <Link
+            to="/"
+            className="flex items-center gap-3 group transition-transform hover:scale-105"
+          >
+            <img
+              src="/assets/logo.jpg"
+              className="w-20 h-15 rounded-lg shadow-md group-hover:shadow-lg transition-shadow"
+              alt="Logo"
+            />
+          </Link>
+
+          {/* NAV LINKS (Desktop) */}
+          <nav
+            className={clsx(
+              "hidden md:flex items-center gap-2 font-semibold transition-all"
+            )}
+          >
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                to={link.path}
+                className={clsx(
+                  "relative px-4 py-2 rounded-xl transition-all group",
+                  scrolled
+                    ? isActive(link.path)
+                      ? "text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20"
+                      : "text-secondary-700 dark:text-secondary-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-secondary-50 dark:hover:bg-secondary-800"
+                    : isActive(link.path)
+                      ? "text-white bg-white/20 backdrop-blur-sm"
+                      : "text-white/90 hover:text-white hover:bg-white/10 backdrop-blur-sm"
+                )}
+              >
+                {link.name}
+                <span
+                  className={clsx(
+                    "absolute left-1/2 -translate-x-1/2 bottom-0 h-0.5 bg-primary-600 transition-all duration-300",
+                    isActive(link.path) ? "w-8" : "w-0 group-hover:w-8"
+                  )}
+                />
+              </Link>
+            ))}
+          </nav>
+
+          {/* LOGIN BUTTON (Desktop) */}
+          <div className="hidden md:block">
+            {!token ? (
+              <Button
+                onClick={() => navigate("/login")}
+                className={clsx(
+                  "font-bold rounded-xl px-6 py-2.5 transition-all shadow-md hover:shadow-lg",
+                  scrolled
+                    ? "bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white"
+                    : "bg-white/95 hover:bg-white text-primary-700 backdrop-blur-sm"
+                )}
+              >
+                Login / Register
+              </Button>
+            ) : (
+              <UserDropdown scrolled={scrolled} />
+            )}
+          </div>
+
+          {/* MOBILE MENU ICON */}
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className={clsx(
+              "md:hidden p-2 rounded-lg transition-all",
+              scrolled
+                ? "text-secondary-700 dark:text-secondary-300 hover:bg-secondary-100 dark:hover:bg-secondary-800"
+                : "text-white hover:bg-white/10 backdrop-blur-sm"
+            )}
+          >
+            {menuOpen ? <X size={26} /> : <Menu size={26} />}
+          </button>
+        </div>
+      </header>
+
+      {/* MOBILE MENU DRAWER */}
+      <AnimatePresence>
+        {menuOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
               onClick={() => setMenuOpen(false)}
-              className="hover:text-blue-600 transition"
+            />
+
+            {/* Sliding Drawer */}
+            <motion.div
+              className="md:hidden fixed top-0 right-0 h-full w-[85%] max-w-sm bg-white/95 dark:bg-secondary-900/95 backdrop-blur-xl shadow-2xl border-l border-white/20 dark:border-secondary-700/20 z-50 overflow-y-auto"
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
             >
-              {link.name}
-            </Link>
-          ))}
-          {!token ? (
-            <Button
-              onClick={() => navigate("/login")}
-              className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-5 py-2 transition-all cursor-pointer"
-            >
-              Login / Register
-            </Button>
-          ) : (
-            <>
-              <hr />
-              <UserMenuItems />
-            </>
-          )}
-        </nav>
-      </div>
-    </header>
+              {/* Header */}
+              <div className="sticky top-0 bg-white/95 dark:bg-secondary-900/95 backdrop-blur-xl border-b border-secondary-200 dark:border-secondary-700 p-6 flex items-center justify-between z-10">
+                <h2 className="text-xl font-bold text-secondary-900 dark:text-white">Menu</h2>
+                <button
+                  onClick={() => setMenuOpen(false)}
+                  className="p-2 hover:bg-secondary-100 dark:hover:bg-secondary-800 rounded-lg transition-colors"
+                >
+                  <X size={22} className="text-secondary-600 dark:text-secondary-400" />
+                </button>
+              </div>
+
+              {/* Navigation Links */}
+              <nav className="flex flex-col p-6 space-y-2">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.name}
+                    to={link.path}
+                    onClick={() => setMenuOpen(false)}
+                    className={clsx(
+                      "px-4 py-3 rounded-xl font-semibold transition-all",
+                      isActive(link.path)
+                        ? "bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400"
+                        : "text-secondary-700 dark:text-secondary-300 hover:bg-secondary-50 dark:hover:bg-secondary-800"
+                    )}
+                  >
+                    {link.name}
+                  </Link>
+                ))}
+              </nav>
+
+              {/* Divider */}
+              <div className="px-6">
+                <hr className="border-secondary-200 dark:border-secondary-700" />
+              </div>
+
+              {/* Auth Section */}
+              <div className="p-6">
+                {!token ? (
+                  <Button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      navigate("/login");
+                    }}
+                    className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-bold rounded-xl shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all"
+                  >
+                    Login / Register
+                  </Button>
+                ) : (
+                  <UserMenuItems />
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 
