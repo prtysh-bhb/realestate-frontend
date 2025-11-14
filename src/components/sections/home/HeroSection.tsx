@@ -1,10 +1,8 @@
 /**
- * Hero Section Component
- * Modern, professional hero section with glassmorphism search
- * Inspired by Zillow, Redfin, and modern real estate platforms
+ * Hero Section - Premium Real Estate Platform
+ * Modern, professional hero with stunning visuals and smooth interactions
  */
 
-import Header from "@/components/layout/public/Header";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChangeEvent, useEffect, useState } from "react";
@@ -12,516 +10,322 @@ import {
   Search,
   SlidersHorizontal,
   MapPin,
-  Home,
+  Home as HomeIcon,
   X,
-  TrendingUp,
+  Building2,
+  DollarSign,
+  Bed,
+  Bath,
+  Maximize2,
+  ChevronDown,
 } from "lucide-react";
 import { FilterState } from "@/types/property";
 import { useNavigate } from "react-router-dom";
 import { PropertyAttribute, propertyAttributes } from "@/api/customer/properties";
 
-const HomePage = () => {
-  const [activeTab, setActiveTab] = useState<"rent" | "sale">("rent");
+const HeroSection = () => {
+  const [activeTab, setActiveTab] = useState<"rent" | "sale">("sale");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [amenities, setAmenities] = useState<PropertyAttribute[]>([]);
   const [propertyTypes, setPropertyTypes] = useState<PropertyAttribute[]>([]);
-
   const navigate = useNavigate();
+
   const [filters, setFilters] = useState<FilterState>({
-    keyword: '',
-    location: '',
-    state: '',
-    city: '',
-    property_type: '',
-    min_price: '0',
-    max_price: '',
-    bedrooms: '',
-    bathrooms: '',
-    min_area: '0',
-    max_area: '',
-    type: 'rent',
+    keyword: "",
+    location: "",
+    state: "",
+    city: "",
+    property_type: "",
+    min_price: "",
+    max_price: "",
+    bedrooms: "",
+    bathrooms: "",
+    min_area: "",
+    max_area: "",
+    type: "sale",
     amenities: [],
-    sortBy: 'Newest First'
-  })
-
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { id, value } = e.target;
-    setFilters(prev => ({
-      ...prev,
-      [id]: value
-    }));
-  };
-
-  const handleAmenityChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { value, checked } = e.target;
-
-    setFilters(prev => {
-      const newAmenities = checked
-        ? [...prev.amenities, value]
-        : prev.amenities.filter(a => a !== value);
-      
-      return { ...prev, amenities: newAmenities };
-    });
-  };
-
-  const fetchAttributes = async () => {
-    const attributeResponse = await propertyAttributes();
-
-    setAmenities(attributeResponse.data.amenities || []);
-    setPropertyTypes(attributeResponse.data.property_types || []);
-  }
+    sortBy: "Newest First",
+  });
 
   useEffect(() => {
-    setFilters(prev => ({
-      ...prev,
-      type: activeTab,
-    }));
+    const fetchAttributes = async () => {
+      try {
+        const response = await propertyAttributes();
+        setAmenities(response.data.amenities || []);
+        setPropertyTypes(response.data.property_types || []);
+      } catch (error) {
+        console.error("Failed to fetch attributes:", error);
+      }
+    };
     fetchAttributes();
+  }, []);
+
+  useEffect(() => {
+    setFilters((prev) => ({ ...prev, type: activeTab }));
   }, [activeTab]);
 
-  // Prevent body scroll when mobile drawer is open
-  useEffect(() => {
-    if (showAdvanced && window.innerWidth < 768) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [showAdvanced]);
+  const handleInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { id, value } = e.target;
+    setFilters((prev) => ({ ...prev, [id]: value }));
+  };
 
   const handleSearch = () => {
-    // Navigate with query params
-    const params = new URLSearchParams();
-
-    Object.entries(filters).forEach(([key, value]) => {
-      if (Array.isArray(value)) {
-        // Handle array values (amenities)
-        value.forEach(item => params.append(key, item));
-      } else if (value) {
-        // Only add non-empty values
-        params.append(key, String(value));
-      }
-    });
-    
-    navigate(`/properties/${filters.type}?${params.toString()}`);
+    const path = activeTab === "rent" ? "/properties/rent" : "/properties/sale";
+    navigate(path, { state: { filters } });
   };
 
   return (
-    <>
-      <Header />
-      <div
-        className="relative min-h-screen flex flex-col items-center justify-center text-white bg-cover bg-center"
-        style={{
-          backgroundImage: "url('/assets/hero-banner.jpg')",
-        }}
-      >
-        {/* Modern gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-900/80 via-primary-800/70 to-secondary-900/80" />
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+      {/* Animated Background Pattern */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoNHYzMGgtNHoiLz48L2c+PC9nPjwvc3ZnPg==')] animate-pulse"></div>
+      </div>
 
-        {/* Animated background pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 -left-4 w-72 h-72 bg-primary-300 rounded-full mix-blend-multiply filter blur-xl animate-blob" />
-          <div className="absolute top-0 -right-4 w-72 h-72 bg-accent-300 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000" />
-          <div className="absolute -bottom-8 left-20 w-72 h-72 bg-success-300 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000" />
-        </div>
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/50 to-transparent"></div>
 
-        {/* Hero content */}
-        <div className="relative z-10 px-4 sm:px-8 max-w-7xl w-full pt-32 pb-16">
-          {/* Main headline */}
-          <motion.div
-            className="text-center mb-8"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight">
-              Find Your Perfect
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-primary-300 to-accent-300">
-                Dream Home
-              </span>
-            </h1>
-            <p className="text-xl md:text-2xl text-secondary-100 mb-4 max-w-3xl mx-auto font-light">
-              Discover the best properties tailored to your lifestyle
-            </p>
-            {/* Quick stats */}
-            <div className="flex items-center justify-center gap-8 mt-6 text-sm">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-success-400" />
-                <span className="text-secondary-200">10,000+ Properties</span>
-              </div>
-              <div className="hidden md:flex items-center gap-2">
-                <Home className="w-5 h-5 text-primary-400" />
-                <span className="text-secondary-200">500+ Agents</span>
-              </div>
-            </div>
-          </motion.div>
+      {/* Content Container */}
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32">
+        {/* Main Heading */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-12"
+        >
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+            Find Your{" "}
+            <span className="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
+              Dream Home
+            </span>
+          </h1>
+          <p className="text-xl sm:text-2xl text-gray-300 max-w-3xl mx-auto font-light">
+            Discover the perfect property from our curated collection of premium
+            homes, apartments, and commercial spaces
+          </p>
+        </motion.div>
 
-          {/* Modern Rent / Sale Tabs */}
-          <motion.div
-            className="flex justify-center mb-8"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <div className="inline-flex bg-white/10 backdrop-blur-xl rounded-2xl p-1.5 border border-white/20 shadow-2xl">
-              <button
-                onClick={() => setActiveTab("rent")}
-                className={`px-8 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${
-                  activeTab === "rent"
-                    ? "bg-gradient-to-r from-success-500 to-success-600 text-white shadow-lg scale-105"
-                    : "text-white hover:bg-white/10"
-                }`}
-              >
-                FOR RENT
-              </button>
+        {/* Search Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.2 }}
+          className="max-w-5xl mx-auto"
+        >
+          {/* Glass Card */}
+          <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl shadow-2xl p-6 sm:p-8">
+            {/* Tabs */}
+            <div className="flex gap-4 mb-6">
               <button
                 onClick={() => setActiveTab("sale")}
-                className={`px-8 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${
+                className={`flex-1 py-4 px-6 rounded-2xl font-semibold text-lg transition-all duration-300 ${
                   activeTab === "sale"
-                    ? "bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg scale-105"
-                    : "text-white hover:bg-white/10"
+                    ? "bg-white text-slate-900 shadow-lg"
+                    : "text-white/70 hover:text-white hover:bg-white/5"
                 }`}
               >
-                FOR SALE
+                <Building2 className="inline-block w-5 h-5 mr-2" />
+                Buy
+              </button>
+              <button
+                onClick={() => setActiveTab("rent")}
+                className={`flex-1 py-4 px-6 rounded-2xl font-semibold text-lg transition-all duration-300 ${
+                  activeTab === "rent"
+                    ? "bg-white text-slate-900 shadow-lg"
+                    : "text-white/70 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <HomeIcon className="inline-block w-5 h-5 mr-2" />
+                Rent
               </button>
             </div>
-          </motion.div>
 
-          {/* Glassmorphism Search Bar */}
-          <motion.div
-            className="bg-white/95 dark:bg-secondary-900/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-6 md:p-8 max-w-6xl mx-auto"
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-              {/* Keyword */}
-              <div className="md:col-span-3">
-                <label className="block text-sm font-semibold text-secondary-700 dark:text-secondary-300 mb-2">
-                  Keyword
-                </label>
-                <div className="relative">
-                  <Home className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary-400" />
-                  <input
-                    type="text"
-                    placeholder="Villa, Apartment..."
-                    id="keyword"
-                    value={filters?.keyword}
-                    onChange={handleInputChange}
-                    maxLength={100}
-                    className="w-full pl-12 pr-4 py-3.5 bg-secondary-50 dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700 rounded-xl text-secondary-900 dark:text-white placeholder:text-secondary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-                  />
-                </div>
-              </div>
-
-              {/* Location */}
-              <div className="md:col-span-3">
-                <label className="block text-sm font-semibold text-secondary-700 dark:text-secondary-300 mb-2">
-                  Location
-                </label>
-                <div className="relative">
-                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary-400" />
+            {/* Main Search Bar */}
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                {/* Location Input */}
+                <div className="flex-1 relative">
+                  <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <input
                     type="text"
                     id="location"
-                    value={filters?.location}
+                    value={filters.location}
                     onChange={handleInputChange}
-                    maxLength={50}
-                    placeholder="City, State, ZIP..."
-                    className="w-full pl-12 pr-4 py-3.5 bg-secondary-50 dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700 rounded-xl text-secondary-900 dark:text-white placeholder:text-secondary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                    placeholder="Enter location, city, or neighborhood"
+                    className="w-full pl-12 pr-4 py-4 bg-white/95 border-0 rounded-2xl text-slate-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-lg shadow-sm"
                   />
                 </div>
-              </div>
 
-              {/* Property Type */}
-              <div className="md:col-span-3">
-                <label className="block text-sm font-semibold text-secondary-700 dark:text-secondary-300 mb-2">
-                  Property Type
-                </label>
-                <select
-                  id="property_type"
-                  value={filters?.property_type}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3.5 bg-secondary-50 dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700 rounded-xl text-secondary-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all cursor-pointer"
-                >
-                  <option value="">All Types</option>
-                  {propertyTypes?.map((type) => (
-                    <option key={type.key} value={type.key}>
-                      {type.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Search Buttons */}
-              <div className="md:col-span-3 flex gap-2">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="flex-1 border-2 border-secondary-300 dark:border-secondary-600 hover:bg-secondary-100 dark:hover:bg-secondary-800 text-secondary-700 dark:text-secondary-300 font-semibold rounded-xl"
-                  onClick={() => setShowAdvanced(!showAdvanced)}
-                >
-                  <SlidersHorizontal className="w-4 h-4 mr-2" />
-                  Filters
-                </Button>
-                <Button
-                  size="lg"
-                  onClick={handleSearch}
-                  className="flex-1 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-bold rounded-xl shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all"
-                >
-                  <Search className="w-4 h-4 mr-2" />
-                  Search
-                </Button>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Advanced Filter Section - Desktop/Tablet (dropdown below) */}
-          <AnimatePresence>
-            {showAdvanced && (
-              <motion.div
-                className="hidden md:block mt-6 bg-white/95 dark:bg-secondary-900/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 text-left overflow-hidden"
-                initial={{ opacity: 0, y: -20, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-secondary-900 dark:text-white">
-                    Advanced Filters
-                  </h3>
-                  <button
-                    onClick={() => setShowAdvanced(false)}
-                    className="p-2 hover:bg-secondary-100 dark:hover:bg-secondary-800 rounded-lg transition-colors"
-                  >
-                    <X className="w-5 h-5 text-secondary-600 dark:text-secondary-400" />
-                  </button>
-                </div>
-                <AdvancedFiltersContent
-                  filters={filters}
-                  amenities={amenities}
-                  handleInputChange={handleInputChange}
-                  handleAmenityChange={handleAmenityChange}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
-
-      {/* Advanced Filter Section - Mobile (side drawer) */}
-      <AnimatePresence>
-        {showAdvanced && (
-          <>
-            {/* Backdrop with blur */}
-            <motion.div
-              className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              onClick={() => setShowAdvanced(false)}
-            />
-
-            {/* Sliding Drawer */}
-            <motion.div
-              className="md:hidden fixed top-0 right-0 h-full w-[85%] max-w-md bg-white/95 dark:bg-secondary-900/95 backdrop-blur-xl shadow-2xl border-l border-white/20 dark:border-secondary-700/20 z-50 overflow-y-auto"
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            >
-              {/* Header */}
-              <div className="sticky top-0 bg-white/95 dark:bg-secondary-900/95 backdrop-blur-xl border-b border-secondary-200 dark:border-secondary-700 p-6 flex items-center justify-between z-10">
-                <h2 className="text-xl font-bold text-secondary-900 dark:text-white">Advanced Filters</h2>
+                {/* Search Button */}
                 <button
-                  onClick={() => setShowAdvanced(false)}
-                  className="p-2 hover:bg-secondary-100 dark:hover:bg-secondary-800 rounded-lg transition-colors"
+                  onClick={handleSearch}
+                  className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap"
                 >
-                  <X size={22} className="text-secondary-600 dark:text-secondary-400" />
+                  <Search className="w-5 h-5" />
+                  Search
                 </button>
               </div>
 
-              {/* Content */}
-              <div className="p-6">
-                <AdvancedFiltersContent
-                  filters={filters}
-                  amenities={amenities ?? []}
-                  handleInputChange={handleInputChange}
-                  handleAmenityChange={handleAmenityChange}
+              {/* Advanced Filters Toggle */}
+              <button
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className="text-white/80 hover:text-white flex items-center gap-2 text-sm font-medium transition-colors"
+              >
+                <SlidersHorizontal className="w-4 h-4" />
+                {showAdvanced ? "Hide" : "Show"} Advanced Filters
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${
+                    showAdvanced ? "rotate-180" : ""
+                  }`}
                 />
-              </div>
+              </button>
 
-              {/* Footer - Apply Button */}
-              <div className="sticky bottom-0 bg-white/95 dark:bg-secondary-900/95 backdrop-blur-xl border-t border-secondary-200 dark:border-secondary-700 p-6">
-                <Button
-                  onClick={() => {
-                    setShowAdvanced(false);
-                    handleSearch();
-                  }}
-                  className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-bold rounded-xl shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all"
-                  size="lg"
-                >
-                  <Search className="w-5 h-5 mr-2" />
-                  Apply Filters
-                </Button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </>
-  );
-};
+              {/* Advanced Filters */}
+              <AnimatePresence>
+                {showAdvanced && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pt-6 border-t border-white/10 space-y-4">
+                      {/* Property Type & Price Range */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <select
+                          id="property_type"
+                          value={filters.property_type}
+                          onChange={handleInputChange}
+                          className="px-4 py-3 bg-white/95 border-0 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium shadow-sm"
+                        >
+                          <option value="">All Property Types</option>
+                          {propertyTypes.map((type) => (
+                            <option key={type.key} value={type.key}>
+                              {type.label}
+                            </option>
+                          ))}
+                        </select>
 
-// Modern Advanced Filters Component
-const AdvancedFiltersContent = ({
-  filters,
-  amenities,
-  handleInputChange,
-  handleAmenityChange
-}: {
-  filters: FilterState;
-  amenities: PropertyAttribute[];
-  handleInputChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
-  handleAmenityChange: (e: ChangeEvent<HTMLInputElement>) => void;
-}) => {
-  return (
-    <div className="space-y-6">
-      {/* Price and Size Range */}
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Price Range */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300">
-              Price Range
-            </label>
-            <span className="text-sm font-bold text-primary-600 dark:text-primary-400">
-              ${Number(filters?.max_price || 0).toLocaleString()}
-            </span>
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="10000000"
-            step="10000"
-            id="max_price"
-            value={filters?.max_price || 0}
-            onChange={handleInputChange}
-            className="w-full h-2 bg-secondary-200 dark:bg-secondary-700 rounded-lg appearance-none cursor-pointer accent-primary-600"
-          />
-          <div className="flex justify-between text-xs text-secondary-500">
-            <span>$0</span>
-            <span>$10M+</span>
-          </div>
-        </div>
+                        <div className="relative">
+                          <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                          <input
+                            type="number"
+                            id="min_price"
+                            value={filters.min_price}
+                            onChange={handleInputChange}
+                            placeholder="Min Price"
+                            className="w-full pl-10 pr-4 py-3 bg-white/95 border-0 rounded-xl text-slate-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium shadow-sm"
+                          />
+                        </div>
 
-        {/* Size Range */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300">
-              Size Range
-            </label>
-            <span className="text-sm font-bold text-primary-600 dark:text-primary-400">
-              {Number(filters?.max_area || 0).toLocaleString()} Sq Ft
-            </span>
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="10000"
-            step="100"
-            id="max_area"
-            value={filters?.max_area || 0}
-            onChange={handleInputChange}
-            className="w-full h-2 bg-secondary-200 dark:bg-secondary-700 rounded-lg appearance-none cursor-pointer accent-primary-600"
-          />
-          <div className="flex justify-between text-xs text-secondary-500">
-            <span>0 Sq Ft</span>
-            <span>10,000+ Sq Ft</span>
-          </div>
-        </div>
-      </div>
+                        <div className="relative">
+                          <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                          <input
+                            type="number"
+                            id="max_price"
+                            value={filters.max_price}
+                            onChange={handleInputChange}
+                            placeholder="Max Price"
+                            className="w-full pl-10 pr-4 py-3 bg-white/95 border-0 rounded-xl text-slate-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium shadow-sm"
+                          />
+                        </div>
+                      </div>
 
-      {/* City, Bedrooms, Bathrooms */}
-      <div className="grid md:grid-cols-3 gap-4">
-        <div>
-          <label className="block text-sm font-semibold text-secondary-700 dark:text-secondary-300 mb-2">
-            City
-          </label>
-          <input
-            type="text"
-            id="city"
-            value={filters?.city}
-            onChange={handleInputChange}
-            maxLength={50}
-            placeholder="Enter city..."
-            className="w-full px-4 py-3 bg-secondary-50 dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700 rounded-xl text-secondary-900 dark:text-white placeholder:text-secondary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-semibold text-secondary-700 dark:text-secondary-300 mb-2">
-            Bedrooms
-          </label>
-          <select
-            id="bedrooms"
-            value={filters?.bedrooms}
-            onChange={handleInputChange}
-            className="w-full px-4 py-3 bg-secondary-50 dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700 rounded-xl text-secondary-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all cursor-pointer"
+                      {/* Beds, Baths, Area */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="relative">
+                          <Bed className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                          <input
+                            type="number"
+                            id="bedrooms"
+                            value={filters.bedrooms}
+                            onChange={handleInputChange}
+                            placeholder="Bedrooms"
+                            className="w-full pl-10 pr-4 py-3 bg-white/95 border-0 rounded-xl text-slate-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium shadow-sm"
+                          />
+                        </div>
+
+                        <div className="relative">
+                          <Bath className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                          <input
+                            type="number"
+                            id="bathrooms"
+                            value={filters.bathrooms}
+                            onChange={handleInputChange}
+                            placeholder="Bathrooms"
+                            className="w-full pl-10 pr-4 py-3 bg-white/95 border-0 rounded-xl text-slate-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium shadow-sm"
+                          />
+                        </div>
+
+                        <div className="relative">
+                          <Maximize2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                          <input
+                            type="number"
+                            id="min_area"
+                            value={filters.min_area}
+                            onChange={handleInputChange}
+                            placeholder="Min Area (sq ft)"
+                            className="w-full pl-10 pr-4 py-3 bg-white/95 border-0 rounded-xl text-slate-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium shadow-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* Quick Stats */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.4 }}
+            className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8"
           >
-            <option value="">Any</option>
-            {[1, 2, 3, 4, 5].map((num) => (
-              <option key={num} value={num}>{num}+ Beds</option>
+            {[
+              { label: "Active Listings", value: "10,000+", icon: Building2 },
+              { label: "Happy Clients", value: "5,000+", icon: HomeIcon },
+              { label: "Expert Agents", value: "500+", icon: HomeIcon },
+              { label: "Cities Covered", value: "50+", icon: MapPin },
+            ].map((stat, index) => (
+              <div
+                key={index}
+                className="backdrop-blur-sm bg-white/10 border border-white/20 rounded-2xl p-4 text-center"
+              >
+                <stat.icon className="w-6 h-6 text-blue-400 mx-auto mb-2" />
+                <div className="text-2xl font-bold text-white">
+                  {stat.value}
+                </div>
+                <div className="text-sm text-gray-300">{stat.label}</div>
+              </div>
             ))}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-semibold text-secondary-700 dark:text-secondary-300 mb-2">
-            Bathrooms
-          </label>
-          <select
-            id="bathrooms"
-            value={filters?.bathrooms}
-            onChange={handleInputChange}
-            className="w-full px-4 py-3 bg-secondary-50 dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700 rounded-xl text-secondary-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all cursor-pointer"
-          >
-            <option value="">Any</option>
-            {[1, 2, 3, 4, 5].map((num) => (
-              <option key={num} value={num}>{num}+ Baths</option>
-            ))}
-          </select>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
 
-      {/* Amenities */}
-      <div>
-        <h3 className="text-sm font-bold text-secondary-900 dark:text-white mb-4">
-          Amenities
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {amenities?.map((item) => (
-            <label
-              key={item.key}
-              className="flex items-center gap-2 p-3 rounded-lg hover:bg-secondary-50 dark:hover:bg-secondary-800 cursor-pointer transition-colors group"
-            >
-              <input
-                type="checkbox"
-                value={item.key}
-                checked={filters.amenities.includes(item.key)}
-                onChange={handleAmenityChange}
-                className="w-4 h-4 rounded border-secondary-300 text-primary-600 focus:ring-2 focus:ring-primary-500 cursor-pointer"
-              />
-              <span className="text-sm text-secondary-700 dark:text-secondary-300 group-hover:text-secondary-900 dark:group-hover:text-white">
-                {item?.label ?? ""}
-              </span>
-            </label>
-          ))}
+      {/* Scroll Indicator */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1, duration: 1 }}
+        className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+      >
+        <div className="flex flex-col items-center gap-2 text-white/60">
+          <span className="text-sm font-medium">Explore More</span>
+          <motion.div
+            animate={{ y: [0, 10, 0] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+            className="w-6 h-10 border-2 border-white/40 rounded-full flex items-start justify-center p-2"
+          >
+            <div className="w-1.5 h-1.5 bg-white/60 rounded-full"></div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
 
-export default HomePage;
+export default HeroSection;
