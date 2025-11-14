@@ -19,13 +19,13 @@ import {
   Trash2,
   Building2,
   ArrowLeft,
-  MapPin,
 } from "lucide-react";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 
 const AdminProfilePage = () => {
-  const [user, setUser] = useState<any>({});
+  const { user, setUser } = useAuth();
   const [password, setPassword] = useState({
     current_password: "",
     new_password: "",
@@ -44,14 +44,15 @@ const AdminProfilePage = () => {
       const res = await getProfile();
       const data = res.data as { data: { user: any } };
       setUser(data.data.user);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load profile");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleUpdate = async () => {
+  const handleUpdate = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     try {
       await updateProfile(user);
       toast.success("Profile updated successfully!");
@@ -123,8 +124,6 @@ const AdminProfilePage = () => {
               Manage your personal and company information
             </p>
           </div>
-
-          {/* Back Button */}
           <Button
             variant="outline"
             className="flex items-center gap-2"
@@ -135,7 +134,10 @@ const AdminProfilePage = () => {
         </div>
 
         {/* Profile Card */}
-        <div className="bg-white dark:bg-gray-800 shadow-sm border border-gray-100 rounded-xl p-6 flex flex-col md:flex-row gap-8">
+        <form
+          onSubmit={handleUpdate}
+          className="bg-white dark:bg-gray-800 shadow-sm border border-gray-100 rounded-xl p-6 flex flex-col md:flex-row gap-8"
+        >
           {/* Avatar Section */}
           <div className="flex flex-col items-center md:w-1/3 border-b md:border-b-0 md:border-r pb-6 md:pb-0">
             <img
@@ -144,8 +146,13 @@ const AdminProfilePage = () => {
               className="w-32 h-32 rounded-full border object-cover shadow-sm"
             />
             <div className="mt-4 space-y-2 text-center">
-              <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                {user.name}
+              <p
+                className="text-lg font-semibold text-gray-800 dark:text-gray-100"
+                title={user.name || ""}
+              >
+                {user.name && user.name.length > 50
+                  ? `${user.name.slice(0, 50)}...`
+                  : user.name}
               </p>
               <p className="text-sm text-gray-500">{user.email}</p>
               <p className="text-sm text-gray-500 capitalize">{user.role}</p>
@@ -155,14 +162,18 @@ const AdminProfilePage = () => {
               <label className="cursor-pointer">
                 <input
                   type="file"
-                  className="hidden "
+                  className="hidden"
+                  accept="image/*"
                   onChange={handleAvatarUpload}
                 />
-                <span className="text-sm text-gray-700 border  border-gray-100 bg-white px-4 py-2 rounded-md shadow-sm hover:bg-gray-50 cursor-pointer transition">Upload Avatar</span>
+                <span className="text-sm text-gray-700 border border-gray-100 bg-white px-4 py-2 rounded-md shadow-sm hover:bg-gray-50 cursor-pointer transition">
+                  Upload Avatar
+                </span>
               </label>
               <Button
                 variant="destructive"
                 size="sm"
+                type="button"
                 onClick={() => {
                   deleteAvatar();
                   toast.success("Avatar deleted");
@@ -186,71 +197,66 @@ const AdminProfilePage = () => {
                 value={user.name || ""}
                 onChange={(e) => setUser({ ...user, name: e.target.value })}
                 placeholder="Full Name"
+                required
+                maxLength={50}
               />
               <Input value={user.email || ""} disabled placeholder="Email" />
               <Input
                 value={user.phone || ""}
                 onChange={(e) => setUser({ ...user, phone: e.target.value })}
                 placeholder="Phone Number"
-              />
-              <Input
-                value={user.company_name || ""}
-                onChange={(e) =>
-                  setUser({ ...user, company_name: e.target.value })
-                }
-                placeholder="Company Name"
-              />
-              <Input
-                value={user.license_number || ""}
-                onChange={(e) =>
-                  setUser({ ...user, license_number: e.target.value })
-                }
-                placeholder="License Number"
+                maxLength={20}
+                inputMode="tel"
               />
               <Input
                 value={user.address || ""}
                 onChange={(e) => setUser({ ...user, address: e.target.value })}
                 placeholder="Address"
+                maxLength={100}
               />
               <Input
                 value={user.city || ""}
                 onChange={(e) => setUser({ ...user, city: e.target.value })}
                 placeholder="City"
+                maxLength={50}
               />
               <Input
                 value={user.state || ""}
                 onChange={(e) => setUser({ ...user, state: e.target.value })}
                 placeholder="State"
+                maxLength={50}
               />
               <Input
                 value={user.zipcode || ""}
                 onChange={(e) => setUser({ ...user, zipcode: e.target.value })}
                 placeholder="Zip Code"
+                maxLength={10}
+                inputMode="numeric"
+                pattern="\d*"
               />
             </div>
 
             {/* Bio */}
             <div>
-              <p className="text-sm text-gray-600 mb-1 flex items-center gap-2">
-                Bio
-              </p>
+              <p className="text-sm text-gray-600 mb-1">Bio</p>
               <textarea
                 value={user.bio || ""}
                 onChange={(e) => setUser({ ...user, bio: e.target.value })}
                 placeholder="Write a short bio..."
                 className="w-full border rounded-lg p-2 text-sm text-gray-700 dark:bg-gray-700 dark:text-gray-100"
                 rows={3}
+                maxLength={1000}
               ></textarea>
             </div>
 
             <Button
-              onClick={handleUpdate}
-              className="mt-2 bg-blue-600 hover:bg-blue-700"
+              type="submit"
+              className="mt-2 bg-blue-600 hover:bg-blue-700 text-white"
             >
               Save Changes
             </Button>
           </div>
-        </div>
+        </form>
 
         {/* Password Change */}
         <div className="bg-white dark:bg-gray-800 shadow-sm border border-gray-100 rounded-xl p-6">
@@ -265,21 +271,27 @@ const AdminProfilePage = () => {
               type="password"
               placeholder="Current Password"
               value={password.current_password}
+              autoComplete="new-password"
+              maxLength={50}
               onChange={(e) =>
                 setPassword({ ...password, current_password: e.target.value })
               }
+              required
             />
             <Input
               type="password"
               placeholder="New Password"
+              maxLength={50}
               value={password.new_password}
               onChange={(e) =>
                 setPassword({ ...password, new_password: e.target.value })
               }
+              required
             />
             <Input
               type="password"
               placeholder="Confirm New Password"
+              maxLength={50}
               value={password.new_password_confirmation}
               onChange={(e) =>
                 setPassword({
@@ -287,10 +299,11 @@ const AdminProfilePage = () => {
                   new_password_confirmation: e.target.value,
                 })
               }
+              required
             />
           </div>
           <Button
-            className="mt-4 bg-green-600 hover:bg-green-700"
+            className="mt-4 bg-green-600 hover:bg-green-700 text-white"
             onClick={handlePasswordChange}
           >
             Update Password

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Bell, Moon, Search, Menu, User, Pencil, LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { logout } from "@/api/auth";
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -32,10 +33,10 @@ const Header = ({ onMenuClick }: HeaderProps) => {
   const profilePath = profilePathMap[role];
   const editProfilePath = editProfilePathMap[role];
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/");
+  const handleLogout = async () => {
+    await logout();
+    localStorage.clear();
+    navigate('/');
   };
 
   // ✅ Close dropdown on outside click

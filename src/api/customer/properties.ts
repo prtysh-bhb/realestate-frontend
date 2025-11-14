@@ -34,6 +34,37 @@ export interface InquiriesResponse {
   };
 }
 
+export interface Attributes{
+  key: string;
+  label: string;
+}
+
+export interface PropertyFormData {
+  title: string;
+  description: string;
+  price: string|number;
+  location: string;
+  address: string;
+  city: string;
+  state: string;
+  zipcode: string;
+  type: string;
+  property_type: string;
+  bedrooms: string | number;
+  bathrooms: string | number;
+  area: string | number;
+  status: string;
+  amenities: string[];
+}
+
+export interface PropertyAttributesResponse {
+  success: boolean;
+  data: {
+    amenities: Attributes[];
+    property_types: Attributes[];
+  };
+}
+
 export interface FavoritesResponse {
   success: boolean;
   message?: string;
@@ -117,6 +148,12 @@ export const getProperty = async (id: number) => {
 
 export const propertyInquiry = async (id: number, formData: InquiryFormData) => {
   const response = await api.post<InquiryResponse>("/customer/inquiries/"+id, {...formData});
+
+  return response.data;
+};
+
+export const propertyAttributes = async () => {
+  const response = await api.get<PropertyAttributesResponse>("/properties/attributes");
 
   return response.data;
 };

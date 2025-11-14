@@ -22,6 +22,7 @@ import {
   ClipboardList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
 
 interface AdminSidebarProps {
   collapsed?: boolean;
@@ -43,7 +44,7 @@ const AdminSidebar = ({
   };
 
   // 🧠 Get logged-in user and role
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const {user} = useAuth();
   const role = user?.role || "admin";
   const userId = user?.id || ""; // use this to build dynamic routes for agents/customers
 

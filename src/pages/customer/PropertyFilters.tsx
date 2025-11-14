@@ -1,8 +1,9 @@
-import { getPropertiesByFilter } from '@/api/customer/properties';
+import { Attributes, getPropertiesByFilter, propertyAttributes } from '@/api/customer/properties';
 import PropertyCard from '@/components/sections/home/PropertyCard';
 import Loader from '@/components/ui/Loader';
 import { FilterState, Property } from '@/types/property';
-import { ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight, Filter, Search, X } from 'lucide-react';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -11,6 +12,8 @@ const PropertyFilters = () => {
   const propType = location.pathname.includes("/properties/sale") ? "sale" : "rent";
   const [loading, setLoading] = useState<boolean>(true);
   const [shouldFetch, setShouldFetch] = useState<boolean>(false);
+  const [amenities, setAmenities] = useState<Attributes[]>();
+  const [propertyTypes, setPropertyTypes] = useState<Attributes[]>();
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [isOpen, setIsOpen] = useState(false);
@@ -34,21 +37,6 @@ const PropertyFilters = () => {
 
   const [properties, setProperties] = useState<Property[]>([]);
 
-  const amenitiesOptions = [
-    "Air Condition",
-    "Garage",
-    "Elevator",
-    "Swimming Pool",
-    "WiFi",
-    "Pet Friendly",
-    "Security",
-    "Parking",
-    "Garden",
-    "Furnishing",
-    "Heating",
-    "Floor",
-  ];
-
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
     setFilters(prev => ({
@@ -67,6 +55,12 @@ const PropertyFilters = () => {
       
       return { ...prev, amenities: newAmenities };
     });
+  };
+
+  const fetchPropertyAttributes = async () => {
+    const response = await propertyAttributes();
+    setAmenities(response.data.amenities);
+    setPropertyTypes(response.data.property_types);
   };
 
   useEffect(() => {
@@ -92,7 +86,6 @@ const PropertyFilters = () => {
     };
 
     setFilters(filterData);
-
     setShouldFetch(true);
   }, [location.search, propType]);
 
@@ -119,6 +112,7 @@ const PropertyFilters = () => {
   useEffect(() => {
     if (shouldFetch) {
       fetchProperties();
+      fetchPropertyAttributes();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldFetch]);
@@ -129,6 +123,7 @@ const PropertyFilters = () => {
 
   const handleApplyFilters = () => {
     setShouldFetch(true);
+    setIsOpen(false);
   };
 
   const handleResetFilters = () => {
@@ -191,177 +186,19 @@ const PropertyFilters = () => {
               {isOpen ? "Hide Filters" : "Show Filters"}
             </button>
           </div>
-          <div className={`${
-        isOpen ? "block" : "hidden"
-        } lg:block bg-white rounded-xl shadow-md p-6 lg:sticky lg:top-6`}>
-            {/* Quick Search Bar */}
-            <div className="mb-6">
-              <div className="relative">
-                <input 
-                  type="text" 
-                  placeholder="Search properties..." 
-                  id="keyword"
-                  maxLength={100}
-                  value={filters?.keyword}
-                  onChange={handleInputChange}
-                  className="w-full pl-3 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <i className="fas fa-search absolute left-3 top-3.5 text-gray-400"></i>
-              </div>
-            </div>
 
-            {/* Filter Sections */}
-            <div className="space-y-6">
-              {/* Location & Type */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-                  <div className="relative">
-                    <input 
-                      type="text" 
-                      id="location"
-                      value={filters?.location}
-                      onChange={handleInputChange}
-                      maxLength={50}
-                      placeholder="Search location..." 
-                      className="w-full pl-3 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
-                  <div className="relative">
-                    <input 
-                      type="text" 
-                      placeholder="Search City..." 
-                      id="city"
-                      value={filters?.city}
-                      onChange={handleInputChange}
-                      maxLength={50}
-                      className="w-full pl-3 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Price Range */}
-              <div>
-                <h3 className="font-semibold text-gray-800 mb-4">Price Range (USD)</h3>
-                <div className="space-y-3">
-                  <input
-                  type="range"
-                  min="0"
-                  max="650000"
-                  step="0"
-                  id="max_price"
-                  value={filters?.max_price || 0}
-                  onChange={handleInputChange}
-                  className="w-full accent-blue-600 cursor-pointer"
-                />
-                <p className="text-sm text-gray-500 mt-1">
-                  Up to <b>${filters?.max_price.toLocaleString()}</b>
-                </p>
-                </div>
-              </div>
-
-              {/* Rooms & Bedrooms */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="font-semibold text-gray-800 mb-2">Bedrooms</h3>
-                  <select 
-                    id="bedrooms"
-                    value={filters?.bedrooms}
-                    onChange={handleInputChange}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                  >
-                    <option value="">Select Bedrooms</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                  </select>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-800 mb-2">Bathrooms</h3>
-                  <select 
-                    id="bathrooms"
-                    value={filters?.bathrooms}
-                    onChange={handleInputChange}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                  >
-                    <option value="">Select Bathrooms</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5+</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Size Range */}
-              <div>
-                <h3 className="font-semibold text-gray-800 mb-4">Size Range (SqFt)</h3>
-                <div className="space-y-3">
-                  <input
-                  type="range"
-                  min="0"
-                  max="1500"
-                  step="0"
-                  id="max_area"
-                  value={filters?.max_area || 0}
-                  onChange={handleInputChange}
-                  className="w-full accent-blue-600 cursor-pointer"
-                />
-                <p className="text-sm text-gray-500 mt-1">
-                  Up to <b>{filters?.max_area.toLocaleString()} SqFt</b>
-                </p>
-                </div>
-              </div>
-
-              {/* Property Type */}
-              <div>
-                <h3 className="font-semibold text-gray-800 mb-4">Property Type</h3>
-                <select id="property_type" value={filters?.property_type} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg p-3 mt-1 text-sm bg-gray-50 text-gray-700 outline-none cursor-pointer">
-                  <option value="">Select Property Type</option>
-                  <option value="apartment">Apartment</option>
-                  <option value="villa">Villa</option>
-                  <option value="commercial">Commercial</option>
-                </select>
-              </div>
-
-              {/* Amenities */}
-              <div>
-                <h3 className="font-semibold text-gray-800 mb-4">Amenities</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {amenitiesOptions.map((item) => (
-                    <div key={item} className="flex items-center">
-                      <label key={item} className="flex items-center text-sm gap-2">
-                        <input type="checkbox" value={item} checked={filters.amenities.includes(item)} onChange={handleAmenityChange} className="accent-blue-600 rounded cursor-pointer" />
-                        {item}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="pt-4 border-t border-gray-200">
-                <button 
-                  onClick={handleApplyFilters}
-                  className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition font-semibold cursor-pointer"
-                >
-                  Apply Filters
-                </button>
-                <button 
-                  onClick={handleResetFilters}
-                  className="w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition mt-2 cursor-pointer"
-                >
-                  Reset Filters
-                </button>
-              </div>
-            </div>
+          {/* Filter Sections */}
+          <div className="hidden lg:block">
+            <MobileFilters
+              isOpen={isOpen}
+              filters={filters}
+              amenities={amenities ?? []}
+              propertyTypes={propertyTypes ?? []}
+              handleInputChange={handleInputChange}
+              handleAmenityChange={handleAmenityChange}
+              handleApplyFilters={handleApplyFilters}
+              handleResetFilters={handleResetFilters}
+            />
           </div>
 
           {/* Properties Grid */}
@@ -409,6 +246,280 @@ const PropertyFilters = () => {
               </div>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Advanced Filter Section - Mobile (side drawer) */}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              className="md:hidden fixed inset-0 bg-black/50 z-40"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              onClick={() => setIsOpen(false)}
+            />
+
+            {/* Sliding Drawer */}
+            <motion.div
+              className="md:hidden fixed top-0 right-0 h-full w-[85%] max-w-md bg-white shadow-2xl z-50 overflow-y-auto"
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            >
+              {/* Header */}
+              <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between z-10">
+                <h2 className="text-lg font-bold text-gray-800">Advanced Filters</h2>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <X size={20} className="text-gray-600" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                <MobileFilters 
+                  isOpen={isOpen}
+                  filters={filters}
+                  amenities={amenities ?? []}
+                  propertyTypes={propertyTypes ?? []}
+                  handleInputChange={handleInputChange}
+                  handleAmenityChange={handleAmenityChange}
+                  handleApplyFilters={handleApplyFilters}
+                  handleResetFilters={handleResetFilters}
+                />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+
+const MobileFilters = ({
+  isOpen,
+  filters,
+  amenities,
+  propertyTypes,
+  handleInputChange,
+  handleAmenityChange,
+  handleApplyFilters,
+  handleResetFilters,
+} : {
+  isOpen: boolean;
+  filters: FilterState;
+  amenities: Attributes[];
+  propertyTypes: Attributes[];
+  handleInputChange: (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+  handleAmenityChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  handleApplyFilters: () => void;
+  handleResetFilters: () => void;
+}) => {
+  return (
+    <div
+      className={`${
+        isOpen ? "block " : "hidden "
+      } lg:bg-white lg:rounded-xl lg:shadow-md lg:p-6 lg:block lg:sticky lg:top-6 transition-all duration-300`}
+    >
+      {/* Quick Search */}
+      <div className="mb-6">
+        <div className="relative">
+          <Search size={19} className='absolute left-3 top-3.5 text-gray-400' />
+          <input
+            type="text"
+            placeholder="Search properties..."
+            id="keyword"
+            maxLength={100}
+            value={filters?.keyword}
+            onChange={handleInputChange}
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+          />
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="space-y-6">
+        {/* Location & City */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2 hover:underline">
+              Location
+            </label>
+            <input
+              type="text"
+              id="location"
+              value={filters?.location}
+              onChange={handleInputChange}
+              maxLength={50}
+              placeholder="Search location..."
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2 hover:underline">
+              City
+            </label>
+            <input
+              type="text"
+              id="city"
+              value={filters?.city}
+              onChange={handleInputChange}
+              maxLength={50}
+              placeholder="Search city..."
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            />
+          </div>
+        </div>
+
+        {/* Price Range */}
+        <div>
+          <h3 className="font-semibold text-gray-800 mb-2 hover:underline">
+            Price Range (USD)
+          </h3>
+          <div className="space-y-2">
+            <input
+              type="range"
+              min="0"
+              max="650000"
+              id="max_price"
+              value={filters?.max_price || 0}
+              onChange={handleInputChange}
+              className="w-full accent-blue-600 cursor-pointer"
+            />
+            <p className="text-sm text-gray-500">
+              Up to <b>${filters?.max_price?.toLocaleString() || 0}</b>
+            </p>
+          </div>
+        </div>
+
+        {/* Bedrooms & Bathrooms */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="font-semibold text-gray-800 mb-2 block hover:underline">
+              Bedrooms
+            </label>
+            <select
+              id="bedrooms"
+              value={filters?.bedrooms}
+              onChange={handleInputChange}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            >
+              <option value="">Select Bedrooms</option>
+              {[1, 2, 3, 4, 5].map((num) => (
+                <option key={num} value={num}>
+                  {num}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="font-semibold text-gray-800 mb-2 block hover:underline">
+              Bathrooms
+            </label>
+            <select
+              id="bathrooms"
+              value={filters?.bathrooms}
+              onChange={handleInputChange}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            >
+              <option value="">Select Bathrooms</option>
+              {[1, 2, 3, 4].map((num) => (
+                <option key={num} value={num}>
+                  {num}
+                </option>
+              ))}
+              <option value="5">5+</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Size Range */}
+        <div>
+          <h3 className="font-semibold text-gray-800 mb-2 hover:underline">
+            Size Range (SqFt)
+          </h3>
+          <div className="space-y-2">
+            <input
+              type="range"
+              min="0"
+              max="1500"
+              id="max_area"
+              value={filters?.max_area || 0}
+              onChange={handleInputChange}
+              className="w-full accent-blue-600 cursor-pointer"
+            />
+            <p className="text-sm text-gray-500">
+              Up to <b>{filters?.max_area?.toLocaleString() || 0} SqFt</b>
+            </p>
+          </div>
+        </div>
+
+        {/* Property Type */}
+        <div>
+          <h3 className="font-semibold text-gray-800 mb-2 hover:underline">
+            Property Type
+          </h3>
+          <select
+            id="property_type"
+            value={filters?.property_type}
+            onChange={handleInputChange}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+          >
+            <option value="">Select Property Type</option>
+            {propertyTypes?.map((type) => (
+              <option key={type.key} value={type.key}>
+                {type.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Amenities */}
+        <div>
+          <h3 className="font-semibold text-gray-800 mb-2 hover:underline">
+            Amenities
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {amenities?.map((item) => (
+              <label
+                key={item.key}
+                className="flex items-center gap-2 text-sm text-gray-700"
+              >
+                <input
+                  type="checkbox"
+                  value={item.key}
+                  checked={filters?.amenities?.includes(item.key)}
+                  onChange={handleAmenityChange}
+                  className="accent-blue-600 rounded cursor-pointer"
+                />
+                {item.label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Buttons */}
+        <div className="pt-4 border-t border-gray-200 space-y-2">
+          <button
+            onClick={handleApplyFilters}
+            className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition font-semibold"
+          >
+            Apply Filters
+          </button>
+          <button
+            onClick={handleResetFilters}
+            className="w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition"
+          >
+            Reset Filters
+          </button>
         </div>
       </div>
     </div>

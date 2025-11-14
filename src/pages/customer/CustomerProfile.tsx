@@ -3,6 +3,7 @@ import { getProfile } from '@/api/auth';
 import { getFavProperties } from '@/api/customer/properties';
 import PropertyCard from '@/components/sections/home/PropertyCard';
 import Loader from '@/components/ui/Loader';
+import { useAuth } from '@/context/AuthContext';
 import { formatReadableDate } from '@/helpers/customer_helper';
 import { FavoriteProperty } from '@/types/property';
 import { Calendar, Edit, Mail, MapPin, Phone } from 'lucide-react';
@@ -48,7 +49,7 @@ interface Note {
 }
 
 const CustomerProfile = () => {
-  const [user, setUser] = useState<any>(null);
+  const { user, setUser } = useAuth();
   const [favProperties, setFavProperties] = useState<FavoriteProperty[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState('activity');
