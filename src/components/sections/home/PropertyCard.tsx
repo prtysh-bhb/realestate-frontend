@@ -1,20 +1,32 @@
+/**
+ * PropertyCard Component
+ * Professional property card component for listing properties
+ * Inspired by Zillow, MagicBricks, and modern real estate platforms
+ */
+
 import { FC } from "react";
-import { MapPin, BedDouble, Bath, Ruler, DollarSign, Heart } from "lucide-react";
+import { MapPin, BedDouble, Bath, Ruler, Heart } from "lucide-react";
 import { Property } from "@/types/property";
 import { removeFavProperties, setFavProperties } from "@/api/customer/properties";
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import { formatAmount } from "@/helpers/customer_helper";
+import { PROPERTY_TYPE } from "@/constants";
 
 interface PropertyCardProps {
   property: Property;
-  isFavorite?: boolean; // optional flag, default false
+  isFavorite?: boolean;
   fetchProperties?: () => void;
 }
 
-const PropertyCard: FC<PropertyCardProps> = ({ property, isFavorite = false, fetchProperties }) => {
+const PropertyCard: FC<PropertyCardProps> = ({
+  property,
+  isFavorite = false,
+  fetchProperties
+}) => {
   const isLogin = localStorage.getItem("token") ? true : false;
   const navigate = useNavigate();
+
   const imageSrc =
     property.primary_image_url ||
     property.image_urls?.[0] ||
@@ -26,117 +38,152 @@ const PropertyCard: FC<PropertyCardProps> = ({ property, isFavorite = false, fet
       : property.price || "$0.00";
 
   const handleFavourite = async () => {
-    if(!isLogin){
-      navigate('/login');
+    if (!isLogin) {
+      navigate("/login");
       return;
     }
     const response = await setFavProperties(property.id);
     fetchProperties?.();
-    
-    if(response.success){
-        toast.success(response.message);
-    }else{
-        toast.error(response.message);
+
+    if (response.success) {
+      toast.success(response.message);
+    } else {
+      toast.error(response.message);
     }
-  }
+  };
 
   const deleteFavourite = async () => {
-    if(!isLogin){
-      navigate('/login');
+    if (!isLogin) {
+      navigate("/login");
       return;
     }
     const response = await removeFavProperties(property.id);
     fetchProperties?.();
-    if(response.success){
-        toast.success(response.message);
-    }else{
-        toast.error(response.message);
+    if (response.success) {
+      toast.success(response.message);
+    } else {
+      toast.error(response.message);
     }
-  }
+  };
+
+  const isSale = property.type === PROPERTY_TYPE.SALE;
 
   return (
-    <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all border border-gray-100 relative">
+    <div className="group bg-white dark:bg-secondary-900 rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 border border-secondary-100 dark:border-secondary-800 relative h-full flex flex-col">
 
-      {/* Image Section */}
-      <div className="relative h-56 w-full overflow-hidden">
+      {/* Image Section with hover effect */}
+      <Link to={`/properties/view/${property.id}`} className="relative h-64 w-full overflow-hidden bg-secondary-100 dark:bg-secondary-800">
         <img
           src={imageSrc}
           alt={property.title}
-          className="h-full w-full object-cover hover:scale-105 transition-transform duration-500"
+          className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
         />
 
-        {/* Type Badge */}
-        <span className="absolute top-3 left-3 bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-semibold shadow capitalize">
-          {property.type || "For Sale"}
+        {/* Gradient overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+        {/* Type Badge - Sale or Rent */}
+        <span
+          className={`absolute top-4 left-4 px-4 py-1.5 rounded-full font-semibold text-sm shadow-lg backdrop-blur-sm transition-all capitalize ${
+            isSale
+              ? "bg-primary-600/90 text-white"
+              : "bg-success-600/90 text-white"
+          }`}
+        >
+          For {property.type || "Sale"}
         </span>
 
         {/* Favorite Icon */}
-        {isFavorite && isLogin ? (
-                <div className="absolute top-3 right-3 bg-white rounded-full p-1 shadow cursor-pointer" onClick={deleteFavourite}>
-                    <Heart size={20} className="text-red-500 fill-red-500" />
-                </div>
-            ) : (
-                <div className="absolute top-3 right-3 bg-white rounded-full p-1 shadow cursor-pointer" onClick={handleFavourite}>
-                    <Heart size={20} className="text-gray-500 fill-gray-500 hover:text-red-500 hover:fill-red-500" />
-                </div>
-         )}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            isFavorite ? deleteFavourite() : handleFavourite();
+          }}
+          className="absolute top-4 right-4 bg-white/95 dark:bg-secondary-800/95 backdrop-blur-sm rounded-full p-2.5 shadow-lg hover:scale-110 transition-transform duration-200"
+        >
+          <Heart
+            size={20}
+            className={
+              isFavorite && isLogin
+                ? "text-accent-500 fill-accent-500"
+                : "text-secondary-600 dark:text-secondary-300 hover:text-accent-500"
+            }
+          />
+        </button>
 
         {/* Property Type Badge */}
-        <span className="absolute bottom-3 left-3 bg-white text-xs font-semibold px-3 py-1 rounded-md shadow border border-gray-100 capitalize">
+        <span className="absolute bottom-4 left-4 bg-white/95 dark:bg-secondary-800/95 backdrop-blur-sm text-sm font-semibold px-4 py-1.5 rounded-lg shadow-md border border-secondary-200 dark:border-secondary-700 capitalize">
           {property.property_type ?? "N/A"}
         </span>
-      </div>
+      </Link>
 
       {/* Content Section */}
-      <div className="p-5 grid gap-1">
-        <Link to={"/properties/view/"+property.id} className="font-bold text-lg text-gray-800 mb-2 hover:text-blue-600 cursor-pointer">
+      <div className="p-6 flex flex-col flex-grow">
+        {/* Price - Prominent Display */}
+        <div className="mb-3">
+          <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">
+            ${formatAmount(price)}
+          </p>
+          <p className="text-sm text-secondary-500 dark:text-secondary-400 mt-0.5">
+            {isSale ? "Purchase Price" : "Monthly Rent"}
+          </p>
+        </div>
+
+        {/* Title */}
+        <Link
+          to={`/properties/view/${property.id}`}
+          className="font-bold text-xl text-secondary-900 dark:text-white mb-2 hover:text-primary-600 dark:hover:text-primary-400 transition-colors line-clamp-2 group-hover:text-primary-600"
+        >
           {property.title || "Untitled Property"}
         </Link>
 
-        <p className="text-md text-gray-500 font-medium flex items-center gap-1 mb-4">
-          <MapPin size={18} className="text-gray-700" />
-          {property.address || "Address unavailable"}
-        </p>
+        {/* Location */}
+        <div className="flex items-start gap-2 text-secondary-600 dark:text-secondary-300 mb-4">
+          <MapPin size={18} className="mt-0.5 flex-shrink-0" />
+          <p className="text-sm line-clamp-2">{property.address || "Address unavailable"}</p>
+        </div>
 
-        {/* Property Info Section */}
-        <div className="flex justify-start gap-5 font-medium text-gray-600 text-lg mb-4">
-          <div className="flex items-center gap-1">
-            <BedDouble size={18} className="text-gray-700" />
-            <span>{property.bedrooms ?? "—"}</span>
+        {/* Property Features */}
+        <div className="flex items-center gap-6 py-4 border-t border-secondary-100 dark:border-secondary-800 mb-4">
+          <div className="flex items-center gap-2 text-secondary-700 dark:text-secondary-300">
+            <BedDouble size={20} className="text-secondary-500" />
+            <span className="text-sm font-semibold">{property.bedrooms ?? "—"}</span>
+            <span className="text-xs text-secondary-500">Beds</span>
           </div>
-          <div className="flex items-center gap-1">
-            <Bath size={18} className="text-gray-700" />
-            <span>{property.bathrooms ?? "—"}</span>
+          <div className="flex items-center gap-2 text-secondary-700 dark:text-secondary-300">
+            <Bath size={20} className="text-secondary-500" />
+            <span className="text-sm font-semibold">{property.bathrooms ?? "—"}</span>
+            <span className="text-xs text-secondary-500">Baths</span>
           </div>
-          <div className="flex items-center gap-1">
-            <Ruler size={18} className="text-gray-700" />
-            <span>
-              {property.area ? `${property.area} Sq Ft` : "— Sq Ft"}
+          <div className="flex items-center gap-2 text-secondary-700 dark:text-secondary-300">
+            <Ruler size={20} className="text-secondary-500" />
+            <span className="text-sm font-semibold">
+              {property.area ? property.area : "—"}
             </span>
+            <span className="text-xs text-secondary-500">Sq Ft</span>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex justify-between items-center border-t border-gray-200 pt-3">
-          <div className="flex items-center gap-2">
-            
+        {/* Agent Info - Footer */}
+        <div className="mt-auto pt-4 border-t border-secondary-100 dark:border-secondary-800">
+          <div className="flex items-center gap-3">
             <img
-              src={property?.agent?.avatar_url ?? ' '}
-              alt={property.agent.name}
-              className="w-9 h-9 rounded-full object-cover"
+              src={property?.agent?.avatar_url ?? "/assets/user.jpg"}
+              alt={property.agent?.name || "Agent"}
+              className="w-10 h-10 rounded-full object-cover border-2 border-secondary-200 dark:border-secondary-700"
               onError={(e) => {
-                  e.currentTarget.src = "/assets/user.jpg";
+                e.currentTarget.src = "/assets/user.jpg";
               }}
             />
-            <span className="text-md text-gray-700 font-medium">
-              {property.agent.name || "Unknown Agent"}
-            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-secondary-900 dark:text-white truncate">
+                {property.agent?.name || "Unknown Agent"}
+              </p>
+              <p className="text-xs text-secondary-500 dark:text-secondary-400">
+                Listing Agent
+              </p>
+            </div>
           </div>
-
-          <p className="font-bold text-gray-800 text-xl flex items-center gap-1">
-            <DollarSign size={20} />
-            {formatAmount(price)}
-          </p>
         </div>
       </div>
     </div>
