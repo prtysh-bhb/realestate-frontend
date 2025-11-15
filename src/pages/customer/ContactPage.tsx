@@ -133,7 +133,7 @@ const ContactPage = () => {
                 {/* Phone */}
                 <motion.a
                   whileHover={{ x: 4 }}
-                  href="tel:1-333-345-6868"
+                  href="tel:918853217658"
                   className="flex items-start gap-4 p-4 rounded-2xl bg-gray-50 hover:bg-blue-50 border-2 border-transparent hover:border-blue-100 transition-all group"
                 >
                   <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl group-hover:scale-110 transition-transform">
@@ -143,9 +143,9 @@ const ContactPage = () => {
                     <p className="text-xs text-gray-500 mb-1 font-medium">
                       Phone Number
                     </p>
-                    <p className="text-gray-900 font-bold">1-333-345-6868</p>
+                    <p className="text-gray-900 font-bold">+91 88532 17658</p>
                     <p className="text-xs text-gray-600 mt-1">
-                      Mon-Fri, 9AM-6PM EST
+                      Mon-Fri, 9AM-6PM IST
                     </p>
                   </div>
                 </motion.a>
@@ -153,7 +153,7 @@ const ContactPage = () => {
                 {/* Email */}
                 <motion.a
                   whileHover={{ x: 4 }}
-                  href="mailto:themesflat@gmail.com"
+                  href="mailto:contact@brainerhub.com"
                   className="flex items-start gap-4 p-4 rounded-2xl bg-gray-50 hover:bg-emerald-50 border-2 border-transparent hover:border-emerald-100 transition-all group"
                 >
                   <div className="p-3 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl group-hover:scale-110 transition-transform">
@@ -164,7 +164,7 @@ const ContactPage = () => {
                       Email Address
                     </p>
                     <p className="text-gray-900 font-bold">
-                      themesflat@gmail.com
+                      contact@bhub.com
                     </p>
                     <p className="text-xs text-gray-600 mt-1">
                       24/7 Email Support
@@ -188,7 +188,7 @@ const ContactPage = () => {
                       Office Address
                     </p>
                     <p className="text-gray-900 font-bold leading-relaxed">
-                      101 E 129th St, East Chicago, IN 46312, US
+                      D101 T-Sq Thaltej Ahmedabad, Gujarat, India
                     </p>
                   </div>
                 </motion.a>
@@ -410,7 +410,7 @@ const ContactPage = () => {
               <div className="text-center">
                 <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-600 font-semibold text-lg">
-                  101 E 129th St, East Chicago, IN 46312, US
+                  D101 T-Sq Thaltej Ahmedabad, Gujarat, India
                 </p>
                 <p className="text-gray-500 text-sm mt-2">
                   Map integration will be added soon
