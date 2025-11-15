@@ -1,7 +1,7 @@
 /**
  * PropertyFilters Component
  * Professional property listing page with advanced filters
- * Inspired by Zillow, Redfin, and modern real estate platforms
+ * Premium design with glassmorphism and modern aesthetics
  */
 
 import { Attributes, getPropertiesByFilter, propertyAttributes } from '@/api/customer/properties';
@@ -9,7 +9,19 @@ import PropertyCard from '@/components/sections/home/PropertyCard';
 import Loader from '@/components/ui/Loader';
 import { FilterState, Property } from '@/types/property';
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Filter, Search, X, Home as HomeIcon, LayoutGrid, RotateCcw } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  Search,
+  X,
+  Home as HomeIcon,
+  LayoutGrid,
+  RotateCcw,
+  Building2,
+  MapPin,
+  Sparkles
+} from 'lucide-react';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -58,7 +70,7 @@ const PropertyFilters = () => {
       const newAmenities = checked
         ? [...prev.amenities, value]
         : prev.amenities.filter(a => a !== value);
-      
+
       return { ...prev, amenities: newAmenities };
     });
   };
@@ -95,12 +107,12 @@ const PropertyFilters = () => {
     setShouldFetch(true);
   }, [location.search, propType]);
 
-  const fetchProperties = async () => {    
+  const fetchProperties = async () => {
     setLoading(true);
 
     try {
       const data = await getPropertiesByFilter(page, filters);
-      
+
       if(data.success){
         setProperties(data?.data.data ?? []);
         setTotalPages(data?.data?.last_page || 1);
@@ -153,57 +165,82 @@ const PropertyFilters = () => {
     handleApplyFilters();
   };
 
-  // const toggleFavorite = (propertyId: number) => {
-  //   setProperties(prev => 
-  //     prev.map(property => 
-  //       property.id === propertyId 
-  //         ? { ...property, isFavorite: !property.isFavorite }
-  //         : property
-  //     )
-  //   );
-  // };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-secondary-50 via-white to-secondary-50 dark:from-secondary-950 dark:via-secondary-900 dark:to-secondary-950">
-      <div className="max-w-7xl mx-auto px-6 md:px-20 py-12">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50">
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-emerald-500 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        </div>
 
-        {/* Page Title */}
-        <motion.div
-          className="mb-12"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold text-secondary-900 dark:text-white mb-2">
-                Find Your Perfect Property
-              </h1>
-              <p className="text-lg text-secondary-600 dark:text-secondary-400">
-                {filters?.type && (
-                  <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary-100 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-full text-sm font-semibold">
-                    <HomeIcon className="w-4 h-4" />
-                    For {propType === 'sale' ? 'Sale' : 'Rent'}
-                  </span>
-                )}
-              </p>
+        {/* Content */}
+        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 py-16 md:py-24">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full mb-6">
+              <Sparkles className="w-4 h-4 text-emerald-400" />
+              <span className="text-sm text-white font-semibold">
+                Properties For {propType === 'sale' ? 'Sale' : 'Rent'}
+              </span>
             </div>
-          </div>
-        </motion.div>
 
-        {/* Main Content */}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
+              Discover Your{" "}
+              <span className="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
+                Perfect Property
+              </span>
+            </h1>
+
+            <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8">
+              Browse through our curated selection of premium properties and find your dream home today
+            </p>
+
+            {/* Quick Stats */}
+            <div className="flex flex-wrap justify-center gap-8 mt-12">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-white mb-1">{totalRecords}+</div>
+                <div className="text-sm text-gray-400">Available Properties</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-white mb-1">50+</div>
+                <div className="text-sm text-gray-400">Cities Covered</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-white mb-1">98%</div>
+                <div className="text-sm text-gray-400">Customer Satisfaction</div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Bottom Wave */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg className="w-full h-12" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" className="fill-gray-50"></path>
+          </svg>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 md:px-8 py-12">
+        {/* Mobile Filter Button */}
+        <div className="lg:hidden mb-6">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-4 rounded-2xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all font-semibold"
+          >
+            <Filter size={20} />
+            {isOpen ? "Hide Filters" : "Show Filters & Search"}
+          </button>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Mobile Toggle Button */}
-          <div className="lg:hidden">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white px-6 py-3 rounded-xl shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all font-semibold"
-            >
-              <Filter size={18} />
-              {isOpen ? "Hide Filters" : "Show Filters"}
-            </button>
-          </div>
-
           {/* Filter Sidebar - Desktop */}
           <div className="hidden lg:block">
             <FilterSidebar
@@ -221,32 +258,49 @@ const PropertyFilters = () => {
           <div className="lg:col-span-3">
             {/* Results Header */}
             <motion.div
-              className="bg-white dark:bg-secondary-900 rounded-2xl shadow-card border border-secondary-100 dark:border-secondary-800 p-6 mb-8"
+              className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
+              transition={{ duration: 0.6 }}
             >
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <h3 className="text-2xl font-bold text-secondary-900 dark:text-white flex items-center gap-2">
-                    <LayoutGrid className="w-6 h-6 text-primary-600 dark:text-primary-400" />
-                    Properties Found
-                  </h3>
-                  <p className="text-secondary-600 dark:text-secondary-400 mt-1">
-                    <span className="font-semibold text-primary-600 dark:text-primary-400">{totalRecords}</span> properties match your criteria
-                  </p>
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl">
+                    <LayoutGrid className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900">
+                      Available Properties
+                    </h3>
+                    <p className="text-gray-600 mt-1">
+                      <span className="font-bold text-blue-600">{totalRecords}</span> properties match your search criteria
+                    </p>
+                  </div>
                 </div>
+
+                {/* Sort Dropdown */}
+                <select
+                  id="sortBy"
+                  value={filters.sortBy}
+                  onChange={handleInputChange}
+                  className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer font-medium"
+                >
+                  <option value="Newest First">Newest First</option>
+                  <option value="Oldest First">Oldest First</option>
+                  <option value="Price: Low to High">Price: Low to High</option>
+                  <option value="Price: High to Low">Price: High to Low</option>
+                </select>
               </div>
             </motion.div>
 
             {/* Properties Grid */}
-            <div className="grid gap-8 grid-cols-1 md:grid-cols-2">
-              {loading ? (
-                <div className="col-span-full flex justify-center items-center min-h-[50vh]">
-                  <Loader />
-                </div>
-              ) : properties.length > 0 ? (
-                properties.map((property, index) => (
+            {loading ? (
+              <div className="flex justify-center items-center min-h-[60vh]">
+                <Loader />
+              </div>
+            ) : properties.length > 0 ? (
+              <div className="grid gap-8 grid-cols-1 md:grid-cols-2">
+                {properties.map((property, index) => (
                   <motion.div
                     key={property.id}
                     initial={{ opacity: 0, y: 30 }}
@@ -259,52 +313,89 @@ const PropertyFilters = () => {
                       fetchProperties={fetchProperties}
                     />
                   </motion.div>
-                ))
-              ) : (
-                <div className="col-span-full text-center py-20">
-                  <div className="inline-flex flex-col items-center gap-4">
-                    <div className="p-6 bg-secondary-100 dark:bg-secondary-800 rounded-full">
-                      <HomeIcon className="w-16 h-16 text-secondary-400" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-secondary-900 dark:text-white">
+                ))}
+              </div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white rounded-3xl shadow-xl border border-gray-100 p-12 text-center"
+              >
+                <div className="inline-flex flex-col items-center gap-6 max-w-md mx-auto">
+                  <div className="p-8 bg-gradient-to-br from-blue-50 to-emerald-50 rounded-3xl">
+                    <Building2 className="w-20 h-20 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-3xl font-bold text-gray-900 mb-3">
                       No Properties Found
                     </h3>
-                    <p className="text-secondary-600 dark:text-secondary-400 max-w-md">
-                      We couldn't find any properties matching your criteria. Try adjusting your filters.
+                    <p className="text-gray-600 text-lg leading-relaxed">
+                      We couldn't find any properties matching your search criteria. Try adjusting your filters or search in a different location.
                     </p>
-                    <button
-                      onClick={handleResetFilters}
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-semibold rounded-xl shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all"
-                    >
-                      <RotateCcw className="w-4 h-4" />
-                      Reset Filters
-                    </button>
                   </div>
+                  <button
+                    onClick={handleResetFilters}
+                    className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all transform hover:scale-105"
+                  >
+                    <RotateCcw className="w-5 h-5" />
+                    Reset All Filters
+                  </button>
                 </div>
-              )}
-            </div>
+              </motion.div>
+            )}
 
             {/* Pagination */}
             {!loading && totalPages > 1 && (
-              <div className="flex justify-center items-center gap-3 mt-12">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex justify-center items-center gap-3 mt-12"
+              >
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="p-3 bg-white dark:bg-secondary-900 border-2 border-secondary-200 dark:border-secondary-700 text-secondary-700 dark:text-secondary-300 rounded-xl hover:bg-secondary-50 dark:hover:bg-secondary-800 shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-4 bg-white border-2 border-gray-200 text-gray-700 rounded-2xl hover:bg-gray-50 hover:border-blue-300 shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
-                <span className="px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-bold rounded-xl shadow-lg">
-                  Page {page} of {totalPages}
-                </span>
+
+                <div className="flex items-center gap-2">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (page <= 3) {
+                      pageNum = i + 1;
+                    } else if (page >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = page - 2 + i;
+                    }
+
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setPage(pageNum)}
+                        className={`px-5 py-3 rounded-2xl font-bold transition-all ${
+                          page === pageNum
+                            ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/30"
+                            : "bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-blue-300"
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="p-3 bg-white dark:bg-secondary-900 border-2 border-secondary-200 dark:border-secondary-700 text-secondary-700 dark:text-secondary-300 rounded-xl hover:bg-secondary-50 dark:hover:bg-secondary-800 shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-4 bg-white border-2 border-gray-200 text-gray-700 rounded-2xl hover:bg-gray-50 hover:border-blue-300 shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200"
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>
-              </div>
+              </motion.div>
             )}
           </div>
         </div>
@@ -326,20 +417,25 @@ const PropertyFilters = () => {
 
             {/* Sliding Drawer */}
             <motion.div
-              className="lg:hidden fixed top-0 right-0 h-full w-[85%] max-w-md bg-white/95 dark:bg-secondary-900/95 backdrop-blur-xl shadow-2xl border-l border-white/20 dark:border-secondary-700/20 z-50 overflow-y-auto"
+              className="lg:hidden fixed top-0 right-0 h-full w-[90%] max-w-md bg-white backdrop-blur-xl shadow-2xl z-50 overflow-y-auto"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
             >
               {/* Header */}
-              <div className="sticky top-0 bg-white/95 dark:bg-secondary-900/95 backdrop-blur-xl border-b border-secondary-200 dark:border-secondary-700 p-6 flex items-center justify-between z-10">
-                <h2 className="text-xl font-bold text-secondary-900 dark:text-white">Filters</h2>
+              <div className="sticky top-0 bg-white backdrop-blur-xl border-b border-gray-200 p-6 flex items-center justify-between z-10 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
+                    <Filter className="w-5 h-5 text-white" />
+                  </div>
+                  <h2 className="text-xl font-bold text-gray-900">Filters & Search</h2>
+                </div>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-2 hover:bg-secondary-100 dark:hover:bg-secondary-800 rounded-lg transition-colors"
+                  className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
                 >
-                  <X size={22} className="text-secondary-600 dark:text-secondary-400" />
+                  <X size={22} className="text-gray-600" />
                 </button>
               </div>
 
@@ -382,39 +478,45 @@ const FilterSidebar = ({
   handleResetFilters: () => void;
 }) => {
   return (
-    <div className="bg-white dark:bg-secondary-900 rounded-2xl shadow-card border border-secondary-100 dark:border-secondary-800 p-6 lg:sticky lg:top-24 transition-all duration-300">
+    <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 lg:sticky lg:top-24">
       {/* Section Header */}
-      <div className="mb-6 pb-6 border-b border-secondary-200 dark:border-secondary-700">
-        <h3 className="text-lg font-bold text-secondary-900 dark:text-white flex items-center gap-2">
-          <Filter className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-          Filter Properties
-        </h3>
+      <div className="mb-6 pb-6 border-b border-gray-200">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
+            <Filter className="w-5 h-5 text-white" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900">
+            Filter Properties
+          </h3>
+        </div>
+        <p className="text-sm text-gray-600">Refine your search to find the perfect match</p>
       </div>
 
       {/* Quick Search */}
       <div className="mb-6">
-        <label className="block text-sm font-semibold text-secondary-700 dark:text-secondary-300 mb-2">
-          Keyword Search
+        <label className="block text-sm font-bold text-gray-900 mb-3">
+          Quick Search
         </label>
         <div className="relative">
-          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary-400" />
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Search properties..."
+            placeholder="Search by keyword..."
             id="keyword"
             maxLength={100}
             value={filters?.keyword}
             onChange={handleInputChange}
-            className="w-full pl-12 pr-4 py-3 bg-secondary-50 dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700 rounded-xl text-secondary-900 dark:text-white placeholder:text-secondary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+            className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
           />
         </div>
       </div>
 
       {/* Filters */}
       <div className="space-y-6">
-        {/* Location & City */}
+        {/* Location */}
         <div>
-          <label className="block text-sm font-semibold text-secondary-700 dark:text-secondary-300 mb-2">
+          <label className="flex items-center gap-2 text-sm font-bold text-gray-900 mb-3">
+            <MapPin className="w-4 h-4 text-blue-600" />
             Location
           </label>
           <input
@@ -423,13 +525,14 @@ const FilterSidebar = ({
             value={filters?.location}
             onChange={handleInputChange}
             maxLength={50}
-            placeholder="Enter location..."
-            className="w-full px-4 py-3 bg-secondary-50 dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700 rounded-xl text-secondary-900 dark:text-white placeholder:text-secondary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+            placeholder="e.g., Downtown, Suburbs..."
+            className="w-full px-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
           />
         </div>
 
+        {/* City */}
         <div>
-          <label className="block text-sm font-semibold text-secondary-700 dark:text-secondary-300 mb-2">
+          <label className="block text-sm font-bold text-gray-900 mb-3">
             City
           </label>
           <input
@@ -438,18 +541,18 @@ const FilterSidebar = ({
             value={filters?.city}
             onChange={handleInputChange}
             maxLength={50}
-            placeholder="Enter city..."
-            className="w-full px-4 py-3 bg-secondary-50 dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700 rounded-xl text-secondary-900 dark:text-white placeholder:text-secondary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+            placeholder="e.g., New York, Los Angeles..."
+            className="w-full px-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
           />
         </div>
 
         {/* Price Range */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300">
-              Price Range
+            <label className="text-sm font-bold text-gray-900">
+              Maximum Price
             </label>
-            <span className="text-sm font-bold text-primary-600 dark:text-primary-400">
+            <span className="text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg">
               ${Number(filters?.max_price || 0).toLocaleString()}
             </span>
           </div>
@@ -461,63 +564,66 @@ const FilterSidebar = ({
             id="max_price"
             value={filters?.max_price || 0}
             onChange={handleInputChange}
-            className="w-full h-2 bg-secondary-200 dark:bg-secondary-700 rounded-lg appearance-none cursor-pointer accent-primary-600"
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
           />
-          <div className="flex justify-between text-xs text-secondary-500 mt-2">
+          <div className="flex justify-between text-xs text-gray-500 mt-2 font-medium">
             <span>$0</span>
             <span>$10M+</span>
           </div>
         </div>
 
-        {/* Bedrooms */}
-        <div>
-          <label className="block text-sm font-semibold text-secondary-700 dark:text-secondary-300 mb-2">
-            Bedrooms
-          </label>
-          <select
-            id="bedrooms"
-            value={filters?.bedrooms}
-            onChange={handleInputChange}
-            className="w-full px-4 py-3 bg-secondary-50 dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700 rounded-xl text-secondary-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all cursor-pointer"
-          >
-            <option value="">Any Bedrooms</option>
-            {[1, 2, 3, 4, 5].map((num) => (
-              <option key={num} value={num}>
-                {num}+ Beds
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* Bedrooms & Bathrooms Row */}
+        <div className="grid grid-cols-2 gap-4">
+          {/* Bedrooms */}
+          <div>
+            <label className="block text-sm font-bold text-gray-900 mb-3">
+              Beds
+            </label>
+            <select
+              id="bedrooms"
+              value={filters?.bedrooms}
+              onChange={handleInputChange}
+              className="w-full px-3 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer font-medium"
+            >
+              <option value="">Any</option>
+              {[1, 2, 3, 4, 5].map((num) => (
+                <option key={num} value={num}>
+                  {num}+
+                </option>
+              ))}
+            </select>
+          </div>
 
-        {/* Bathrooms */}
-        <div>
-          <label className="block text-sm font-semibold text-secondary-700 dark:text-secondary-300 mb-2">
-            Bathrooms
-          </label>
-          <select
-            id="bathrooms"
-            value={filters?.bathrooms}
-            onChange={handleInputChange}
-            className="w-full px-4 py-3 bg-secondary-50 dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700 rounded-xl text-secondary-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all cursor-pointer"
-          >
-            <option value="">Any Bathrooms</option>
-            {[1, 2, 3, 4].map((num) => (
-              <option key={num} value={num}>
-                {num}+ Baths
-              </option>
-            ))}
-            <option value="5">5+ Baths</option>
-          </select>
+          {/* Bathrooms */}
+          <div>
+            <label className="block text-sm font-bold text-gray-900 mb-3">
+              Baths
+            </label>
+            <select
+              id="bathrooms"
+              value={filters?.bathrooms}
+              onChange={handleInputChange}
+              className="w-full px-3 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer font-medium"
+            >
+              <option value="">Any</option>
+              {[1, 2, 3, 4].map((num) => (
+                <option key={num} value={num}>
+                  {num}+
+                </option>
+              ))}
+              <option value="5">5+</option>
+            </select>
+          </div>
         </div>
 
         {/* Size Range */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300">
-              Size Range
+            <label className="text-sm font-bold text-gray-900">
+              Maximum Area
             </label>
-            <span className="text-sm font-bold text-primary-600 dark:text-primary-400">
-              {Number(filters?.max_area || 0).toLocaleString()} Sq Ft
+            <span className="text-sm font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg">
+              {Number(filters?.max_area || 0).toLocaleString()} ft²
             </span>
           </div>
           <input
@@ -528,26 +634,27 @@ const FilterSidebar = ({
             id="max_area"
             value={filters?.max_area || 0}
             onChange={handleInputChange}
-            className="w-full h-2 bg-secondary-200 dark:bg-secondary-700 rounded-lg appearance-none cursor-pointer accent-primary-600"
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
           />
-          <div className="flex justify-between text-xs text-secondary-500 mt-2">
-            <span>0 Sq Ft</span>
-            <span>10,000+ Sq Ft</span>
+          <div className="flex justify-between text-xs text-gray-500 mt-2 font-medium">
+            <span>0 ft²</span>
+            <span>10,000+ ft²</span>
           </div>
         </div>
 
         {/* Property Type */}
         <div>
-          <label className="block text-sm font-semibold text-secondary-700 dark:text-secondary-300 mb-2">
+          <label className="flex items-center gap-2 text-sm font-bold text-gray-900 mb-3">
+            <Building2 className="w-4 h-4 text-blue-600" />
             Property Type
           </label>
           <select
             id="property_type"
             value={filters?.property_type}
             onChange={handleInputChange}
-            className="w-full px-4 py-3 bg-secondary-50 dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700 rounded-xl text-secondary-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all cursor-pointer"
+            className="w-full px-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer font-medium"
           >
-            <option value="">All Property Types</option>
+            <option value="">All Types</option>
             {propertyTypes?.map((type) => (
               <option key={type.key} value={type.key}>
                 {type.label}
@@ -558,23 +665,24 @@ const FilterSidebar = ({
 
         {/* Amenities */}
         <div>
-          <h3 className="text-sm font-bold text-secondary-900 dark:text-white mb-4">
+          <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-emerald-600" />
             Amenities
           </h3>
-          <div className="grid grid-cols-1 gap-3 max-h-64 overflow-y-auto scrollbar-thin">
+          <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto scrollbar-thin pr-2">
             {amenities?.map((item) => (
               <label
                 key={item.key}
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-secondary-50 dark:hover:bg-secondary-800 cursor-pointer transition-colors group"
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50 cursor-pointer transition-all group border-2 border-transparent hover:border-blue-100"
               >
                 <input
                   type="checkbox"
                   value={item.key}
                   checked={filters?.amenities?.includes(item.key)}
                   onChange={handleAmenityChange}
-                  className="w-4 h-4 rounded border-secondary-300 text-primary-600 focus:ring-2 focus:ring-primary-500 cursor-pointer"
+                  className="w-5 h-5 rounded-lg border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 cursor-pointer"
                 />
-                <span className="text-sm text-secondary-700 dark:text-secondary-300 group-hover:text-secondary-900 dark:group-hover:text-white">
+                <span className="text-sm text-gray-700 font-medium group-hover:text-gray-900">
                   {item.label}
                 </span>
               </label>
@@ -583,20 +691,20 @@ const FilterSidebar = ({
         </div>
 
         {/* Buttons */}
-        <div className="pt-6 border-t border-secondary-200 dark:border-secondary-700 space-y-3">
+        <div className="pt-6 border-t border-gray-200 space-y-3">
           <button
             onClick={handleApplyFilters}
-            className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all flex items-center justify-center gap-2"
+            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all flex items-center justify-center gap-2 transform hover:scale-105"
           >
-            <Search className="w-4 h-4" />
+            <Search className="w-5 h-5" />
             Apply Filters
           </button>
           <button
             onClick={handleResetFilters}
-            className="w-full bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 py-3 rounded-xl font-semibold hover:bg-secondary-200 dark:hover:bg-secondary-700 transition-all flex items-center justify-center gap-2"
+            className="w-full bg-gray-100 text-gray-700 py-4 rounded-2xl font-bold hover:bg-gray-200 transition-all flex items-center justify-center gap-2"
           >
-            <RotateCcw className="w-4 h-4" />
-            Reset Filters
+            <RotateCcw className="w-5 h-5" />
+            Reset All
           </button>
         </div>
       </div>
