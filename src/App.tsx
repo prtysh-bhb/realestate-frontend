@@ -49,11 +49,13 @@ import ContactPage from "@/pages/customer/ContactPage";
 import ProtectedRoute from "@/lib/ProtectedRoute";
 import PublicRoute from "@/lib/PublicRoute";
 import { ApiInterceptor } from "./api/ApiInterceptor";
+import ScrollToTop from "@/components/ScrollToTop";
 
 function App() {
   return (
     <BrowserRouter>
-    <ApiInterceptor />
+      <ScrollToTop />
+      <ApiInterceptor />
       <Routes>
         {/* ---------------- AUTH ROUTES ---------------- */}
         <Route element={<PublicRoute />}>
