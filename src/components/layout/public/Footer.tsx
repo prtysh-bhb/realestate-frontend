@@ -1,7 +1,6 @@
 /**
  * Footer Component
- * Professional multi-column footer with newsletter and social links
- * Inspired by Zillow, Redfin, and modern real estate platforms
+ * Premium professional footer with modern design
  */
 
 import {
@@ -15,80 +14,101 @@ import {
   Phone,
   Send,
   Home,
+  Building2,
+  ArrowRight,
+  CheckCircle2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="relative bg-gradient-to-br from-secondary-900 via-secondary-950 to-secondary-900 text-secondary-300 overflow-hidden">
-      {/* Background pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-primary-400 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent-400 rounded-full blur-3xl" />
+    <footer className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-gray-300 overflow-hidden">
+      {/* Animated Background Decorations */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-1/2 right-1/4 w-64 h-64 bg-emerald-500 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-600 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
       </div>
 
-      {/* Top Section */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-20 py-16 md:py-20 border-b border-secondary-800">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
-          {/* Company Info */}
-          <div className="lg:col-span-1">
-            <Link to="/" className="inline-block mb-6">
-              <img
-                src="/assets/logo.jpg"
-                className="w-28 h-auto rounded-lg shadow-lg hover:shadow-xl transition-shadow"
-                alt="Logo"
-              />
+      {/* Pattern Overlay */}
+      <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
+
+      {/* Main Footer Content */}
+      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 pt-20 pb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-16">
+          {/* Company Info - Spans 4 columns */}
+          <div className="lg:col-span-4">
+            <Link to="/" className="inline-block mb-6 group">
+              <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm px-4 py-3 rounded-2xl border border-white/20 hover:border-blue-400/50 transition-all duration-300 group-hover:scale-105">
+                <Building2 className="w-8 h-8 text-blue-400" />
+                <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
+                  Homzen
+                </span>
+              </div>
             </Link>
-            <p className="text-sm leading-relaxed mb-6 text-secondary-400">
-              Specializes in providing high-class real estate services for those seeking their dream home.{" "}
-              <Link to="/contact" className="text-primary-400 hover:text-primary-300 font-semibold">
-                Contact Us
-              </Link>
+
+            <p className="text-gray-400 leading-relaxed mb-8 text-sm">
+              Your trusted partner in finding the perfect property. We specialize in providing high-class real estate services for those seeking their dream home.
             </p>
 
-            {/* Contact Info */}
-            <div className="flex flex-col gap-3 text-sm">
-              <a
+            {/* Contact Info Cards */}
+            <div className="flex flex-col gap-4">
+              <motion.a
+                whileHover={{ x: 4 }}
                 href="https://maps.google.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-start gap-3 hover:text-primary-400 transition-colors group"
+                className="flex items-start gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-blue-400/50 transition-all group"
               >
-                <div className="p-2 bg-primary-900/20 rounded-lg group-hover:bg-primary-900/30 transition-colors">
-                  <MapPin size={16} className="text-primary-400" />
+                <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg group-hover:scale-110 transition-transform">
+                  <MapPin size={16} className="text-white" />
                 </div>
-                <span className="flex-1">101 E 129th St, East Chicago, IN 46312, US</span>
-              </a>
-              <a
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-1">Address</p>
+                  <p className="text-sm text-gray-300">101 E 129th St, East Chicago, IN 46312, US</p>
+                </div>
+              </motion.a>
+
+              <motion.a
+                whileHover={{ x: 4 }}
                 href="tel:1-333-345-6868"
-                className="flex items-center gap-3 hover:text-primary-400 transition-colors group"
+                className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-400/50 transition-all group"
               >
-                <div className="p-2 bg-primary-900/20 rounded-lg group-hover:bg-primary-900/30 transition-colors">
-                  <Phone size={16} className="text-primary-400" />
+                <div className="p-2 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg group-hover:scale-110 transition-transform">
+                  <Phone size={16} className="text-white" />
                 </div>
-                <span>1-333-345-6868</span>
-              </a>
-              <a
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-1">Phone</p>
+                  <p className="text-sm text-gray-300 font-semibold">1-333-345-6868</p>
+                </div>
+              </motion.a>
+
+              <motion.a
+                whileHover={{ x: 4 }}
                 href="mailto:themesflat@gmail.com"
-                className="flex items-center gap-3 hover:text-primary-400 transition-colors group"
+                className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-blue-400/50 transition-all group"
               >
-                <div className="p-2 bg-primary-900/20 rounded-lg group-hover:bg-primary-900/30 transition-colors">
-                  <Mail size={16} className="text-primary-400" />
+                <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg group-hover:scale-110 transition-transform">
+                  <Mail size={16} className="text-white" />
                 </div>
-                <span>themesflat@gmail.com</span>
-              </a>
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-1">Email</p>
+                  <p className="text-sm text-gray-300">themesflat@gmail.com</p>
+                </div>
+              </motion.a>
             </div>
           </div>
 
           {/* Quick Links */}
-          <div>
-            <h3 className="text-white font-bold text-lg mb-6 flex items-center gap-2">
-              <Home className="w-5 h-5 text-primary-400" />
-              Quick Links
-            </h3>
-            <ul className="space-y-3 text-sm">
+          <div className="lg:col-span-2">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-emerald-500 rounded-full" />
+              <h3 className="text-white font-bold text-lg">Quick Links</h3>
+            </div>
+            <ul className="space-y-3">
               {[
                 { name: "Pricing Plans", path: "#" },
                 { name: "Our Services", path: "#" },
@@ -98,9 +118,10 @@ const Footer = () => {
                 <li key={link.name}>
                   <Link
                     to={link.path}
-                    className="hover:text-primary-400 transition-colors hover:translate-x-1 inline-block"
+                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-blue-400 transition-colors group"
                   >
-                    → {link.name}
+                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                    {link.name}
                   </Link>
                 </li>
               ))}
@@ -108,9 +129,12 @@ const Footer = () => {
           </div>
 
           {/* Properties */}
-          <div>
-            <h3 className="text-white font-bold text-lg mb-6">Properties</h3>
-            <ul className="space-y-3 text-sm">
+          <div className="lg:col-span-2">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="w-1 h-6 bg-gradient-to-b from-emerald-500 to-blue-500 rounded-full" />
+              <h3 className="text-white font-bold text-lg">Properties</h3>
+            </div>
+            <ul className="space-y-3">
               {[
                 { name: "Property For Sale", path: "/properties/sale" },
                 { name: "Property For Rent", path: "/properties/rent" },
@@ -120,9 +144,10 @@ const Footer = () => {
                 <li key={link.name}>
                   <Link
                     to={link.path}
-                    className="hover:text-primary-400 transition-colors hover:translate-x-1 inline-block"
+                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-emerald-400 transition-colors group"
                   >
-                    → {link.name}
+                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                    {link.name}
                   </Link>
                 </li>
               ))}
@@ -130,67 +155,93 @@ const Footer = () => {
           </div>
 
           {/* Newsletter */}
-          <div>
-            <h3 className="text-white font-bold text-lg mb-6">Newsletter</h3>
-            <p className="text-sm mb-6 text-secondary-400 leading-relaxed">
-              Subscribe to get the latest property updates and exclusive offers
-            </p>
-            <div className="relative">
-              <div className="flex items-center bg-secondary-800 rounded-xl overflow-hidden border border-secondary-700 focus-within:border-primary-500 transition-colors">
-                <Mail size={18} className="text-primary-400 ml-4" />
-                <input
-                  type="email"
-                  placeholder="Your email address"
-                  className="bg-transparent w-full px-4 py-3 text-sm focus:outline-none text-white placeholder-secondary-500"
-                />
-                <button className="p-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 transition-all">
-                  <Send size={18} className="text-white" />
-                </button>
+          <div className="lg:col-span-4">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-emerald-500 rounded-full" />
+              <h3 className="text-white font-bold text-lg">Stay Updated</h3>
+            </div>
+
+            <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm p-6 rounded-2xl border border-white/20 mb-6">
+              <p className="text-sm mb-4 text-gray-300 leading-relaxed">
+                Subscribe to get the latest property updates, market insights, and exclusive offers directly to your inbox.
+              </p>
+
+              <div className="relative mb-4">
+                <div className="flex items-center bg-white/10 rounded-xl overflow-hidden border border-white/20 focus-within:border-blue-400 focus-within:shadow-lg focus-within:shadow-blue-500/20 transition-all">
+                  <div className="pl-4">
+                    <Mail size={18} className="text-blue-400" />
+                  </div>
+                  <input
+                    type="email"
+                    placeholder="Your email address"
+                    className="bg-transparent w-full px-4 py-3.5 text-sm focus:outline-none text-white placeholder-gray-500"
+                  />
+                  <button className="px-6 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transition-all flex items-center gap-2 group">
+                    <Send size={18} className="text-white group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2 text-xs text-gray-400">
+                <CheckCircle2 size={14} className="text-emerald-400 mt-0.5 flex-shrink-0" />
+                <span>No spam, unsubscribe anytime</span>
               </div>
             </div>
 
             {/* Social Icons */}
-            <div className="mt-8">
+            <div>
               <p className="text-white font-semibold mb-4 text-sm">Follow Us</p>
               <div className="flex gap-3">
                 {[
-                  { Icon: Facebook, href: "#" },
-                  { Icon: Linkedin, href: "#" },
-                  { Icon: Twitter, href: "#" },
-                  { Icon: Instagram, href: "#" },
-                  { Icon: Youtube, href: "#" },
-                ].map(({ Icon, href }, i) => (
-                  <a
+                  { Icon: Facebook, href: "#", color: "from-blue-600 to-blue-700" },
+                  { Icon: Linkedin, href: "#", color: "from-blue-500 to-blue-600" },
+                  { Icon: Twitter, href: "#", color: "from-sky-500 to-sky-600" },
+                  { Icon: Instagram, href: "#", color: "from-pink-500 to-purple-600" },
+                  { Icon: Youtube, href: "#", color: "from-red-500 to-red-600" },
+                ].map(({ Icon, href, color }, i) => (
+                  <motion.a
                     key={i}
+                    whileHover={{ y: -4, scale: 1.1 }}
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-secondary-800 hover:bg-gradient-to-br hover:from-primary-600 hover:to-primary-700 transition-all p-2.5 rounded-lg"
+                    className={`bg-white/10 hover:bg-gradient-to-br hover:${color} transition-all p-3 rounded-xl border border-white/20 hover:border-transparent hover:shadow-lg group`}
                   >
-                    <Icon size={18} className="text-secondary-300 hover:text-white transition-colors" />
-                  </a>
+                    <Icon size={18} className="text-gray-300 group-hover:text-white transition-colors" />
+                  </motion.a>
                 ))}
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Bottom Section */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-20 py-6 flex flex-col md:flex-row justify-between items-center text-sm text-secondary-500">
-        <p>©{currentYear} Homzen. All Rights Reserved.</p>
-        <div className="flex flex-wrap gap-6 mt-4 md:mt-0">
-          <Link to="#" className="hover:text-primary-400 transition-colors">
-            Terms Of Services
-          </Link>
-          <Link to="#" className="hover:text-primary-400 transition-colors">
-            Privacy Policy
-          </Link>
-          <Link to="#" className="hover:text-primary-400 transition-colors">
-            Cookie Policy
-          </Link>
+        {/* Divider */}
+        <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-8" />
+
+        {/* Bottom Section */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
+          <p className="flex items-center gap-2">
+            <span>© {currentYear} Homzen. All Rights Reserved.</span>
+          </p>
+
+          <div className="flex flex-wrap gap-6">
+            <Link to="#" className="hover:text-blue-400 transition-colors flex items-center gap-1">
+              Terms Of Services
+            </Link>
+            <span className="text-gray-700">•</span>
+            <Link to="#" className="hover:text-blue-400 transition-colors flex items-center gap-1">
+              Privacy Policy
+            </Link>
+            <span className="text-gray-700">•</span>
+            <Link to="#" className="hover:text-blue-400 transition-colors flex items-center gap-1">
+              Cookie Policy
+            </Link>
+          </div>
         </div>
       </div>
+
+      {/* Bottom Gradient Line */}
+      <div className="h-1 bg-gradient-to-r from-blue-600 via-emerald-500 to-blue-600" />
     </footer>
   );
 };
