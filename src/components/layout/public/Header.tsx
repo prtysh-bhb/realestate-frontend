@@ -63,7 +63,7 @@ const Header = () => {
         className={clsx(
           "fixed top-0 left-0 w-full z-50 transition-all duration-500",
           scrolled
-            ? "bg-white/95 dark:bg-secondary-900/95 backdrop-blur-xl shadow-lg border-b border-secondary-200 dark:border-secondary-800"
+            ? "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-lg border-b border-gray-200 dark:border-gray-800"
             : "bg-transparent"
         )}
       >
@@ -94,8 +94,8 @@ const Header = () => {
                   "relative px-4 py-2 rounded-xl transition-all group",
                   scrolled
                     ? isActive(link.path)
-                      ? "text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20"
-                      : "text-secondary-700 dark:text-secondary-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-secondary-50 dark:hover:bg-secondary-800"
+                      ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20"
+                      : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800"
                     : isActive(link.path)
                       ? "text-white bg-white/20 backdrop-blur-sm"
                       : "text-white/90 hover:text-white hover:bg-white/10 backdrop-blur-sm"
@@ -104,7 +104,7 @@ const Header = () => {
                 {link.name}
                 <span
                   className={clsx(
-                    "absolute left-1/2 -translate-x-1/2 bottom-0 h-0.5 bg-primary-600 transition-all duration-300",
+                    "absolute left-1/2 -translate-x-1/2 bottom-0 h-0.5 bg-blue-600 transition-all duration-300",
                     isActive(link.path) ? "w-8" : "w-0 group-hover:w-8"
                   )}
                 />
@@ -118,10 +118,10 @@ const Header = () => {
               <Button
                 onClick={() => navigate("/login")}
                 className={clsx(
-                  "font-bold rounded-xl px-6 py-2.5 transition-all shadow-md hover:shadow-lg",
+                  "font-bold rounded-xl px-6 py-3 transition-all duration-300 transform hover:scale-105",
                   scrolled
-                    ? "bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white"
-                    : "bg-white/95 hover:bg-white text-primary-700 backdrop-blur-sm"
+                    ? "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40"
+                    : "bg-white/95 hover:bg-white text-blue-700 backdrop-blur-sm shadow-lg shadow-white/50 hover:shadow-xl"
                 )}
               >
                 Login / Register
@@ -137,7 +137,7 @@ const Header = () => {
             className={clsx(
               "md:hidden p-2 rounded-lg transition-all",
               scrolled
-                ? "text-secondary-700 dark:text-secondary-300 hover:bg-secondary-100 dark:hover:bg-secondary-800"
+                ? "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                 : "text-white hover:bg-white/10 backdrop-blur-sm"
             )}
           >
@@ -189,8 +189,8 @@ const Header = () => {
                     className={clsx(
                       "px-4 py-3 rounded-xl font-semibold transition-all",
                       isActive(link.path)
-                        ? "bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400"
-                        : "text-secondary-700 dark:text-secondary-300 hover:bg-secondary-50 dark:hover:bg-secondary-800"
+                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                     )}
                   >
                     {link.name}
@@ -211,7 +211,7 @@ const Header = () => {
                       setMenuOpen(false);
                       navigate("/login");
                     }}
-                    className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-bold rounded-xl shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all"
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all transform hover:scale-105"
                   >
                     Login / Register
                   </Button>
