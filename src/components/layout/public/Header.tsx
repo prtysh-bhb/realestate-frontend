@@ -75,7 +75,7 @@ const Header = () => {
           >
             <img
               src="/assets/logo.jpg"
-              className="w-20 h-15 rounded-lg shadow-md group-hover:shadow-lg transition-shadow"
+              className="w-20 h-15 rounded-lg transition-shadow"
               alt="Logo"
             />
           </Link>

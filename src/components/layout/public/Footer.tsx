@@ -68,13 +68,13 @@ const Footer = () => {
                 </div>
                 <div className="flex-1">
                   <p className="text-xs text-gray-500 mb-1">Address</p>
-                  <p className="text-sm text-gray-300">101 E 129th St, East Chicago, IN 46312, US</p>
+                  <p className="text-sm text-gray-300">D101 T-Sq Thaltej Ahmedabad, Gujarat, India</p>
                 </div>
               </motion.a>
 
               <motion.a
                 whileHover={{ x: 4 }}
-                href="tel:1-333-345-6868"
+                href="tel:918853217658"
                 className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-400/50 transition-all group"
               >
                 <div className="p-2 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg group-hover:scale-110 transition-transform">
@@ -82,13 +82,13 @@ const Footer = () => {
                 </div>
                 <div className="flex-1">
                   <p className="text-xs text-gray-500 mb-1">Phone</p>
-                  <p className="text-sm text-gray-300 font-semibold">1-333-345-6868</p>
+                  <p className="text-sm text-gray-300 font-semibold">+91 88532 17658</p>
                 </div>
               </motion.a>
 
               <motion.a
                 whileHover={{ x: 4 }}
-                href="mailto:themesflat@gmail.com"
+                href="mailto:contact@brainerhub.com"
                 className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-blue-400/50 transition-all group"
               >
                 <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg group-hover:scale-110 transition-transform">
@@ -96,7 +96,7 @@ const Footer = () => {
                 </div>
                 <div className="flex-1">
                   <p className="text-xs text-gray-500 mb-1">Email</p>
-                  <p className="text-sm text-gray-300">themesflat@gmail.com</p>
+                  <p className="text-sm text-gray-300">contact@bhub.com</p>
                 </div>
               </motion.a>
             </div>
