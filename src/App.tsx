@@ -43,6 +43,7 @@ import CustomerProfile from "@/pages/customer/CustomerProfile";
 import ProfileEditForm from "@/pages/customer/ProfileEditForm";
 import PropertyFilters from "@/pages/customer/PropertyFilters";
 import PropertyView from "@/pages/customer/PropertyView";
+import ContactPage from "@/pages/customer/ContactPage";
 
 // Routing Utils
 import ProtectedRoute from "@/lib/ProtectedRoute";
@@ -99,6 +100,9 @@ function App() {
           <Route path="/properties/rent" element={<PropertyFilters />} />
           <Route path="/properties/sale" element={<PropertyFilters />} />
           <Route path="/properties/view/:id" element={<PropertyView />} />
+
+          {/* Contact Page */}
+          <Route path="/contact" element={<ContactPage />} />
         </Route>
 
         {/* ---------------- ADMIN & AGENT DASHBOARD ---------------- */}
