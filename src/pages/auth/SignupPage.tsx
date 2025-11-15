@@ -1,14 +1,18 @@
+/**
+ * SignupPage Component
+ * Professional registration page with premium UI/UX
+ */
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import { register } from "@/api/auth";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Building2, Sparkles, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router";
 import { toast } from "sonner";
-import bgImage from "/assets/hero-house.jpg";
-import Logo from "/public/vite.svg";
+import { motion } from "framer-motion";
 
 const SignupPage = () => {
   const [name, setName] = useState("");
@@ -50,7 +54,7 @@ const SignupPage = () => {
     }
 
     if (name.length > 50) {
-      newErrors.name = "Full name can’t exceed 50 characters.";
+      newErrors.name = "Full name can't exceed 50 characters.";
       hasError = true;
     }
 
@@ -60,7 +64,7 @@ const SignupPage = () => {
     }
 
     if (email.length > 70) {
-      newErrors.name = "Email can’t exceed 70 characters.";
+      newErrors.email = "Email can't exceed 70 characters.";
       hasError = true;
     }
 
@@ -70,7 +74,7 @@ const SignupPage = () => {
     }
 
     if (password.length > 50) {
-      newErrors.name = "Password can’t exceed 50 characters.";
+      newErrors.password = "Password can't exceed 50 characters.";
       hasError = true;
     }
 
@@ -111,223 +115,366 @@ const SignupPage = () => {
   };
 
   return (
-    <div
-      className="h-screen flex items-center justify-center relative"
-      style={{
-        backgroundImage: `url(${bgImage})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-lg"></div>
-
-      <div className="relative z-10 flex flex-col lg:flex-row w-[90%] max-w-5xl h-[650px] rounded-2xl overflow-hidden shadow-2xl">
-        {/* Left Section */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500 rounded-full blur-3xl animate-pulse" />
         <div
-          className="hidden lg:flex flex-col justify-center items-center text-white
-            bg-[url('/assets/login-image.jpg')] bg-center bg-cover bg-full w-[40%] p-10 relative
-            before:content-[''] before:absolute before:inset-0 before:bg-black before:opacity-50"
-        >
-          <h1 className="text-2xl font-semibold text-center z-2">
-            Start your journey with us.
-          </h1>
-          <p className="text-white-400 text-center mt-2 text-sm z-2">
-            It brings together your tasks, projects, timelines, files and more.
-          </p>
-
-          <div className="mt-10 text-center z-2">
-            <Link to="/">
-              <img
-                src={Logo}
-                alt="Site Logo"
-                className="mx-auto w-24 h-auto mb-4 z-2"
-              />
-            </Link>
-            <h2 className="text-xl font-medium mb-4 z-2">
-              Welcome to RealEstate
-            </h2>
-          </div>
-
-          <p className="text-xs text-white-500 mt-20 z-2">© 2025 RealEstate.</p>
-        </div>
-
-        {/* Right Section – Signup Form */}
-        <div className="flex flex-col justify-center items-center w-full lg:w-[60%] bg-white px-10 py-12">
-          <div className="w-full max-w-sm">
-            <h2 className="text-2xl font-semibold text-center text-gray-900 mb-1">
-              Create an Account
-            </h2>
-            <p className="text-center text-sm text-gray-500 mb-8">
-              Fill in your details below to get started.
-            </p>
-
-            <form onSubmit={handleSignup} className="space-y-5" noValidate>
-              {error && (
-                <p className="text-sm text-red-600 bg-red-50 p-2 rounded-md text-center">
-                  {error}
-                </p>
-              )}
-
-              {/* Full Name */}
-              <div>
-                <label className="block mb-1 text-sm font-medium text-gray-700">
-                  Full Name
-                </label>
-                <Input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your name"
-                  maxLength={50}
-                  required
-                  className={fieldErrors.name ? "border-red-500" : ""}
-                />
-                {fieldErrors.name && (
-                  <p className="text-xs text-red-500 mt-1">
-                    {fieldErrors.name}
-                  </p>
-                )}
-              </div>
-
-              {/* Email */}
-              <div>
-                <label className="block mb-1 text-sm font-medium text-gray-700">
-                  Email
-                </label>
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  maxLength={70}
-                  required
-                  className={fieldErrors.email ? "border-red-500" : ""}
-                />
-                {fieldErrors.email && (
-                  <p className="text-xs text-red-500 mt-1">
-                    {fieldErrors.email}
-                  </p>
-                )}
-              </div>
-
-              {/* Password */}
-              <div className="relative">
-                <label className="block mb-1 text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  maxLength={50}
-                  className={`h-10 pr-10 ${
-                    fieldErrors.password ? "border-red-500" : ""
-                  }`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-                {fieldErrors.password && (
-                  <p className="text-xs text-red-500 mt-1">
-                    {fieldErrors.password}
-                  </p>
-                )}
-              </div>
-
-              {/* Confirm Password */}
-              <div className="relative">
-                <label className="block mb-1 text-sm font-medium text-gray-700">
-                  Confirm Password
-                </label>
-                <Input
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={confirmPassword}
-                  maxLength={50}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  className={`h-10 pr-10 ${
-                    fieldErrors.confirmPassword ? "border-red-500" : ""
-                  }`}
-                />
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowConfirmPassword(!showConfirmPassword)
-                  }
-                  className="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff size={18} />
-                  ) : (
-                    <Eye size={18} />
-                  )}
-                </button>
-                {fieldErrors.confirmPassword && (
-                  <p className="text-xs text-red-500 mt-1">
-                    {fieldErrors.confirmPassword}
-                  </p>
-                )}
-              </div>
-
-              {/* Role Selection */}
-              <div>
-                <label className="block mb-1 text-sm font-medium text-gray-700">
-                  Role
-                </label>
-                <div className="flex space-x-4">
-                  <label className="inline-flex items-center">
-                    <input
-                      type="radio"
-                      name="role"
-                      value="customer"
-                      checked={role === "customer"}
-                      onChange={(e) => setRole(e.target.value)}
-                      className="form-radio h-4 w-4 text-blue-600 cursor-pointer"
-                    />
-                    <span className="ml-2 text-gray-700">Customer</span>
-                  </label>
-                  <label className="inline-flex items-center">
-                    <input
-                      type="radio"
-                      name="role"
-                      value="agent"
-                      checked={role === "agent"}
-                      onChange={(e) => setRole(e.target.value)}
-                      className="form-radio h-4 w-4 text-blue-600 cursor-pointer"
-                    />
-                    <span className="ml-2 text-gray-700">Agent</span>
-                  </label>
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full h-11 bg-blue-600 hover:bg-blue-700 font-medium text-white cursor-pointer"
-                disabled={loading}
-              >
-                {loading ? "Creating Account..." : "Sign Up"}
-              </Button>
-
-              <p className="text-sm text-gray-600 text-center">
-                Already have an account?{" "}
-                <Link
-                  to="/login"
-                  className="text-blue-600 hover:underline font-medium"
-                >
-                  Login
-                </Link>
-              </p>
-            </form>
-          </div>
-        </div>
+          className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: "1s" }}
+        />
+        <div
+          className="absolute top-1/2 right-1/3 w-96 h-96 bg-purple-500 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: "2s" }}
+        />
       </div>
+
+      {/* Main Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="relative z-10 w-full max-w-6xl bg-white rounded-3xl shadow-2xl overflow-hidden"
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-2">
+          {/* Left Section - Branding */}
+          <div className="hidden lg:flex flex-col justify-center items-center bg-gradient-to-br from-emerald-600 via-emerald-700 to-blue-600 p-12 text-white relative overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 opacity-10">
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage:
+                    'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
+                  backgroundSize: '40px 40px',
+                }}
+              />
+            </div>
+
+            <div className="relative z-10 text-center">
+              {/* Logo */}
+              <Link to="/" className="inline-block mb-8">
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm px-6 py-4 rounded-2xl border border-white/20">
+                  <Building2 className="w-10 h-10 text-white" />
+                  <span className="text-3xl font-bold">Homzen</span>
+                </div>
+              </Link>
+
+              {/* Headline */}
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-4xl font-bold mb-4"
+              >
+                Join Homzen Today!
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-emerald-100 text-lg mb-12 max-w-md"
+              >
+                Create your account and start your journey to finding the perfect property
+              </motion.p>
+
+              {/* Benefits */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="space-y-4 text-left max-w-md"
+              >
+                {[
+                  'Free account with no hidden fees',
+                  'Access to exclusive property listings',
+                  'Personalized property recommendations',
+                  'Direct communication with agents',
+                  'Save and compare favorite properties',
+                ].map((benefit, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center flex-shrink-0">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+                    </div>
+                    <span className="text-white/90">{benefit}</span>
+                  </div>
+                ))}
+              </motion.div>
+
+              {/* Footer */}
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="text-emerald-200 text-sm mt-16"
+              >
+                © 2025 Homzen. All rights reserved.
+              </motion.p>
+            </div>
+          </div>
+
+          {/* Right Section - Signup Form */}
+          <div className="p-8 sm:p-12 lg:p-16">
+            <div className="max-w-md mx-auto">
+              {/* Mobile Logo */}
+              <div className="lg:hidden text-center mb-8">
+                <Link to="/" className="inline-block">
+                  <div className="flex items-center gap-3 justify-center">
+                    <Building2 className="w-8 h-8 text-emerald-600" />
+                    <span className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+                      Homzen
+                    </span>
+                  </div>
+                </Link>
+              </div>
+
+              {/* Header */}
+              <div className="mb-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                  Create Account
+                </h2>
+                <p className="text-gray-600">
+                  Fill in your details to get started
+                </p>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleSignup} className="space-y-5" noValidate>
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-4 bg-red-50 border-2 border-red-200 rounded-2xl"
+                  >
+                    <p className="text-sm text-red-700 font-medium">{error}</p>
+                  </motion.div>
+                )}
+
+                {/* Full Name */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-3">
+                    Full Name <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <User
+                      size={20}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                    />
+                    <Input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Enter your name"
+                      maxLength={50}
+                      required
+                      className={`pl-12 h-14 bg-gray-50 border-2 ${
+                        fieldErrors.name ? "border-red-300" : "border-gray-200"
+                      } rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all`}
+                    />
+                  </div>
+                  {fieldErrors.name && (
+                    <p className="text-xs text-red-600 mt-2 font-medium">
+                      {fieldErrors.name}
+                    </p>
+                  )}
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-3">
+                    Email Address <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Mail
+                      size={20}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                    />
+                    <Input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      maxLength={70}
+                      required
+                      className={`pl-12 h-14 bg-gray-50 border-2 ${
+                        fieldErrors.email ? "border-red-300" : "border-gray-200"
+                      } rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all`}
+                    />
+                  </div>
+                  {fieldErrors.email && (
+                    <p className="text-xs text-red-600 mt-2 font-medium">
+                      {fieldErrors.email}
+                    </p>
+                  )}
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-3">
+                    Password <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Lock
+                      size={20}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                    />
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      maxLength={50}
+                      className={`pl-12 pr-12 h-14 bg-gray-50 border-2 ${
+                        fieldErrors.password ? "border-red-300" : "border-gray-200"
+                      } rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                  {fieldErrors.password && (
+                    <p className="text-xs text-red-600 mt-2 font-medium">
+                      {fieldErrors.password}
+                    </p>
+                  )}
+                </div>
+
+                {/* Confirm Password */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-3">
+                    Confirm Password <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Lock
+                      size={20}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                    />
+                    <Input
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      maxLength={50}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      className={`pl-12 pr-12 h-14 bg-gray-50 border-2 ${
+                        fieldErrors.confirmPassword ? "border-red-300" : "border-gray-200"
+                      } rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff size={20} />
+                      ) : (
+                        <Eye size={20} />
+                      )}
+                    </button>
+                  </div>
+                  {fieldErrors.confirmPassword && (
+                    <p className="text-xs text-red-600 mt-2 font-medium">
+                      {fieldErrors.confirmPassword}
+                    </p>
+                  )}
+                </div>
+
+                {/* Role Selection */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-3">
+                    I am a <span className="text-red-500">*</span>
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { value: 'customer', label: 'Customer', desc: 'Looking for properties' },
+                      { value: 'agent', label: 'Agent', desc: 'Selling properties' },
+                    ].map((option) => (
+                      <label
+                        key={option.value}
+                        className={`relative flex items-start p-4 border-2 rounded-2xl cursor-pointer transition-all ${
+                          role === option.value
+                            ? 'border-emerald-600 bg-emerald-50'
+                            : 'border-gray-200 hover:border-emerald-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="role"
+                          value={option.value}
+                          checked={role === option.value}
+                          onChange={(e) => setRole(e.target.value)}
+                          className="sr-only"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                              role === option.value
+                                ? 'border-emerald-600 bg-emerald-600'
+                                : 'border-gray-300'
+                            }`}>
+                              {role === option.value && (
+                                <div className="w-2 h-2 bg-white rounded-full" />
+                              )}
+                            </div>
+                            <span className="font-bold text-gray-900">{option.label}</span>
+                          </div>
+                          <p className="text-xs text-gray-600 ml-7">{option.desc}</p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Sign Up Button */}
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-14 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold rounded-2xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    "Creating Account..."
+                  ) : (
+                    <>
+                      Create Account
+                      <ArrowRight size={20} />
+                    </>
+                  )}
+                </Button>
+
+                {/* Terms */}
+                <p className="text-xs text-center text-gray-600 mt-4">
+                  By signing up, you agree to our{" "}
+                  <Link to="#" className="text-emerald-600 hover:text-emerald-700 font-medium">
+                    Terms of Service
+                  </Link>{" "}
+                  and{" "}
+                  <Link to="#" className="text-emerald-600 hover:text-emerald-700 font-medium">
+                    Privacy Policy
+                  </Link>
+                </p>
+
+                {/* Login Link */}
+                <p className="text-center text-gray-600 mt-6">
+                  Already have an account?{" "}
+                  <Link
+                    to="/login"
+                    className="text-emerald-600 hover:text-emerald-700 font-bold transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                </p>
+              </form>
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 };

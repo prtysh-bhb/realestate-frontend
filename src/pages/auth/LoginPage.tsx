@@ -1,21 +1,25 @@
+/**
+ * LoginPage Component
+ * Professional login page with premium UI/UX
+ */
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, ArrowRight, Building2, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router";
 import { login } from "@/api/auth";
-import { toast } from "sonner"; // ✅ Import Sonner toast
+import { toast } from "sonner";
 import google from "/assets/Google.svg";
 import apple from "/assets/apple.svg";
 import facebook from "/assets/Facebook.svg";
-import bgImage from "/assets/hero-house.jpg";
-import Logo from "/public/vite.svg";
 import { useAuth } from "@/context/AuthContext";
+import { motion } from "framer-motion";
 
 const LoginPage = () => {
-  const {fetchUserProfile} = useAuth();
+  const { fetchUserProfile } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -69,184 +73,276 @@ const LoginPage = () => {
   };
 
   return (
-    <div
-      className="h-screen flex items-center justify-center relative"
-      style={{
-        backgroundImage: `url(${bgImage})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      {/* Blurred Overlay */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-lg"></div>
-
-      {/* Main Auth Card */}
-      <div className="relative z-10 flex flex-col lg:flex-row w-[90%] max-w-5xl h-[600px] rounded-2xl overflow-hidden shadow-2xl">
-        {/* Left Section */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500 rounded-full blur-3xl animate-pulse" />
         <div
-          className="hidden lg:flex flex-col justify-center items-center text-white
-          bg-[url('/assets/login-image.jpg')] bg-center bg-cover bg-full w-[40%] p-10 relative
-          before:content-[''] before:absolute before:inset-0 before:bg-black before:opacity-50"
-        >
-          <h1 className="text-2xl font-semibold text-center z-2">
-            Start your journey with us.
-          </h1>
-          <p className="text-white-400 text-center mt-2 text-sm z-2">
-            It brings together your tasks, projects, timelines, files and more.
-          </p>
+          className="absolute bottom-0 right-0 w-96 h-96 bg-emerald-500 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: "1s" }}
+        />
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: "2s" }}
+        />
+      </div>
 
-          <div className="mt-10 text-center z-2">
-            <Link to="/">
-              <img
-                src={Logo}
-                alt="Site Logo"
-                className="mx-auto w-24 h-auto mb-4 z-2"
+      {/* Main Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="relative z-10 w-full max-w-6xl bg-white rounded-3xl shadow-2xl overflow-hidden"
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-2">
+          {/* Left Section - Branding */}
+          <div className="hidden lg:flex flex-col justify-center items-center bg-gradient-to-br from-blue-600 via-blue-700 to-emerald-600 p-12 text-white relative overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 opacity-10">
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage:
+                    'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
+                  backgroundSize: '40px 40px',
+                }}
               />
-            </Link>
-            <h2 className="text-xl font-medium mb-4 z-2">
-              Welcome to RealEstate
-            </h2>
+            </div>
+
+            <div className="relative z-10 text-center">
+              {/* Logo */}
+              <Link to="/" className="inline-block mb-8">
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm px-6 py-4 rounded-2xl border border-white/20">
+                  <Building2 className="w-10 h-10 text-white" />
+                  <span className="text-3xl font-bold">Homzen</span>
+                </div>
+              </Link>
+
+              {/* Headline */}
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-4xl font-bold mb-4"
+              >
+                Welcome Back!
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-blue-100 text-lg mb-12 max-w-md"
+              >
+                Sign in to access your account and discover amazing properties
+              </motion.p>
+
+              {/* Features */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="space-y-4 text-left max-w-md"
+              >
+                {[
+                  'Browse thousands of verified properties',
+                  'Save your favorite listings',
+                  'Connect with trusted agents',
+                  'Track your property inquiries',
+                ].map((feature, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                      <Sparkles className="w-4 h-4 text-emerald-300" />
+                    </div>
+                    <span className="text-white/90">{feature}</span>
+                  </div>
+                ))}
+              </motion.div>
+
+              {/* Footer */}
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="text-blue-200 text-sm mt-16"
+              >
+                © 2025 Homzen. All rights reserved.
+              </motion.p>
+            </div>
           </div>
 
-          <p className="text-xs text-white-500 mt-20 z-2">© 2025 RealEstate.</p>
-        </div>
-
-        {/* Right Section – Login Form */}
-        <div className="flex flex-col justify-center items-center w-full lg:w-[60%] bg-white px-10 py-12">
-          <div className="w-full max-w-sm">
-            <h2 className="text-2xl font-semibold text-center text-gray-900 mb-1">
-              Welcome Back
-            </h2>
-            <p className="text-center text-sm text-gray-500 mb-8">
-              Sign in to continue to RealEstate.
-            </p>
-
-            <form onSubmit={handleLogin} className="space-y-6">
-              {error && (
-                <p className="text-sm text-red-600 bg-red-50 p-2 rounded-md text-center">
-                  {error}
-                </p>
-              )}
-
-              {/* Email */}
-              <div>
-                <label className="block mb-1 text-sm font-medium text-gray-700">
-                  Email Address <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  maxLength={70}
-                  className="h-10"
-                />
+          {/* Right Section - Login Form */}
+          <div className="p-8 sm:p-12 lg:p-16">
+            <div className="max-w-md mx-auto">
+              {/* Mobile Logo */}
+              <div className="lg:hidden text-center mb-8">
+                <Link to="/" className="inline-block">
+                  <div className="flex items-center gap-3 justify-center">
+                    <Building2 className="w-8 h-8 text-blue-600" />
+                    <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent">
+                      Homzen
+                    </span>
+                  </div>
+                </Link>
               </div>
 
-              {/* Password */}
-              <div className="relative">
-                <label className="block mb-1 text-sm font-medium text-gray-700">
-                  Password <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  maxLength={50}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="h-10 pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-                <div className="flex justify-end mt-1 hidden">
+              {/* Header */}
+              <div className="mb-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                  Sign In
+                </h2>
+                <p className="text-gray-600">
+                  Enter your credentials to access your account
+                </p>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleLogin} className="space-y-6">
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-4 bg-red-50 border-2 border-red-200 rounded-2xl"
+                  >
+                    <p className="text-sm text-red-700 font-medium">{error}</p>
+                  </motion.div>
+                )}
+
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-3">
+                    Email Address <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Mail
+                      size={20}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                    />
+                    <Input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      maxLength={70}
+                      className="pl-12 h-14 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-3">
+                    Password <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Lock
+                      size={20}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                    />
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      maxLength={50}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="pl-12 pr-12 h-14 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Remember me & Forgot password */}
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      id="remember"
+                      className="w-5 h-5 rounded-lg border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    />
+                    <span className="text-sm text-gray-700 font-medium">
+                      Remember me
+                    </span>
+                  </label>
                   <Link
                     to="/forgot-password"
-                    className="text-xs text-blue-600 hover:underline"
+                    className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
                   >
                     Forgot password?
                   </Link>
                 </div>
-              </div>
 
-              {/* Remember me */}
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="remember"
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <label htmlFor="remember" className="text-sm text-gray-700">
-                  Remember me
-                </label>
-              </div>
-
-              {/* Sign In Button */}
-              <Button
-                type="submit"
-                className="w-full h-11 bg-blue-600 hover:bg-blue-700 font-medium text-white cursor-pointer"
-                disabled={loading}
-              >
-                {loading ? "Signing in..." : "Sign In"}
-              </Button>
-
-              {/* Social Buttons */}
-              <div className="text-center mt-6">
-                <p className="text-gray-500 text-sm mb-3">Sign in with</p>
-                <div className="flex justify-center gap-4">
-                  <button
-                    onClick={() =>
-                      (window.location.href = `${
-                        import.meta.env.VITE_BACKEND_URL
-                      }/auth/google/redirect`)
-                    }
-                    className="p-2 border rounded-md hover:bg-gray-100 cursor-pointer"
-                  >
-                    <img src={google} alt="Google" className="w-5" />
-                  </button>
-                  <button
-                    onClick={() =>
-                      (window.location.href = `${
-                        import.meta.env.VITE_BACKEND_URL
-                      }/auth/apple/redirect`)
-                    }
-                    className="p-2 border rounded-md hover:bg-gray-100 cursor-pointer"
-                  >
-                    <img src={apple} alt="Apple" className="w-5" />
-                  </button>
-                  <button
-                    onClick={() =>
-                      (window.location.href = `${
-                        import.meta.env.VITE_BACKEND_URL
-                      }/auth/facebook/redirect`)
-                    }
-                    className="p-2 border rounded-md hover:bg-gray-100 cursor-pointer"
-                  >
-                    <img src={facebook} alt="Facebook" className="w-5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Signup Link */}
-              <p className="text-sm text-center text-gray-600 mt-6">
-                Don’t have an account?{" "}
-                <Link
-                  to="/register"
-                  className="text-blue-600 hover:underline font-medium"
+                {/* Sign In Button */}
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-14 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
                 >
-                  Sign Up
-                </Link>
-              </p>
-            </form>
+                  {loading ? (
+                    "Signing in..."
+                  ) : (
+                    <>
+                      Sign In
+                      <ArrowRight size={20} />
+                    </>
+                  )}
+                </Button>
+
+                {/* Divider */}
+                <div className="relative my-8">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-200" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-4 bg-white text-gray-500 font-medium">
+                      Or continue with
+                    </span>
+                  </div>
+                </div>
+
+                {/* Social Buttons */}
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { icon: google, name: 'Google', provider: 'google' },
+                    { icon: facebook, name: 'Facebook', provider: 'facebook' },
+                    { icon: apple, name: 'Apple', provider: 'apple' },
+                  ].map((social) => (
+                    <button
+                      key={social.provider}
+                      type="button"
+                      onClick={() =>
+                        (window.location.href = `${
+                          import.meta.env.VITE_BACKEND_URL
+                        }/auth/${social.provider}/redirect`)
+                      }
+                      className="flex items-center justify-center p-4 border-2 border-gray-200 rounded-2xl hover:bg-gray-50 hover:border-gray-300 transition-all transform hover:scale-105"
+                    >
+                      <img src={social.icon} alt={social.name} className="w-6 h-6" />
+                    </button>
+                  ))}
+                </div>
+
+                {/* Signup Link */}
+                <p className="text-center text-gray-600 mt-8">
+                  Don't have an account?{" "}
+                  <Link
+                    to="/register"
+                    className="text-blue-600 hover:text-blue-700 font-bold transition-colors"
+                  >
+                    Sign Up
+                  </Link>
+                </p>
+              </form>
+            </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
