@@ -17,6 +17,7 @@ import apple from "/assets/apple.svg";
 import facebook from "/assets/Facebook.svg";
 import { useAuth } from "@/context/AuthContext";
 import { motion } from "framer-motion";
+import { APP_NAME } from "@/constants";
 
 const LoginPage = () => {
   const { fetchUserProfile } = useAuth();
@@ -114,7 +115,7 @@ const LoginPage = () => {
               <Link to="/" className="inline-block mb-8">
                 <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm px-6 py-4 rounded-2xl border border-white/20">
                   <Building2 className="w-10 h-10 text-white" />
-                  <span className="text-3xl font-bold">Homzen</span>
+                  <span className="text-3xl font-bold">{APP_NAME}</span>
                 </div>
               </Link>
 
@@ -165,7 +166,7 @@ const LoginPage = () => {
                 transition={{ delay: 0.5 }}
                 className="text-blue-200 text-sm mt-16"
               >
-                © 2025 Homzen. All rights reserved.
+                © 2025 {APP_NAME}. All rights reserved.
               </motion.p>
             </div>
           </div>
@@ -179,7 +180,7 @@ const LoginPage = () => {
                   <div className="flex items-center gap-3 justify-center">
                     <Building2 className="w-8 h-8 text-blue-600" />
                     <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent">
-                      Homzen
+                      {APP_NAME}
                     </span>
                   </div>
                 </Link>

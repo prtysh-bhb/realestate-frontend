@@ -13,6 +13,7 @@ import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Building2, Sparkles, CheckCi
 import { Link } from "react-router";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { APP_NAME } from "@/constants";
 
 const SignupPage = () => {
   const [name, setName] = useState("");
@@ -156,7 +157,7 @@ const SignupPage = () => {
               <Link to="/" className="inline-block mb-8">
                 <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm px-6 py-4 rounded-2xl border border-white/20">
                   <Building2 className="w-10 h-10 text-white" />
-                  <span className="text-3xl font-bold">Homzen</span>
+                  <span className="text-3xl font-bold">{APP_NAME}</span>
                 </div>
               </Link>
 
@@ -167,7 +168,7 @@ const SignupPage = () => {
                 transition={{ delay: 0.2 }}
                 className="text-4xl font-bold mb-4"
               >
-                Join Homzen Today!
+                Join {APP_NAME} Today!
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
@@ -208,7 +209,7 @@ const SignupPage = () => {
                 transition={{ delay: 0.5 }}
                 className="text-emerald-200 text-sm mt-16"
               >
-                © 2025 Homzen. All rights reserved.
+                © 2025 {APP_NAME}. All rights reserved.
               </motion.p>
             </div>
           </div>
@@ -222,7 +223,7 @@ const SignupPage = () => {
                   <div className="flex items-center gap-3 justify-center">
                     <Building2 className="w-8 h-8 text-emerald-600" />
                     <span className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
-                      Homzen
+                      {APP_NAME}
                     </span>
                   </div>
                 </Link>

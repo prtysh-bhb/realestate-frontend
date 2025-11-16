@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { APP_NAME } from "@/constants";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -45,7 +46,7 @@ const Footer = () => {
               <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm px-4 py-3 rounded-2xl border border-white/20 hover:border-blue-400/50 transition-all duration-300 group-hover:scale-105">
                 <Building2 className="w-8 h-8 text-blue-400" />
                 <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-                  Homzen
+                  {APP_NAME}
                 </span>
               </div>
             </Link>
@@ -221,7 +222,7 @@ const Footer = () => {
         {/* Bottom Section */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
           <p className="flex items-center gap-2">
-            <span>© {currentYear} Homzen. All Rights Reserved.</span>
+            <span>© {currentYear} {APP_NAME}. All Rights Reserved.</span>
           </p>
 
           <div className="flex flex-wrap gap-6">

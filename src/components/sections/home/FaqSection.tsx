@@ -3,6 +3,7 @@
  * Features customer reviews and success stories
  */
 
+import { APP_NAME } from "@/constants";
 import { motion } from "framer-motion";
 import { Star, Quote, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
@@ -16,7 +17,7 @@ const FaqSection = () => {
       role: "Homeowner",
       image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400",
       rating: 5,
-      text: "EstateHub made finding my dream home incredibly easy. The search filters are intuitive, and the agent support was exceptional. Highly recommended!",
+      text: `${APP_NAME} made finding my dream home incredibly easy. The search filters are intuitive, and the agent support was exceptional. Highly recommended!`,
     },
     {
       name: "Michael Chen",
@@ -30,7 +31,7 @@ const FaqSection = () => {
       role: "First-time Buyer",
       image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
       rating: 5,
-      text: "Being a first-time buyer was daunting, but EstateHub's team guided me through every step. The virtual tours saved me so much time!",
+      text: `Being a first-time buyer was daunting, but ${APP_NAME}'s team guided me through every step. The virtual tours saved me so much time!`,
     },
     {
       name: "David Thompson",

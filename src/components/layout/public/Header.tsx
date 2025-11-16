@@ -6,12 +6,13 @@
 
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Home as HomeIcon } from "lucide-react";
+import { Menu, X, Home as HomeIcon, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import clsx from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
 import UserDropdown from "@/pages/admin/customer/components/UserDropdown";
 import UserMenuItems from "@/pages/admin/customer/components/UserMenuItems";
+import { APP_NAME } from "@/constants";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -69,7 +70,7 @@ const Header = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-4">
           {/* LOGO */}
-          <Link
+          {/* <Link
             to="/"
             className="flex items-center gap-3 group transition-transform hover:scale-105"
           >
@@ -78,6 +79,14 @@ const Header = () => {
               className="w-20 h-15 rounded-lg transition-shadow"
               alt="Logo"
             />
+          </Link> */}
+          <Link to="/" className="inline-block group">
+            <div className="flex items-center gap-3 backdrop-blur-sm px-3 py-2 rounded-2xl transition-all duration-300 group-hover:scale-105">
+              <Building2 className="w-8 h-8 text-blue-400" />
+              <span className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
+                {APP_NAME}
+              </span>
+            </div>
           </Link>
 
           {/* NAV LINKS (Desktop) */}

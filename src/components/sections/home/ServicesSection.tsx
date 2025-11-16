@@ -3,6 +3,7 @@
  * Showcases key services with engaging visuals
  */
 
+import { APP_NAME } from "@/constants";
 import { motion } from "framer-motion";
 import { Search, Key, TrendingUp, Shield, Clock, Award, ArrowRight } from "lucide-react";
 
@@ -78,7 +79,7 @@ const ServicesSection = () => {
           <h2 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-4">
             Why Choose{" "}
             <span className="bg-gradient-to-r from-blue-600 to-emerald-500 bg-clip-text text-transparent">
-              EstateHub
+              {APP_NAME}
             </span>
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">

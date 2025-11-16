@@ -3,6 +3,8 @@
  * Centralized constants for the real estate application
  */
 
+export const APP_NAME = import.meta.env.VITE_APP_NAME;
+
 export const USER_ROLES = {
   ADMIN: "admin",
   AGENT: "agent",
