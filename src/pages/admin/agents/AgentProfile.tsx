@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { fetchAgentProfile, AgentProfile } from "@/api/agent/agentProfile";
+import { fetchAgentProfile, AgentProfile } from "@/api/agent/agentprofile";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import AgentDetailsTab from "@/pages/admin/agents/components/AgentDetailsTab";

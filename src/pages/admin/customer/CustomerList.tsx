@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { exportUsers } from "@/api/admin/userExport";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
-import { getCustomers, Customer } from "@/api/customer/customerList";
+import { getCustomers, Customer } from "@/api/customer/customerlist";
 import {
   activateCustomer,
   deactivateCustomer,

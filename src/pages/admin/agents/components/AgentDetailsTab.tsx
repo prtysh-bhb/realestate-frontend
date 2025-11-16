@@ -1,4 +1,4 @@
-import { AgentProfile } from "@/api/agent/agentProfile";
+import { AgentProfile } from "@/api/agent/agentprofile";
 
 const AgentDetailsTab = ({ agent }: { agent: AgentProfile }) => (
   <div className="space-y-3">
