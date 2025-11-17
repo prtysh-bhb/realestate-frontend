@@ -179,7 +179,7 @@ const RecommendedProperties = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.1 * index }}
               >
-                <PropertyCard property={property} />
+                <PropertyCard property={property} isFavorite={property.is_favorite} />
               </motion.div>
             ))}
           </motion.div>

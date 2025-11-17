@@ -5,7 +5,7 @@
 
 import api from "@/api/axios";
 import type { Property, PropertyFormData } from "@/types/property";
-import type { ApiResponse, PaginatedResponse, PaginationMeta } from "@/types/api";
+import type { ApiResponse, PaginatedResponse } from "@/types/api";
 import { handleApiError } from "@/services/errorHandler";
 
 interface PropertyDetailResponse {
@@ -13,7 +13,7 @@ interface PropertyDetailResponse {
 }
 
 interface PropertyListResponse {
-  data: Property[];
+  properties: Property[];
   total: number;
   per_page: number;
   current_page: number;
@@ -35,8 +35,9 @@ export const getAgentProperties = async (
       `/agent/properties`,
       { params: { page } }
     );
+    
     return {
-      data: response.data.data.data,
+      data: response.data.data.properties,
       pagination: {
         total: response.data.data.total,
         per_page: response.data.data.per_page,

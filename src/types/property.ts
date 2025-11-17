@@ -75,6 +75,8 @@ export interface FilterState {
   type: string;
   amenities: string[];
   sortBy: string;
+  sort_by: string;
+  sort_order: string;
 }
 
 export interface FavoriteProperty {

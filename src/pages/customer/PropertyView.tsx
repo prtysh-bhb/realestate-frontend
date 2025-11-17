@@ -26,7 +26,6 @@ import {
   Mail,
   Phone,
   Download,
-  Calendar,
   Building2,
   Sparkles
 } from 'lucide-react';
@@ -36,7 +35,7 @@ import CustomerInquiryModal from './CustomerInquiryModal';
 import { toast } from 'sonner';
 import { formatAmount, getDocumentTypeFromUrl, getFileSizeInMB } from '@/helpers/customer_helper';
 import ImageModal from './ImageModal';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 const PropertyView = () => {
   const { id } = useParams<{ id: string }>();
@@ -85,11 +84,6 @@ const PropertyView = () => {
       default:
         return <File className="text-gray-500" />;
     }
-  };
-
-  const handleImageClick = (index: number) => {
-    setSelectedImageIndex(index);
-    setIsImageModalOpen(true);
   };
 
   const handleCloseImageModal = () => {
@@ -492,7 +486,7 @@ const PropertyView = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
-              className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-3xl shadow-xl p-6 sm:p-8 sticky top-24"
+              className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-3xl shadow-xl p-6 sm:p-8 top-24"
             >
               <h2 className="text-2xl font-bold text-white mb-6">Listing Agent</h2>
               <div className="flex items-center gap-4 mb-6">

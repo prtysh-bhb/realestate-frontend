@@ -15,7 +15,6 @@ import {
   Filter,
   Search,
   X,
-  Home as HomeIcon,
   LayoutGrid,
   RotateCcw,
   Building2,
@@ -50,7 +49,9 @@ const PropertyFilters = () => {
     max_area: '',
     type: 'rent',
     amenities: [],
-    sortBy: 'Newest First'
+    sort_by: '',
+    sort_order: '',
+    sortBy: 'Newest First',
   });
 
   const [properties, setProperties] = useState<Property[]>([]);
@@ -61,6 +62,52 @@ const PropertyFilters = () => {
       ...prev,
       [id]: value
     }));
+  };
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+
+    let sort_by = "";
+    let sort_order = "";
+    let sortBy = "";
+
+    switch (value) {
+      case "Newest First":
+        sort_by = "created_at";
+        sort_order = "desc";
+        sortBy = value;
+        break;
+
+      case "Oldest First":
+        sort_by = "created_at";
+        sort_order = "asc";
+        sortBy = value;
+        break;
+
+      case "Price: Low to High":
+        sort_by = "price";
+        sort_order = "asc";
+        sortBy = value;
+        break;
+
+      case "Price: High to Low":
+        sort_by = "price";
+        sort_order = "desc";
+        sortBy = value;
+        break;
+
+      default:
+        break;
+    }
+
+    setFilters(prev => ({
+      ...prev,
+      sort_by,
+      sort_order,
+      sortBy
+    }));
+
+    setShouldFetch(true);
   };
 
   const handleAmenityChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -82,27 +129,7 @@ const PropertyFilters = () => {
   };
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-
-    const filterData: FilterState = {
-      keyword: params.get("keyword") || "",
-      location: params.get("location") || "",
-      state: params.get("state") || "",
-      city: params.get("city") || "",
-      property_type: params.get("property_type") || "",
-      min_price: params.get("min_price") || "",
-      max_price: params.get("max_price") || "",
-      bedrooms: params.get("bedrooms") || "",
-      bathrooms: params.get("bathrooms") || "",
-      min_area: params.get("min_area") || "",
-      max_area: params.get("max_area") || "",
-      type: propType || "rent",
-      amenities: params.get("amenities")
-        ? params.get("amenities")!.split(",")
-        : [],
-      sortBy: params.get("sortBy") || "Newest First",
-    };
-
+    const filterData = location.state?.filters;
     setFilters(filterData);
     setShouldFetch(true);
   }, [location.search, propType]);
@@ -159,7 +186,9 @@ const PropertyFilters = () => {
       max_area: '',
       type: propType,
       amenities: [],
-      sortBy: ''
+      sort_by: '',
+      sort_order: '',
+      sortBy: 'Newest First'
     });
 
     handleApplyFilters();
@@ -281,8 +310,8 @@ const PropertyFilters = () => {
                 {/* Sort Dropdown */}
                 <select
                   id="sortBy"
-                  value={filters.sortBy}
-                  onChange={handleInputChange}
+                  value={filters?.sortBy}
+                  onChange={handleSortChange}
                   className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer font-medium"
                 >
                   <option value="Newest First">Newest First</option>

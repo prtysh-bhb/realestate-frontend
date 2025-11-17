@@ -3,7 +3,6 @@
  * Modern, professional hero with stunning visuals and smooth interactions
  */
 
-import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChangeEvent, useEffect, useState } from "react";
 import {
@@ -11,7 +10,6 @@ import {
   SlidersHorizontal,
   MapPin,
   Home as HomeIcon,
-  X,
   Building2,
   DollarSign,
   Bed,
@@ -26,7 +24,6 @@ import { PropertyAttribute, propertyAttributes } from "@/api/customer/properties
 const HeroSection = () => {
   const [activeTab, setActiveTab] = useState<"rent" | "sale">("sale");
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [amenities, setAmenities] = useState<PropertyAttribute[]>([]);
   const [propertyTypes, setPropertyTypes] = useState<PropertyAttribute[]>([]);
   const navigate = useNavigate();
 
@@ -44,14 +41,15 @@ const HeroSection = () => {
     max_area: "",
     type: "sale",
     amenities: [],
-    sortBy: "Newest First",
+    sort_by: '',
+    sort_order: '',
+    sortBy: 'Newest First',
   });
 
   useEffect(() => {
     const fetchAttributes = async () => {
       try {
         const response = await propertyAttributes();
-        setAmenities(response.data.amenities || []);
         setPropertyTypes(response.data.property_types || []);
       } catch (error) {
         console.error("Failed to fetch attributes:", error);
