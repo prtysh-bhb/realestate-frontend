@@ -51,160 +51,191 @@ const AdminSidebar = ({
   // ===============================
   // ROLE-BASED MENU ITEMS
   // ===============================
-  const menuItems =
-    role === "admin"
-      ? [
-          {
-            name: "Dashboard",
-            icon: LayoutDashboard,
-            path: "/admin/dashboard",
-          },
-          {
-            name: "Properties",
-            icon: Home,
-            children: [
-              {
-                name: "All Properties",
-                icon: List,
-                path: "/admin/properties",
-              },
-              {
-                name: "Property Stats",
-                icon: Building2,
-                path: "/admin/properties/stats",
-              },
-            ],
-          },
-          {
-            name: "Agents",
-            icon: Users,
-            children: [
-              {
-                name: "Agents List",
-                icon: List,
-                path: "/admin/agents",
-              },
-              {
-                name: "Add Agent*",
-                icon: PlusCircle,
-                path: "/admin/agents/new",
-              },
-            ],
-          },
-          {
-            name: "Customers",
-            icon: Contact,
-            children: [
-              {
-                name: "Customers List",
-                icon: List,
-                path: "/admin/customers",
-              },
-              {
-                name: "Add Customer*",
-                icon: PlusCircle,
-                path: "/admin/customers/new",
-              },
-            ],
-          },
-          {
-            name: "Leads",
-            icon: ClipboardList,
-            path: "/admin/leads",
-          },
-          {
-            name: "Transactions*",
-            icon: ArrowLeftRight,
-            children: [
-              {
-                name: "Agents",
-                icon: Users,
-                path: "/admin/transactions/agents",
-              },
-              {
-                name: "Customers",
-                icon: Contact,
-                path: "/admin/transactions/customers",
-              },
-            ],
-          },
-          { name: "Orders*", icon: HousePlus, path: "/admin/orders" },
-          { name: "Inbox*", icon: MailOpen, path: "/admin/inbox" },
-          { name: "Chat*", icon: MessageCircle, path: "/admin/chat" },
-          { name: "Reviews*", icon: MessageSquare, path: "/admin/reviews" },
-          { name: "Settings*", icon: Settings, path: "/admin/settings" },
-        ]
-      : role === "agent"
-      ? [
-          // 👇 AGENT MENU (Dynamic based on login)
-          {
-            name: "Dashboard",
-            icon: LayoutDashboard,
-            path: "/admin/dashboard",
-          },
-          {
-            name: "My Properties",
-            icon: Home,
-            children: [
-              {
-                name: "Property List",
-                icon: List,
-                path: `/agent/properties`,
-              },
-              {
-                name: "Add Property",
-                icon: PlusCircle,
-                path: `/agent/properties/new`,
-              },
-            ],
-          },
-          {
-            name: "Customers",
-            icon: Contact,
-            children: [
-              {
-                name: "Customer List",
-                icon: List,
-                path: "/admin/customers",
-              },
-              {
-                name: "Add Customer*",
-                icon: PlusCircle,
-                path: "/admin/customers/new",
-              },
-            ],
-          },
-          {
-            name: "Leads",
-            icon: ClipboardList,
-            path: "/admin/leads",
-          },
-          { name: "Inbox*", icon: MailOpen, path: "/admin/inbox" },
-          { name: "Chat*", icon: MessageCircle, path: "/admin/chat" },
-          { name: "Settings*", icon: Settings, path: "/admin/settings" },
-        ]
-      : [
-          // 👇 CUSTOMER MENU
-          {
-            name: "Dashboard",
-            icon: LayoutDashboard,
-            path: "/admin/dashboard",
-          },
-          {
-            name: "My Properties",
-            icon: Home,
-            children: [
-              {
-                name: "Property List",
-                icon: Building2,
-                path: `/admin/customers/${userId}/properties`,
-              },
-            ],
-          },
-          { name: "Inbox", icon: MailOpen, path: "/admin/inbox" },
-          { name: "Chat", icon: MessageCircle, path: "/admin/chat" },
-          { name: "Settings", icon: Settings, path: "/admin/settings" },
-        ];
+const menuItems =
+  role === "admin"
+    ? [
+        {
+          name: "Dashboard*",
+          icon: LayoutDashboard,
+          path: "/admin/dashboard",
+          exact: true,
+        },
+        {
+          name: "Properties",
+          icon: Home,
+          children: [
+            {
+              name: "All Properties",
+              icon: List,
+              path: "/admin/properties",
+              exact: true,
+            },
+            {
+              name: "Property Stats",
+              icon: Building2,
+              path: "/admin/properties/stats",
+              exact: true,
+            },
+          ],
+        },
+        {
+          name: "Agents",
+          icon: Users,
+          children: [
+            {
+              name: "Agents List",
+              icon: List,
+              path: "/admin/agents",
+              exact: true,
+            },
+            {
+              name: "Add Agent*",
+              icon: PlusCircle,
+              path: "/admin/agents/new",
+              exact: true,
+            },
+          ],
+        },
+        {
+          name: "Customers",
+          icon: Contact,
+          children: [
+            {
+              name: "Customers List",
+              icon: List,
+              path: "/admin/customers",
+              exact: true,
+            },
+            {
+              name: "Add Customer*",
+              icon: PlusCircle,
+              path: "/admin/customers/new",
+              exact: true,
+            },
+          ],
+        },
+        {
+          name: "Transactions*",
+          icon: ArrowLeftRight,
+          children: [
+            {
+              name: "Agents",
+              icon: Users,
+              path: "/admin/transactions/agents",
+              exact: true,
+            },
+            {
+              name: "Customers",
+              icon: Contact,
+              path: "/admin/transactions/customers",
+              exact: true,
+            },
+          ],
+        },
+        { name: "Orders*", icon: HousePlus, path: "/admin/orders", exact: true },
+        { name: "Inbox*", icon: MailOpen, path: "/admin/inbox", exact: true },
+        { name: "Chat*", icon: MessageCircle, path: "/admin/chat", exact: true },
+        {
+          name: "Reviews*",
+          icon: MessageSquare,
+          path: "/admin/reviews",
+          exact: true,
+        },
+        {
+          name: "Settings*",
+          icon: Settings,
+          path: "/admin/settings",
+          exact: true,
+        },
+      ]
+    : role === "agent"
+    ? [
+        {
+          name: "Dashboard*",
+          icon: LayoutDashboard,
+          path: "/agent/dashboard",
+          exact: true,
+        },
+        {
+          name: "My Properties",
+          icon: Home,
+          children: [
+            {
+              name: "Property List",
+              icon: List,
+              path: `/agent/properties`,
+              exact: true,
+            },
+            {
+              name: "Add Property",
+              icon: PlusCircle,
+              path: `/agent/properties/new`,
+              exact: true,
+            },
+          ],
+        },
+        {
+          name: "Customers*",
+          icon: Contact,
+          children: [
+            {
+              name: "Customer List*",
+              icon: List,
+              path: "/agent/customers",
+              exact: true,
+            },
+            {
+              name: "Add Customer*",
+              icon: PlusCircle,
+              path: "/agent/customers/new",
+              exact: true,
+            },
+          ],
+        },
+        {
+          name: "Leads",
+          icon: ClipboardList,
+          path: "/agent/leads",
+          exact: false,
+        },
+        { name: "Inbox*", icon: MailOpen, path: "/admin/inbox", exact: true },
+        { name: "Chat*", icon: MessageCircle, path: "/admin/chat", exact: true },
+        {
+          name: "Settings*",
+          icon: Settings,
+          path: "/admin/settings",
+          exact: true,
+        },
+      ]
+    : [
+        {
+          name: "Dashboard",
+          icon: LayoutDashboard,
+          path: "/admin/dashboard",
+          exact: true,
+        },
+        {
+          name: "My Properties",
+          icon: Home,
+          children: [
+            {
+              name: "Property List",
+              icon: Building2,
+              path: `/admin/customers/${userId}/properties`,
+              exact: false,
+            },
+          ],
+        },
+        { name: "Inbox", icon: MailOpen, path: "/admin/inbox", exact: true },
+        { name: "Chat", icon: MessageCircle, path: "/admin/chat", exact: true },
+        {
+          name: "Settings",
+          icon: Settings,
+          path: "/admin/settings",
+          exact: true,
+        },
+      ];
+
 
   // ===============================
   // Keep dropdown open for active route
@@ -301,6 +332,7 @@ const AdminSidebar = ({
                         <NavLink
                           key={child.name}
                           to={child.path}
+                          end={!!child.exact}
                           className={({ isActive }) =>
                             `flex items-center gap-2 px-3 py-2.5 text-sm rounded-lg transition-all hover:bg-white/10 text-gray-400 hover:text-gray-200 ${
                               isActive ? "bg-gradient-to-r from-blue-600 to-emerald-600 text-white shadow-lg font-medium" : ""
@@ -317,6 +349,7 @@ const AdminSidebar = ({
               ) : (
                 <NavLink
                   to={item.path}
+                  end={!!item.exact}
                   className={({ isActive }) =>
                     `group flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 backdrop-blur-sm text-gray-300 transition-all text-sm ${
                       collapsed ? "justify-center" : ""

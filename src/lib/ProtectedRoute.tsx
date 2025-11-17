@@ -15,8 +15,14 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   if (!token || !user) return <Navigate to="/" />;
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    // Redirect non-admin users to customer dashboard
-    return <Navigate to="/dashboard" />;
+    if(user.role == 'admin'){
+      return <Navigate to="/admin/dashboard" />;      
+    }else if(user.role == 'agent'){
+      return <Navigate to="/agent/dashboard" />;
+    }else{
+      // Redirect non-admin users to customer dashboard
+      return <Navigate to="/dashboard" />;
+    }
   }
 
   return children;

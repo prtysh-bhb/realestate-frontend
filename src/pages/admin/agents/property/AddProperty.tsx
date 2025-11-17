@@ -62,19 +62,14 @@ const AddProperty = () => {
     if (!formData.property_type?.trim())
       newErrors.property_type = "Property type is required.";
 
-    if (
-      formData.bedrooms === "" ||
-      isNaN(Number(formData.bedrooms)) ||
-      formData.bedrooms < 0
-    )
-      newErrors.bedrooms = "Valid number of bedrooms is required.";
-
-    if (
-      formData.bathrooms === "" ||
-      isNaN(Number(formData.bathrooms)) ||
-      formData.bathrooms < 0
-    )
-      newErrors.bathrooms = "Valid number of bathrooms is required.";
+    if (formData.bedrooms < 0 || isNaN(Number(formData.bedrooms)))
+      newErrors.bedrooms = "Valid bedrooms count is required.";
+    else if (formData.bedrooms > 20)
+      newErrors.bedrooms = "Bedrooms cannot exceed 20.";
+    if (formData.bathrooms < 0 || isNaN(Number(formData.bathrooms)))
+      newErrors.bathrooms = "Valid bathrooms count is required.";
+    else if (formData.bathrooms > 20)
+      newErrors.bathrooms = "Bathrooms cannot exceed 20.";
 
     if (
       formData.area === "" ||

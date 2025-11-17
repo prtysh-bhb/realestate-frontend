@@ -144,7 +144,7 @@ const LeadList = () => {
                     size="sm"
                     className="flex items-center gap-1 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 cursor-pointer transition-all"
                     onClick={() =>
-                      navigate(`/admin/agents/lead/view/${lead.id}`)
+                      navigate(`/agent/leads/${lead.id}`)
                     }
                   >
                     <Eye size={15} />

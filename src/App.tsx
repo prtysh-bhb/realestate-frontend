@@ -119,11 +119,21 @@ function App() {
           <Route path="/contact" element={<ContactPage />} />
         </Route>
 
-        {/* ---------------- ADMIN & AGENT DASHBOARD ---------------- */}
+        {/* ---------------- ADMIN DASHBOARD ---------------- */}
         <Route
           path="/admin/dashboard"
           element={
-            <ProtectedRoute allowedRoles={["admin", "agent"]}>
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ---------------- AGENT DASHBOARD ---------------- */}
+        <Route
+          path="/agent/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["agent"]}>
               <AdminDashboardPage />
             </ProtectedRoute>
           }
@@ -165,19 +175,19 @@ function App() {
           }
         />
 
-        {/* ---------------- LEADS ---------------- */}
+        {/* ---------------- AGENT LEADS ---------------- */}
         <Route
-          path="/admin/leads"
+          path="/agent/leads"
           element={
-            <ProtectedRoute allowedRoles={["admin", "agent"]}>
+            <ProtectedRoute allowedRoles={["agent"]}>
               <LeadList />
             </ProtectedRoute>
           }
         />
         <Route
-          path="/admin/leads/:id"
+          path="/agent/leads/:id"
           element={
-            <ProtectedRoute allowedRoles={["admin", "agent"]}>
+            <ProtectedRoute allowedRoles={["agent"]}>
               <ViewLead />
             </ProtectedRoute>
           }
@@ -203,7 +213,7 @@ function App() {
         <Route
           path="/admin/agents/:id"
           element={
-            <ProtectedRoute allowedRoles={["admin", "agent"]}>
+            <ProtectedRoute allowedRoles={["admin"]}>
               <AgentProfilePage />
             </ProtectedRoute>
           }
@@ -229,7 +239,7 @@ function App() {
         <Route
           path="/admin/customers"
           element={
-            <ProtectedRoute allowedRoles={["admin", "agent"]}>
+            <ProtectedRoute allowedRoles={["admin"]}>
               <CustomerList />
             </ProtectedRoute>
           }
@@ -237,7 +247,7 @@ function App() {
         <Route
           path="/admin/customers/new"
           element={
-            <ProtectedRoute allowedRoles={["admin", "agent"]}>
+            <ProtectedRoute allowedRoles={["admin"]}>
               <AddCustomer />
             </ProtectedRoute>
           }
@@ -245,7 +255,7 @@ function App() {
         <Route
           path="/admin/customers/:id"
           element={
-            <ProtectedRoute allowedRoles={["admin", "agent"]}>
+            <ProtectedRoute allowedRoles={["admin"]}>
               <CustomerProfilePage />
             </ProtectedRoute>
           }
@@ -253,7 +263,7 @@ function App() {
         <Route
           path="/admin/customers/:id/properties"
           element={
-            <ProtectedRoute allowedRoles={["admin", "agent", "customer"]}>
+            <ProtectedRoute allowedRoles={["admin"]}>
               <CustomerPropertyList />
             </ProtectedRoute>
           }
@@ -261,7 +271,7 @@ function App() {
         <Route
           path="/admin/customers/:id/transactions"
           element={
-            <ProtectedRoute allowedRoles={["admin", "agent", "customer"]}>
+            <ProtectedRoute allowedRoles={["admin"]}>
               <CustomerTransaction />
             </ProtectedRoute>
           }
@@ -271,7 +281,7 @@ function App() {
         <Route
           path="/agent/properties"
           element={
-            <ProtectedRoute allowedRoles={["agent", "admin"]}>
+            <ProtectedRoute allowedRoles={["agent"]}>
               <PropertyList />
             </ProtectedRoute>
           }
@@ -279,7 +289,7 @@ function App() {
         <Route
           path="/agent/properties/new"
           element={
-            <ProtectedRoute allowedRoles={["agent", "admin"]}>
+            <ProtectedRoute allowedRoles={["agent"]}>
               <AddProperty />
             </ProtectedRoute>
           }
@@ -331,7 +341,7 @@ function App() {
         <Route
           path="/admin/transactions/customers"
           element={
-            <ProtectedRoute allowedRoles={["admin", "agent"]}>
+            <ProtectedRoute allowedRoles={["admin"]}>
               <CustomerTransaction />
             </ProtectedRoute>
           }
@@ -349,7 +359,7 @@ function App() {
         <Route
           path="/admin/inbox"
           element={
-            <ProtectedRoute allowedRoles={["admin", "agent", "customer"]}>
+            <ProtectedRoute allowedRoles={["admin"]}>
               <InboxPage />
             </ProtectedRoute>
           }
@@ -357,7 +367,7 @@ function App() {
         <Route
           path="/admin/chat"
           element={
-            <ProtectedRoute allowedRoles={["admin", "agent", "customer"]}>
+            <ProtectedRoute allowedRoles={["admin"]}>
               <ChatPage />
             </ProtectedRoute>
           }
@@ -373,7 +383,7 @@ function App() {
         <Route
           path="/admin/settings"
           element={
-            <ProtectedRoute allowedRoles={["admin", "agent", "customer"]}>
+            <ProtectedRoute allowedRoles={["admin"]}>
               <SettingsPage />
             </ProtectedRoute>
           }
