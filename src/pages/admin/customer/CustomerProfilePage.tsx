@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { fetchCustomerProfile, CustomerProfile } from "@/api/customer/customerprofile";
+import { fetchCustomerProfile, CustomerProfile } from "@/api/customer/customerProfile";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import CustomerDetailsTab from "@/pages/admin/customer/components/CustomerDetailsTab";
