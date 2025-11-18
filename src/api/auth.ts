@@ -129,7 +129,7 @@ export const register = async (
  */
 export const forgotPassword = async (email: string): Promise<ForgotPasswordResponse> => {
   try {
-    const response = await api.post<ForgotPasswordResponse>("/forgot-password", { email });
+    const response = await api.post<ForgotPasswordResponse>("/password/email", { email });
     return response.data;
   } catch (error) {
     throw handleApiError(error);

@@ -151,8 +151,6 @@ const AdminDashboardPage = () => {
         setLoading(false);
       }
     };
-
-    console.log(dashboardData);
     
     fetchAll();
   }, []);
