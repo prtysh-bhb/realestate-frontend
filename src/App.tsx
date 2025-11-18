@@ -62,6 +62,7 @@ import ProtectedRoute from "@/lib/ProtectedRoute";
 import PublicRoute from "@/lib/PublicRoute";
 import { ApiInterceptor } from "./api/ApiInterceptor";
 import ScrollToTop from "@/components/ScrollToTop";
+import AgentDashboardPage from "./pages/admin/agents/AgentDashboardPage";
 
 function App() {
   return (
@@ -134,7 +135,7 @@ function App() {
           path="/agent/dashboard"
           element={
             <ProtectedRoute allowedRoles={["agent"]}>
-              <AdminDashboardPage />
+              <AgentDashboardPage />
             </ProtectedRoute>
           }
         />

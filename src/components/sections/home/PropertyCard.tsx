@@ -13,6 +13,7 @@ import {
   Eye,
   Share2,
   TrendingUp,
+  Home,
 } from "lucide-react";
 import { Property } from "@/types/property";
 import {
@@ -42,14 +43,7 @@ const PropertyCard: FC<PropertyCardProps> = ({
 
   const imageSrc =
     property.primary_image_url ||
-    property.image_urls?.[0] ||
-    "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800";
-
-  const formatPrice = (price: string | number) => {
-    const numPrice = typeof price === "number" ? price : parseFloat(price);
-    if (isNaN(numPrice)) return "$0";
-    return `$${numPrice.toLocaleString()}`;
-  };
+    property.image_urls?.[0];
 
   const handleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -71,7 +65,7 @@ const PropertyCard: FC<PropertyCardProps> = ({
         toast.success("Added to favorites");
       }
       fetchProperties?.();
-    } catch (error) {
+    } catch {
       toast.error("Failed to update favorites");
     }
   };
@@ -96,13 +90,19 @@ const PropertyCard: FC<PropertyCardProps> = ({
       >
         {/* Image Container */}
         <div className="relative aspect-[4/3] overflow-hidden">
-          <motion.img
-            src={imageSrc}
-            alt={property.title}
-            className="w-full h-full object-cover"
-            animate={{ scale: isHovered ? 1.1 : 1 }}
-            transition={{ duration: 0.6 }}
-          />
+          {imageSrc ? (
+            <motion.img
+              src={imageSrc}
+              alt={property.title}
+              className="w-full h-full object-cover"
+              animate={{ scale: isHovered ? 1.1 : 1 }}
+              transition={{ duration: 0.6 }}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+              <Home className="w-16 h-16 text-gray-300 dark:text-gray-600" />
+            </div>
+          )}
 
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -146,7 +146,7 @@ const PropertyCard: FC<PropertyCardProps> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-3xl font-bold text-slate-900">
-                    {formatPrice(property.price)}
+                    {formatAmount(property.price)}
                   </p>
                   {property.type === "rent" && (
                     <p className="text-sm text-gray-600 font-medium">/month</p>

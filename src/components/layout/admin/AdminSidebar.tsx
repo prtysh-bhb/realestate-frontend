@@ -55,7 +55,7 @@ const menuItems =
   role === "admin"
     ? [
         {
-          name: "Dashboard*",
+          name: "Dashboard",
           icon: LayoutDashboard,
           path: "/admin/dashboard",
           exact: true,
@@ -151,7 +151,7 @@ const menuItems =
     : role === "agent"
     ? [
         {
-          name: "Dashboard*",
+          name: "Dashboard",
           icon: LayoutDashboard,
           path: "/agent/dashboard",
           exact: true,

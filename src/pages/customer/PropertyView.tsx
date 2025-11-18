@@ -207,7 +207,7 @@ const PropertyView = () => {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="text-left sm:text-right">
                 <p className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent">
-                  ${formatAmount(property?.price ?? 0)}
+                  {formatAmount(property?.price ?? 0)}
                 </p>
                 <p className="text-gray-600 capitalize font-medium mt-1">
                   For {property?.type === "sale" ? "Sale" : "Rent"}
@@ -326,12 +326,8 @@ const PropertyView = () => {
                 )}
               </>
             ) : (
-              <div className="h-96 flex items-center justify-center bg-gray-100">
-                <img
-                  src="/assets/no_image_found.jpg"
-                  alt="No image available"
-                  className="max-h-full object-contain"
-                />
+              <div className="w-full h-96 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+                <Home className="w-16 h-16 text-gray-300 dark:text-gray-600" />
               </div>
             )}
           </div>

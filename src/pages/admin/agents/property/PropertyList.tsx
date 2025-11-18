@@ -18,6 +18,7 @@ import {
   AlertTriangle,
   X,
 } from "lucide-react";
+import { formatAmount } from "@/helpers/customer_helper";
 
 const PropertyList = () => {
   const [properties, setProperties] = useState<Property[]>([]);
@@ -165,7 +166,7 @@ const PropertyList = () => {
 
                   <div className="text-sm text-gray-500 flex items-center gap-1">
                     <DollarSign size={14} className="text-green-500" />
-                    ${property.price.toLocaleString()}
+                    {formatAmount(property.price)}
                   </div>
                 </div>
 

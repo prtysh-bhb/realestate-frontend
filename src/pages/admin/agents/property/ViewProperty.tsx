@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Trash2, AlertTriangle, X } from "lucide-react";
+import { ArrowLeft, Trash2, AlertTriangle, X, Home } from "lucide-react";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
 import { getPropertyById, deleteProperty } from "@/api/agent/property";
 import type { Property } from "@/types/property";
@@ -9,13 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import PropertyDocuments from "./PropertyDocuments";
 import { Attributes, propertyAttributes } from "@/api/customer/properties";
-
-const getImageUrl = (path?: string | null) => {
-  if (!path) return "https://placehold.co/800x400?text=No+Image";
-  if (path.startsWith("http")) return path;
-  const clean = path.replace(/^public\//, "").replace(/^storage\//, "");
-  return `${import.meta.env.VITE_API_URL}/storage/${clean}`;
-};
+import { formatAmount } from "@/helpers/customer_helper";
 
 const ViewProperty = () => {
   const { id } = useParams<{ id: string }>();
@@ -151,11 +145,9 @@ const ViewProperty = () => {
               />
             ))
           ) : (
-            <img
-              src="https://placehold.co/800x400?text=No+Image"
-              alt="No Image"
-              className="w-full h-64 object-cover rounded-xl border border-gray-200"
-            />
+            <div className="w-full h-50 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+              <Home className="w-16 h-16 text-gray-300 dark:text-gray-600" />
+            </div>
           )}
         </div>
 
@@ -163,7 +155,7 @@ const ViewProperty = () => {
         <Card className="shadow-md border border-gray-200">
           <CardContent className="p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Info label="Price" value={`$${property.price.toLocaleString()}`} />
+              <Info label="Price" value={`${formatAmount(property.price)}`} />
               <Info label="Type" value={property.type} />
               <Info label="Property Type" value={propertyTypes?.find(a => a.key === property?.property_type)?.label ?? '-'} />
               <Info label="Bedrooms" value={property.bedrooms} />

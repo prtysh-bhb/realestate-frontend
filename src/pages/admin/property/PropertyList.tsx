@@ -16,12 +16,10 @@ import {
   Grid3x3,
   List,
   Search,
-  Filter,
   MapPin,
   Bed,
   Bath,
   Maximize2,
-  Eye,
   DollarSign,
 } from "lucide-react";
 import { toast } from "sonner";
