@@ -30,7 +30,7 @@ const AddProperty = () => {
     state: "",
     zipcode: "",
     type: "sale",
-    property_type: "",
+    property_type: "apartment",
     bedrooms: "",
     bathrooms: "",
     area: "",
@@ -39,6 +39,7 @@ const AddProperty = () => {
   });
 
   const [images, setImages] = useState<FileList | null>(null);
+  const [video, setVideo] = useState<File | null>(null);
 
   const validatePropertyForm = (formData: any): boolean => {
     const newErrors: Record<string, string> = {};
@@ -145,6 +146,34 @@ const AddProperty = () => {
     }
   };
 
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.length) return;
+
+    const file = e.target.files[0];
+
+    // size limit: 50MB
+    if (file.size > 50 * 1024 * 1024) {
+      setErrors((prev) => ({
+        ...prev,
+        video: "Video exceeds 50MB size limit.",
+      }));
+      return;
+    }
+
+    // format validation
+    if (file.type !== "video/mp4") {
+      setErrors((prev) => ({
+        ...prev,
+        video: "Only MP4 video format is allowed.",
+      }));
+      return;
+    }
+
+    // valid → clear errors
+    setErrors((prev) => ({ ...prev, video: "" }));
+    setVideo(file);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validatePropertyForm(formData)) return;
@@ -168,6 +197,10 @@ const AddProperty = () => {
         });
       }
 
+      if(video){
+        data.append("video", video);
+      }
+
       await createProperty(data);
       toast.success("Property created successfully!");
       navigate("/agent/properties");
@@ -189,7 +222,7 @@ const AddProperty = () => {
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* ---------- Property Info Section ---------- */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-4">
+            <h3 className="text-2xl font-semibold text-gray-800 mb-4">
               Property Information
             </h3>
 
@@ -348,7 +381,7 @@ const AddProperty = () => {
 
             {/* Amenities */}
             <div className="mt-4 mb-10">
-              <h3 className="font-semibold text-gray-800 mb-4">Amenities</h3>
+              <h3 className="text-2xl font-semibold text-gray-800 mb-4">Amenities</h3>
               <div className="grid grid-cols-2 lg:grid-cols-9 gap-3 bg-gray-100 p-4 rounded-lg">
                 {amenities?.map((item) => (
                   <div key={item.key} className="flex items-center">
@@ -368,8 +401,8 @@ const AddProperty = () => {
             </div>
 
             {/* Images */}
-            <h3 className="font-semibold text-gray-800 mb-4">Add New Images</h3>
-            <div className="mt-4">
+            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Add New Images</h3>
+            <div className="mt-4 mb-10">
               <label className="block text-sm font-medium mb-1 text-gray-600">
                 Upload Images (max 10)
               </label>
@@ -387,10 +420,30 @@ const AddProperty = () => {
                 <p className="text-red-500 text-xs mt-1">{errors.images}</p>
               )}
             </div>
+
+            {/* Video */}
+            <h3 className="text-2xl font-semibold text-gray-800 mb-4 mt-4">Add Property Video</h3>
+            <div className="mt-4">
+              <label className="block text-sm font-medium mb-1 text-gray-600">
+                Upload Video (MP4 only, max 1 file)
+              </label>
+              <Input
+                type="file"
+                name="video"
+                className={`border-gray-300 ${
+                  errors.video ? "border-red-500" : ""
+                }`}
+                accept="video/mp4"
+                onChange={handleVideoChange}
+              />
+              {errors.video && (
+                <p className="text-red-500 text-xs mt-1">{errors.video}</p>
+              )}
+            </div>
           </div>
 
           {/* ---------- Location Section ---------- */}
-          <h3 className="font-semibold text-gray-800 mb-4">Location Details</h3>
+          <h3 className="text-2xl font-semibold text-gray-800 mb-4">Location Details</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-600">

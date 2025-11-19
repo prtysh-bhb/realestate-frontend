@@ -33,6 +33,7 @@ export interface Property {
   approved_by?: number;
   rejection_reason?: string | null;
   primary_image_url: string | null;
+  video_url: string | null;
   image_urls: string[];
   document_urls: DocumentFile[];
   amenities: string[];

@@ -37,6 +37,7 @@ const EditProperty = () => {
     });
   const [images, setImages] = useState<string[]>([]);
   const [newImages, setNewImages] = useState<File[]>([]);
+  const [video, setVideo] = useState<File | null>(null);
   const [removeImages, setRemoveImages] = useState<number[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [amenities, setAmenities] = useState<Attributes[]>([]);
@@ -171,6 +172,34 @@ const EditProperty = () => {
     setNewImages((prev) => [...prev, ...validFiles]);
   };
 
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.length) return;
+
+    const file = e.target.files[0];
+
+    // size limit: 50MB
+    if (file.size > 50 * 1024 * 1024) {
+      setErrors((prev) => ({
+        ...prev,
+        video: "Video exceeds 50MB size limit.",
+      }));
+      return;
+    }
+
+    // format validation
+    if (file.type !== "video/mp4") {
+      setErrors((prev) => ({
+        ...prev,
+        video: "Only MP4 video format is allowed.",
+      }));
+      return;
+    }
+
+    // valid → clear errors
+    setErrors((prev) => ({ ...prev, video: "" }));
+    setVideo(file);
+  };
+
   const handleRemoveExistingImage = (index: number) => {
     setRemoveImages((prev) =>
       prev.includes(index)
@@ -218,6 +247,11 @@ const EditProperty = () => {
       removeImages.forEach((i) => data.append("remove_images[]", i.toString()));
       newImages.forEach((file) => data.append("images[]", file));
 
+      if(video){
+        data.append("video", video);
+        data.append("remove_video", "1");
+      }
+
       // ✅ Submit to backend
       await updateProperty(Number(id), data);
 
@@ -259,7 +293,7 @@ const EditProperty = () => {
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Property Info */}
           <div>
-            <h2 className="text-lg font-semibold mb-4 text-gray-700">
+            <h2 className="text-2xl font-semibold mb-4 text-gray-800">
               Property Information
             </h2>
 
@@ -364,7 +398,7 @@ const EditProperty = () => {
 
           {/* Amenities */}
           <div>
-            <h3 className="font-semibold text-gray-800 mb-4">Amenities</h3>
+            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Amenities</h3>
             <div className="grid grid-cols-2 lg:grid-cols-9 gap-3 bg-gray-100 p-4 rounded-lg">
               {amenities.map((item) => (
                 <label
@@ -386,7 +420,7 @@ const EditProperty = () => {
 
           {/* Existing + New Images */}
           <div>
-            <h3 className="font-semibold text-gray-800 mb-4">
+            <h3 className="text-2xl font-semibold text-gray-800 mb-4">
               Existing Images
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -417,7 +451,7 @@ const EditProperty = () => {
           </div>
 
           <div>
-            <h3 className="font-semibold text-gray-800 mb-4">Add New Images</h3>
+            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Add New Images</h3>
             <input
               type="file"
               multiple
@@ -447,9 +481,29 @@ const EditProperty = () => {
             )}
           </div>
 
+          {/* Video */}
+            <h3 className="text-2xl font-semibold text-gray-800 mb-4 mt-4">Add Property Video</h3>
+            <div className="mt-4">
+              <label className="block text-sm font-medium mb-1 text-gray-600">
+                Upload Video (MP4 only, max 1 file)
+              </label>
+              <Input
+                type="file"
+                name="video"
+                className={`border-gray-300 ${
+                  errors.video ? "border-red-500" : ""
+                }`}
+                accept="video/mp4"
+                onChange={handleVideoChange}
+              />
+              {errors.video && (
+                <p className="text-red-500 text-xs mt-1">{errors.video}</p>
+              )}
+            </div>
+
           {/* ---------- Location Section ---------- */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-4">
+            <h3 className="text-2xl font-semibold text-gray-800 mb-4">
               Location Details
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

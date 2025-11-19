@@ -521,7 +521,7 @@ const AgentDashboardPage = () => {
                       Start building your portfolio by adding your first property listing
                     </p>
                     <Link 
-                      to="/agent/properties/create"
+                      to="/agent/properties/new"
                       className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105"
                     >
                       <Rocket className="w-4 h-4" />

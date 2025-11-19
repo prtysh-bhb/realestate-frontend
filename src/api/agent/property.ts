@@ -148,3 +148,15 @@ export const deleteProperty = async (id: number): Promise<ApiResponse<null>> => 
     throw handleApiError(error);
   }
 };
+
+/**
+ * Delete property video
+ */
+export const deletePropertyVideo = async (id: number): Promise<ApiResponse<null>> => {
+  try {
+    const response = await api.delete<ApiResponse<null>>(`/agent/properties/${id}/video`);
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+};

@@ -27,7 +27,9 @@ import {
   Phone,
   Download,
   Building2,
-  Sparkles
+  Sparkles,
+  Video,
+  Image
 } from 'lucide-react';
 import { JSX, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -36,6 +38,7 @@ import { toast } from 'sonner';
 import { formatAmount, getDocumentTypeFromUrl, getFileSizeInMB } from '@/helpers/customer_helper';
 import ImageModal from './ImageModal';
 import { motion } from 'framer-motion';
+import ReactPlayer from 'react-player';
 
 const PropertyView = () => {
   const { id } = useParams<{ id: string }>();
@@ -49,6 +52,7 @@ const PropertyView = () => {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [images, setImages] = useState<string[]>([]);
   const [documents, setDocuments] = useState<DocumentFile[]>([]);
+  const [activeTab, setActiveTab] = useState<'photos' | 'videos'>('photos');
   const isLogin = localStorage.getItem("token") ? true : false;
 
   const fetchPropertyAttributes = async () => {
@@ -102,7 +106,7 @@ const PropertyView = () => {
     const fetchProperty = async () => {
       try {
         const data = await getProperty(Number(id));
-        if (data.success) {
+        if (data.success) {          
           initDocuments(data.data.property?.document_urls);
           setProperty(data.data.property);
           setImages(data.data.property.image_urls);
@@ -123,13 +127,16 @@ const PropertyView = () => {
 
   const initDocuments = (documents: DocumentFile[] = []): void => {
     const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"];
+    const videoExtensions = [".mp4", ".mov", ".avi", ".mkv", ".webm"];
+    
     const imageDocs = documents.filter((doc) =>
       imageExtensions.some((ext) => doc.url.toLowerCase().endsWith(ext))
     );
 
     const nonImageDocs = documents.filter(
       (doc) =>
-        !imageExtensions.some((ext) => doc.url.toLowerCase().endsWith(ext))
+        !imageExtensions.some((ext) => doc.url.toLowerCase().endsWith(ext)) &&
+        !videoExtensions.some((ext) => doc.url.toLowerCase().endsWith(ext))
     );
 
     setImages(imageDocs.map((doc) => doc.url));
@@ -252,87 +259,146 @@ const PropertyView = () => {
           </div>
         </motion.div>
 
-        {/* Image Gallery */}
+        {/* Media Gallery with Tabs */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
           className="mb-8"
         >
-          <div className="relative bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
-            {images.length > 0 ? (
-              <>
-                {/* Main Image */}
-                <div className="relative h-96 sm:h-[500px] lg:h-[600px]">
-                  <img
-                    src={images[selectedImageIndex] ?? ""}
-                    alt={`Property image ${selectedImageIndex + 1}`}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.src = "/assets/no_image_found.jpg";
-                    }}
-                  />
+          <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+            {/* Tabs */}
+            <div className="flex border-b border-gray-200">
+              <button
+                onClick={() => setActiveTab('photos')}
+                className={`flex items-center gap-2 px-6 py-4 font-semibold transition-all ${
+                  activeTab === 'photos'
+                    ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <Image size={20} />
+                Photos ({images.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('videos')}
+                className={`flex items-center gap-2 px-6 py-4 font-semibold transition-all ${
+                  activeTab === 'videos'
+                    ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <Video size={20} />
+                Video
+              </button>
+            </div>
 
-                  {/* Navigation Arrows */}
-                  {images.length > 1 && (
-                    <>
-                      <button
-                        onClick={prevImage}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-all"
-                      >
-                        <ChevronLeft size={24} className="text-gray-900" />
-                      </button>
-                      <button
-                        onClick={nextImage}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-all"
-                      >
-                        <ChevronRight size={24} className="text-gray-900" />
-                      </button>
-                    </>
-                  )}
+            {/* Content */}
+            <div className="p-4">
+              {activeTab === 'photos' ? (
+                <>
+                  {images.length > 0 ? (
+                    <div className="relative">
+                      {/* Main Image */}
+                      <div className="relative h-96 sm:h-[500px] lg:h-[600px]">
+                        <img
+                          src={images[selectedImageIndex] ?? ""}
+                          alt={`Property image ${selectedImageIndex + 1}`}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = "/assets/no_image_found.jpg";
+                          }}
+                        />
 
-                  {/* Image Counter */}
-                  <div className="absolute bottom-4 right-4 px-4 py-2 bg-black/60 backdrop-blur-sm rounded-full text-white text-sm font-semibold">
-                    {selectedImageIndex + 1} / {images.length}
-                  </div>
-                </div>
+                        {/* Navigation Arrows */}
+                        {images.length > 1 && (
+                          <>
+                            <button
+                              onClick={prevImage}
+                              className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-all"
+                            >
+                              <ChevronLeft size={24} className="text-gray-900" />
+                            </button>
+                            <button
+                              onClick={nextImage}
+                              className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-all"
+                            >
+                              <ChevronRight size={24} className="text-gray-900" />
+                            </button>
+                          </>
+                        )}
 
-                {/* Thumbnail Strip */}
-                {images.length > 1 && (
-                  <div className="p-4 bg-gray-50 border-t border-gray-200">
-                    <div className="flex gap-3 overflow-x-auto pb-2">
-                      {images.map((image, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setSelectedImageIndex(index)}
-                          className={`relative flex-shrink-0 w-24 h-20 rounded-xl overflow-hidden transition-all ${
-                            selectedImageIndex === index
-                              ? "ring-4 ring-blue-600 scale-105"
-                              : "ring-2 ring-gray-200 hover:ring-blue-300"
-                          }`}
-                        >
-                          <img
-                            src={image}
-                            alt={`Thumbnail ${index + 1}`}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.currentTarget.src = "/assets/no_image_found.jpg";
-                            }}
-                          />
-                        </button>
-                      ))}
+                        {/* Image Counter */}
+                        <div className="absolute bottom-4 right-4 px-4 py-2 bg-black/60 backdrop-blur-sm rounded-full text-white text-sm font-semibold">
+                          {selectedImageIndex + 1} / {images.length}
+                        </div>
+                      </div>
+
+                      {/* Thumbnail Strip */}
+                      {images.length > 1 && (
+                        <div className="p-4 bg-gray-50 border-t border-gray-200">
+                          <div className="flex gap-3 overflow-x-auto pb-2">
+                            {images.map((image, index) => (
+                              <button
+                                key={index}
+                                onClick={() => setSelectedImageIndex(index)}
+                                className={`relative flex-shrink-0 w-24 h-20 rounded-xl overflow-hidden transition-all ${
+                                  selectedImageIndex === index
+                                    ? "ring-4 ring-blue-600 scale-105"
+                                    : "ring-2 ring-gray-200 hover:ring-blue-300"
+                                }`}
+                              >
+                                <img
+                                  src={image}
+                                  alt={`Thumbnail ${index + 1}`}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    e.currentTarget.src = "/assets/no_image_found.jpg";
+                                  }}
+                                />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="w-full h-96 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-                <Home className="w-16 h-16 text-gray-300 dark:text-gray-600" />
-              </div>
-            )}
+                  ) : (
+                    <div className="w-full h-96 flex flex-col items-center justify-center bg-gray-100">
+                      <Image className="w-16 h-16 text-gray-300 mb-4" />
+                      <p className="text-gray-500 text-lg">No photos available</p>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                {console.log(property?.video_url)}
+                  {property?.video_url ? (
+                    <div className="space-y-4">
+                      {/* Main Video Player */}
+                      <div className="relative h-96 sm:h-[500px] lg:h-[600px] bg-black rounded-xl overflow-hidden">
+                        <ReactPlayer
+                          src={property?.video_url}
+                          width="100%"
+                          height="100%"
+                          controls
+                          style={{ borderRadius: '12px' }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-full h-96 flex flex-col items-center justify-center bg-gray-100">
+                      <Video className="w-16 h-16 text-gray-300 mb-4" />
+                      <p className="text-gray-500 text-lg">No video available</p>
+                      <p className="text-gray-400 text-sm mt-2">Check back later for property video</p>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </motion.div>
 
+        {/* Rest of the component remains exactly the same */}
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Property Details */}
@@ -379,7 +445,7 @@ const PropertyView = () => {
                 ].map((detail, index) => (
                   <div key={index} className="flex justify-between items-center py-3 border-b border-gray-100 last:border-0">
                     <span className="text-gray-600 font-medium">{detail.label}</span>
-                    <span className="font-bold text-gray-900 capitalize">{detail.value}</span>
+                    <span className="font-bold text-gray-900 capitalize w-50">{detail.value}</span>
                   </div>
                 ))}
               </div>
@@ -441,7 +507,7 @@ const PropertyView = () => {
               <div className="p-6 sm:p-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
-                    <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
                       <Home size={18} className="text-blue-600" />
                       Address
                     </h3>
@@ -451,7 +517,7 @@ const PropertyView = () => {
                     </p>
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
                       <MapPin size={18} className="text-emerald-600" />
                       Neighborhood
                     </h3>
