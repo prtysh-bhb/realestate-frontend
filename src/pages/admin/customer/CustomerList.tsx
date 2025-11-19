@@ -433,7 +433,7 @@ const CustomerList = () => {
                       <div className="flex gap-2 pt-3 border-t border-gray-100 dark:border-gray-700">
                         <button
                           onClick={() => navigate(`/admin/customers/${c.id}`)}
-                          className="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 transition-all font-medium text-sm"
+                          className="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 transition-all font-medium text-sm cursor-pointer"
                         >
                           <Eye size={16} />
                           <span>View</span>
@@ -441,21 +441,21 @@ const CustomerList = () => {
                         {c.is_active ? (
                           <button
                             onClick={() => openDeactivatePopup(c)}
-                            className="flex-1 px-3 py-2 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-semibold rounded-xl hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-all"
+                            className="flex-1 px-3 py-2 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-semibold rounded-xl hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-all cursor-pointer"
                           >
                             Deactivate
                           </button>
                         ) : (
                           <button
                             onClick={() => handleActivate(c.id)}
-                            className="flex-1 px-3 py-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-semibold rounded-xl hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-all"
+                            className="flex-1 px-3 py-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-semibold rounded-xl hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-all cursor-pointer"
                           >
                             Activate
                           </button>
                         )}
                         <button
                           onClick={() => handleDelete(c.id)}
-                          className="p-2.5 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-all"
+                          className="p-2.5 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-all cursor-pointer"
                         >
                           <Trash2 size={16} />
                         </button>

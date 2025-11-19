@@ -47,11 +47,12 @@ const AgentList = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      {/* Make sure parent allows children to control height and scrolling */}
+      <div className="space-y-6 min-h-0 pb-6">
         {/* Header */}
-        <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+        <div className="bg-white dark:bg-gray-900 p-4 sm:p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 min-w-0">
               <div className="p-3 bg-gradient-to-br from-blue-500 to-emerald-500 rounded-xl">
                 <Users className="text-white" size={24} />
               </div>
@@ -65,9 +66,9 @@ const AgentList = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 shadow-sm hover:border-blue-400 dark:hover:border-emerald-600 transition-all">
-                <Search size={16} className="text-gray-400 mr-2" />
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+              <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 shadow-sm hover:border-blue-400 dark:hover:border-emerald-600 transition-all w-full sm:w-auto">
+                <Search size={16} className="text-gray-400 mr-2 flex-shrink-0" />
                 <input
                   type="text"
                   placeholder="Search agents..."
@@ -76,7 +77,7 @@ const AgentList = () => {
                     setSearch(e.target.value);
                     setPage(1);
                   }}
-                  className="bg-transparent outline-none text-sm text-gray-900 dark:text-white w-48 placeholder-gray-500"
+                  className="bg-transparent outline-none text-sm text-gray-900 dark:text-white w-full sm:w-48 placeholder-gray-500"
                 />
               </div>
 
@@ -105,13 +106,17 @@ const AgentList = () => {
                 </button>
               </div>
 
-              <button className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-950/20 hover:border-blue-400 dark:hover:border-emerald-600 text-gray-700 dark:text-gray-300 transition-all text-sm shadow-sm">
+              <button
+                className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-950/20 hover:border-blue-400 dark:hover:border-emerald-600 text-gray-700 dark:text-gray-300 transition-all text-sm shadow-sm w-full sm:w-auto"
+                title="Filters"
+              >
                 <Filter size={16} />
+                <span className="hidden sm:inline">Filter</span>
               </button>
 
               <button
                 onClick={() => navigate("/admin/agents/new")}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white transition-all text-sm shadow-md hover:shadow-lg font-medium"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white transition-all text-sm shadow-md hover:shadow-lg font-medium w-full sm:w-auto"
               >
                 <UserPlus size={16} />
                 <span>Add Agent</span>
@@ -140,26 +145,24 @@ const AgentList = () => {
           <>
             {/* Table View */}
             {viewMode === "table" && (
-              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
+              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden min-h-0">
+                {/* ensure table container can scroll horizontally on small screens */}
+                <div className="overflow-x-auto w-full">
                   <table className="min-w-full w-full border-collapse text-sm">
                     <thead>
                       <tr className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 text-gray-700 dark:text-gray-200">
-                        <th className="py-4 px-6 text-left font-semibold">Agent</th>
-                        <th className="py-4 px-6 text-left font-semibold">Contact</th>
-                        <th className="py-4 px-6 text-left font-semibold">Security</th>
-                        <th className="py-4 px-6 text-left font-semibold">Joined</th>
-                        <th className="py-4 px-6 text-left font-semibold">Status</th>
-                        <th className="py-4 px-6 text-center font-semibold">Actions</th>
+                        <th className="py-4 px-4 sm:px-6 text-left font-semibold">Agent</th>
+                        <th className="py-4 px-4 sm:px-6 text-left font-semibold hidden sm:table-cell">Contact</th>
+                        <th className="py-4 px-4 sm:px-6 text-left font-semibold hidden md:table-cell">Security</th>
+                        <th className="py-4 px-4 sm:px-6 text-left font-semibold hidden lg:table-cell">Joined</th>
+                        <th className="py-4 px-4 sm:px-6 text-left font-semibold">Status</th>
+                        <th className="py-4 px-4 sm:px-6 text-center font-semibold">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-gray-900">
                       {agents.length === 0 ? (
                         <tr>
-                          <td
-                            colSpan={6}
-                            className="py-12 text-center text-gray-500 dark:text-gray-400"
-                          >
+                          <td colSpan={6} className="py-12 text-center text-gray-500 dark:text-gray-400">
                             <div className="flex flex-col items-center gap-3">
                               <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
                                 <Search className="text-gray-400" size={24} />
@@ -177,23 +180,25 @@ const AgentList = () => {
                               index % 2 === 0 ? "bg-white dark:bg-gray-900" : "bg-gray-50/50 dark:bg-gray-800/50"
                             }`}
                           >
-                            <td className="py-4 px-6">
+                            <td className="py-4 px-4 sm:px-6">
                               <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-emerald-500 flex items-center justify-center text-white font-bold text-sm shadow-md">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-emerald-500 flex items-center justify-center text-white font-bold text-sm shadow-md flex-shrink-0">
                                   {agent.name.charAt(0).toUpperCase()}
                                 </div>
-                                <div>
-                                  <p className="font-semibold text-gray-900 dark:text-white">
+                                <div className="min-w-0">
+                                  <p className="font-semibold text-gray-900 dark:text-white truncate">
                                     {agent.name}
                                   </p>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">ID: {agent.id}</p>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">ID: {agent.id}</p>
                                 </div>
                               </div>
                             </td>
-                            <td className="py-4 px-6">
-                              <p className="text-gray-700 dark:text-gray-300">{agent.email}</p>
+
+                            <td className="py-4 px-4 sm:px-6 hidden sm:table-cell">
+                              <p className="text-gray-700 dark:text-gray-300 truncate">{agent.email}</p>
                             </td>
-                            <td className="py-4 px-6">
+
+                            <td className="py-4 px-4 sm:px-6 hidden md:table-cell">
                               <span
                                 className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${
                                   agent.two_factor_enabled
@@ -204,32 +209,35 @@ const AgentList = () => {
                                 {agent.two_factor_enabled ? "2FA Enabled" : "2FA Disabled"}
                               </span>
                             </td>
-                            <td className="py-4 px-6 text-gray-600 dark:text-gray-400">
-                              {new Date(agent.created_at).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric'
+
+                            <td className="py-4 px-4 sm:px-6 text-gray-600 dark:text-gray-400 hidden lg:table-cell">
+                              {new Date(agent.created_at).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
                               })}
                             </td>
-                            <td className="py-4 px-6">
+
+                            <td className="py-4 px-4 sm:px-6">
                               <span
                                 className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${badge(
                                   agent.is_active
                                 )}`}
                               >
-                                <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-                                  agent.is_active ? "bg-emerald-600 dark:bg-emerald-400" : "bg-red-600 dark:bg-red-400"
-                                }`}></span>
+                                <span
+                                  className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                                    agent.is_active ? "bg-emerald-600 dark:bg-emerald-400" : "bg-red-600 dark:bg-red-400"
+                                  }`}
+                                ></span>
                                 {agent.is_active ? "Active" : "Inactive"}
                               </span>
                             </td>
-                            <td className="py-4 px-6">
+
+                            <td className="py-4 px-4 sm:px-6">
                               <div className="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button
                                   className="p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 transition-all hover:scale-110 cursor-pointer"
-                                  onClick={() =>
-                                    navigate(`/admin/agents/${agent.id}`)
-                                  }
+                                  onClick={() => navigate(`/admin/agents/${agent.id}`)}
                                   title="View Details"
                                 >
                                   <Eye size={18} />
@@ -259,83 +267,80 @@ const AgentList = () => {
 
             {/* Grid View */}
             {viewMode === "grid" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {agents.length === 0 ? (
-                  <div className="col-span-full text-center py-12">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-                        <Search className="text-gray-400" size={24} />
-                      </div>
-                      <p className="font-medium text-gray-500 dark:text-gray-400">No agents found</p>
-                      <p className="text-sm text-gray-400">Try adjusting your search criteria</p>
-                    </div>
-                  </div>
-                ) : (
-                  agents.map((agent) => (
-                    <div
-                      key={agent.id}
-                      className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-lg hover:border-blue-200 dark:hover:border-blue-800 transition-all hover:-translate-y-1 group"
-                    >
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-emerald-500 flex items-center justify-center text-white font-bold text-lg shadow-md">
-                            {agent.name.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <h3 className="text-sm font-bold text-gray-900 dark:text-white">
-                              {agent.name}
-                            </h3>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">{agent.email}</p>
-                            <span
-                              className={`inline-flex items-center mt-1 px-2 py-0.5 rounded-md text-xs font-semibold ${
-                                agent.two_factor_enabled
-                                  ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
-                                  : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
-                              }`}
-                            >
-                              {agent.two_factor_enabled ? "2FA On" : "2FA Off"}
-                            </span>
-                          </div>
+              <div className="min-h-0">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {agents.length === 0 ? (
+                    <div className="col-span-full text-center py-12">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                          <Search className="text-gray-400" size={24} />
                         </div>
-                        <span
-                          className={`px-2.5 py-1 text-xs font-bold rounded-full ${badge(
-                            agent.is_active
-                          )}`}
-                        >
-                          {agent.is_active ? "Active" : "Inactive"}
-                        </span>
-                      </div>
-
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                        Joined: {new Date(agent.created_at).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric'
-                        })}
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex gap-2 pt-3 border-t border-gray-100 dark:border-gray-700">
-                        <button
-                          onClick={() =>
-                            navigate(`/admin/agents/${agent.id}`)
-                          }
-                          className="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 transition-all font-medium text-sm"
-                        >
-                          <Eye size={16} />
-                          <span>View</span>
-                        </button>
-                        <button className="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 transition-all font-medium text-sm">
-                          <Edit size={16} />
-                          <span>Edit</span>
-                        </button>
-                        <button className="p-2.5 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-all">
-                          <Trash2 size={16} />
-                        </button>
+                        <p className="font-medium text-gray-500 dark:text-gray-400">No agents found</p>
+                        <p className="text-sm text-gray-400">Try adjusting your search criteria</p>
                       </div>
                     </div>
-                  ))
-                )}
+                  ) : (
+                    agents.map((agent) => (
+                      <div
+                        key={agent.id}
+                        className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-lg hover:border-blue-200 dark:hover:border-blue-800 transition-all hover:-translate-y-1 group min-h-0"
+                      >
+                        <div className="flex justify-between items-start mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-emerald-500 flex items-center justify-center text-white font-bold text-lg shadow-md flex-shrink-0">
+                              {agent.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                              <h3 className="text-sm font-bold text-gray-900 dark:text-white truncate">
+                                {agent.name}
+                              </h3>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{agent.email}</p>
+                              <span
+                                className={`inline-flex items-center mt-1 px-2 py-0.5 rounded-md text-xs font-semibold ${
+                                  agent.two_factor_enabled
+                                    ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
+                                    : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                                }`}
+                              >
+                                {agent.two_factor_enabled ? "2FA On" : "2FA Off"}
+                              </span>
+                            </div>
+                          </div>
+                          <span className={`px-2.5 py-1 text-xs font-bold rounded-full ${badge(agent.is_active)}`}>
+                            {agent.is_active ? "Active" : "Inactive"}
+                          </span>
+                        </div>
+
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                          Joined:{" "}
+                          {new Date(agent.created_at).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-2 pt-3 border-t border-gray-100 dark:border-gray-700">
+                          <button
+                            onClick={() => navigate(`/admin/agents/${agent.id}`)}
+                            className="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 transition-all font-medium text-sm cursor-pointer"
+                          >
+                            <Eye size={16} />
+                            <span>View</span>
+                          </button>
+                          <button className="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 transition-all font-medium text-sm cursor-pointer">
+                            <Edit size={16} />
+                            <span>Edit</span>
+                          </button>
+                          <button className="p-2.5 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-all cursor-pointer">
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             )}
           </>
@@ -346,20 +351,21 @@ const AgentList = () => {
           <div className="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Showing page <span className="text-blue-600 dark:text-emerald-400 font-bold">{page}</span> of <span className="font-bold">{totalPages}</span>
+                Showing page <span className="text-blue-600 dark:text-emerald-400 font-bold">{page}</span> of{" "}
+                <span className="font-bold">{totalPages}</span>
               </p>
-              <div className="flex gap-2">
+              <div className="flex gap-2 w-full sm:w-auto">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="px-5 py-2.5 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-500 dark:hover:border-emerald-500 text-gray-700 dark:text-gray-300 transition-all"
+                  className="flex-1 sm:flex-none px-5 py-2.5 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-500 dark:hover:border-emerald-500 text-gray-700 dark:text-gray-300 transition-all"
                 >
                   Previous
                 </button>
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="px-5 py-2.5 text-sm font-medium rounded-lg bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-all shadow-md hover:shadow-lg"
+                  className="flex-1 sm:flex-none px-5 py-2.5 text-sm font-medium rounded-lg bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-all shadow-md hover:shadow-lg"
                 >
                   Next
                 </button>

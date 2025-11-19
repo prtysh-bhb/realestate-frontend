@@ -199,7 +199,7 @@ const menuItems =
           exact: false,
         },
         { name: "Inbox*", icon: MailOpen, path: "/admin/inbox", exact: true },
-        { name: "Chat*", icon: MessageCircle, path: "/admin/chat", exact: true },
+        { name: "Chat*", icon: MessageCircle, path: "/agent/chat", exact: true },
         {
           name: "Settings*",
           icon: Settings,
@@ -285,7 +285,7 @@ const menuItems =
                 </p>
               </div>
             )}
-            <div className="flex gap-1">
+            <div className="grid gap-1">
               <button
                 onClick={() => onCollapseChange?.(!collapsed)}
                 className="text-gray-400 hover:text-emerald-400 transition-all cursor-pointer p-2 rounded-lg hover:bg-white/10 backdrop-blur-sm"
