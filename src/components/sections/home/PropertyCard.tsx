@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Property Card - Premium Design
  * Stunning property card with modern aesthetics and smooth interactions
@@ -21,7 +22,6 @@ import {
 } from "@/api/customer/properties";
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
-import { formatAmount } from "@/helpers/customer_helper";
 import { motion } from "framer-motion";
 
 interface PropertyCardProps {
@@ -99,7 +99,7 @@ const PropertyCard: FC<PropertyCardProps> = ({
           <motion.img
             src={imageSrc}
             alt={property.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-top"
             animate={{ scale: isHovered ? 1.1 : 1 }}
             transition={{ duration: 0.6 }}
           />
@@ -210,7 +210,7 @@ const PropertyCard: FC<PropertyCardProps> = ({
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="w-full mt-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+            className="w-full mt-4 py-3 cursor-pointer bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
           >
             <Eye className="w-5 h-5" />
             View Details

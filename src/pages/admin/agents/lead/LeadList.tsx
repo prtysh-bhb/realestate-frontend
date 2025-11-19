@@ -64,7 +64,7 @@ const LeadList = () => {
 
   return (
     <AdminLayout>
-      <div className="p-6 min-h-screen transition-colors">
+      <div className="min-h-screen transition-colors">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">

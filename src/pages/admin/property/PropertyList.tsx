@@ -16,12 +16,10 @@ import {
   Grid3x3,
   List,
   Search,
-  Filter,
   MapPin,
   Bed,
   Bath,
   Maximize2,
-  Eye,
   DollarSign,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -218,7 +216,7 @@ const PropertyList = () => {
                         <img
                           src={p.primary_image_url || p.image_urls?.[0]}
                           alt={p.title}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
@@ -289,7 +287,7 @@ const PropertyList = () => {
                       <div className="flex gap-2">
                         <Button
                           size="sm"
-                          className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                          className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
                           onClick={() => handleApprove(p.id)}
                           disabled={p.approval_status === "approved"}
                         >
@@ -298,7 +296,7 @@ const PropertyList = () => {
                         <Button
                           size="sm"
                           variant="destructive"
-                          className="flex-1"
+                          className="flex-1 cursor-pointer"
                           onClick={() => openRejectPopup(p.id)}
                           disabled={p.approval_status === "rejected"}
                         >

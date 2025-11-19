@@ -283,7 +283,7 @@ const LoginPage = () => {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full h-14 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                  className="w-full h-14 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {loading ? (
                     "Signing in..."
@@ -322,7 +322,7 @@ const LoginPage = () => {
                           import.meta.env.VITE_BACKEND_URL
                         }/auth/${social.provider}/redirect`)
                       }
-                      className="flex items-center justify-center p-4 border-2 border-gray-200 rounded-2xl hover:bg-gray-50 hover:border-gray-300 transition-all transform hover:scale-105"
+                      className="flex cursor-pointer items-center justify-center p-4 border-2 border-gray-200 rounded-2xl hover:bg-gray-50 hover:border-gray-300 transition-all transform hover:scale-105"
                     >
                       <img src={social.icon} alt={social.name} className="w-6 h-6" />
                     </button>

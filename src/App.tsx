@@ -372,6 +372,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+        {/* ---------------- AGENT CHAT ---------------- */}
+        <Route
+          path="/agent/chat"
+          element={
+            <ProtectedRoute allowedRoles={["agent"]}>
+              <ChatPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/admin/reviews"
           element={

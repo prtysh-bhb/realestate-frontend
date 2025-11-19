@@ -194,7 +194,7 @@ const PropertyView = () => {
                     (property?.approval_status?.slice(1) ?? "")}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-gray-600 mb-4">
+              <div className="flex items-center gap-2 text-gray-600 mb-4 max-w-auto">
                 <MapPin size={18} className="text-blue-600 flex-shrink-0" />
                 <span className="text-base">
                   {property?.address}, {property?.city}, {property?.state}{" "}
@@ -216,11 +216,11 @@ const PropertyView = () => {
 
               {/* Action Buttons */}
               <div className="flex gap-2">
-                <button className="p-3 bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 hover:border-blue-300 transition-all shadow-sm">
-                  <Share2 size={20} className="text-gray-600" />
+                <button className="p-3 bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 hover:border-blue-300 transition-all shadow-sm cursor-pointer">
+                  <Share2 size={20} className="text-gray-600 cursor-pointer" />
                 </button>
-                <button className="p-3 bg-white border-2 border-gray-200 rounded-xl hover:bg-red-50 hover:border-red-300 transition-all shadow-sm">
-                  <Heart size={20} className="text-gray-600" />
+                <button className="p-3 bg-white border-2 border-gray-200 rounded-xl hover:bg-red-50 hover:border-red-300 transition-all shadow-sm cursor-pointer">
+                  <Heart size={20} className="text-gray-600 cursor-pointer" />
                 </button>
               </div>
             </div>
@@ -263,11 +263,11 @@ const PropertyView = () => {
             {images.length > 0 ? (
               <>
                 {/* Main Image */}
-                <div className="relative h-96 sm:h-[500px] lg:h-[600px]">
+                <div className="relative h-96 sm:h-[60vh] lg:h-[70vh]">
                   <img
                     src={images[selectedImageIndex] ?? ""}
                     alt={`Property image ${selectedImageIndex + 1}`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-top"
                     onError={(e) => {
                       e.currentTarget.src = "/assets/no_image_found.jpg";
                     }}
@@ -278,13 +278,13 @@ const PropertyView = () => {
                     <>
                       <button
                         onClick={prevImage}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-all"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-all cursor-pointer"
                       >
                         <ChevronLeft size={24} className="text-gray-900" />
                       </button>
                       <button
                         onClick={nextImage}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-all"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-all cursor-pointer"
                       >
                         <ChevronRight size={24} className="text-gray-900" />
                       </button>
@@ -300,7 +300,7 @@ const PropertyView = () => {
                 {/* Thumbnail Strip */}
                 {images.length > 1 && (
                   <div className="p-4 bg-gray-50 border-t border-gray-200">
-                    <div className="flex gap-3 overflow-x-auto pb-2">
+                    <div className="flex gap-5 overflow-x-auto p-2">
                       {images.map((image, index) => (
                         <button
                           key={index}
@@ -381,9 +381,9 @@ const PropertyView = () => {
                   { label: "Listed On", value: new Date(property?.created_at ?? '').toLocaleDateString() },
                   { label: "Property ID", value: `#${property?.id}` },
                 ].map((detail, index) => (
-                  <div key={index} className="flex justify-between items-center py-3 border-b border-gray-100 last:border-0">
+                  <div key={index} className="flex justify-between items-center py-3 border-b border-gray-100 last:border-0 gap-20">
                     <span className="text-gray-600 font-medium">{detail.label}</span>
-                    <span className="font-bold text-gray-900 capitalize">{detail.value}</span>
+                    <span className="font-bold text-gray-900 capitalize text-end">{detail.value}</span>
                   </div>
                 ))}
               </div>
@@ -531,7 +531,7 @@ const PropertyView = () => {
                     navigate('/login');
                   }
                 }}
-                className="w-full bg-white text-blue-700 py-4 rounded-2xl hover:bg-gray-50 transition-all font-bold shadow-lg flex items-center justify-center gap-2 transform hover:scale-105"
+                className="w-full cursor-pointer bg-white text-blue-700 py-4 rounded-2xl hover:bg-gray-50 transition-all font-bold shadow-lg flex items-center justify-center gap-2 transform hover:scale-105"
               >
                 <Mail size={20} />
                 Request Information
