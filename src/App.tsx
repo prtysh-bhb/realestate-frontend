@@ -35,6 +35,10 @@ import InboxPage from "@/pages/admin/inbox/InboxPage";
 import ChatPage from "@/pages/admin/chat/ChatPage";
 import ReviewsPage from "@/pages/admin/reviews/ReviewsPage";
 import SettingsPage from "@/pages/admin/settings/SettingsPage";
+import AgentDashboardPage from "./pages/admin/agents/AgentDashboardPage";
+import SubscriptionPlanList from "./pages/admin/subscriptions/SubscriptionPlanList";
+import AddSubscriptionPlan from "./pages/admin/subscriptions/AddSubscripitonPlan";
+import EditSubscriptionPlan from "./pages/admin/subscriptions/EditSubscriptionPlan";
 
 // Property Pages
 import AddProperty from "@/pages/admin/agents/property/AddProperty";
@@ -62,7 +66,7 @@ import ProtectedRoute from "@/lib/ProtectedRoute";
 import PublicRoute from "@/lib/PublicRoute";
 import { ApiInterceptor } from "./api/ApiInterceptor";
 import ScrollToTop from "@/components/ScrollToTop";
-import AgentDashboardPage from "./pages/admin/agents/AgentDashboardPage";
+import ShowSubscriptionPlan from "./pages/admin/subscriptions/ShowSubscriptionPlan";
 
 function App() {
   return (
@@ -274,6 +278,40 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
               <CustomerTransaction />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ---------------- SUBSCRIPTIONS MANAGEMENT ---------------- */}
+        <Route
+          path="/admin/subscriptions"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <SubscriptionPlanList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/subscriptions/new"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AddSubscriptionPlan />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/subscriptions/:id"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <ShowSubscriptionPlan />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/subscriptions/:id/edit"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <EditSubscriptionPlan />
             </ProtectedRoute>
           }
         />

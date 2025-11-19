@@ -20,6 +20,7 @@ import {
   Menu,
   X,
   ClipboardList,
+  CreditCard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
@@ -110,6 +111,24 @@ const menuItems =
               name: "Add Customer*",
               icon: PlusCircle,
               path: "/admin/customers/new",
+              exact: true,
+            },
+          ],
+        },
+        {
+          name: "Subscriptions",
+          icon: CreditCard,
+          children: [
+            {
+              name: "Subscription List",
+              icon: List,
+              path: "/admin/subscriptions",
+              exact: true,
+            },
+            {
+              name: "Add Subscription*",
+              icon: PlusCircle,
+              path: "/admin/subscriptions/new",
               exact: true,
             },
           ],
