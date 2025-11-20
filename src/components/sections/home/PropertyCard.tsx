@@ -24,6 +24,7 @@ import {
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { formatAmount } from "@/utils";
 
 interface PropertyCardProps {
   property: Property;

@@ -443,7 +443,7 @@ const PropertyView = () => {
                   { label: "Listed On", value: new Date(property?.created_at ?? '').toLocaleDateString() },
                   { label: "Property ID", value: `#${property?.id}` },
                 ].map((detail, index) => (
-                  <div key={index} className="flex justify-between items-center py-3 border-b border-gray-100 last:border-0 gap-20">
+                  <div key={index} className="flex justify-between items-center py-3 border-b border-gray-100 last:border-0">
                     <span className="text-gray-600 font-medium">{detail.label}</span>
                     <span className="font-bold text-gray-900 capitalize w-50">{detail.value}</span>
                   </div>

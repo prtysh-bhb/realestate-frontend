@@ -9,6 +9,11 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipcode?: string;
+  bio?: string;
   role: UserRole;
   phone?: string;
   avatar_url?: string | null;

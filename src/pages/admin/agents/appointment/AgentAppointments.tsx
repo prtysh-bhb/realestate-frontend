@@ -7,7 +7,6 @@ import { useLocation } from "react-router-dom";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
 import { toast } from "sonner";
 import {
-  fetchAgentProperties,
   fetchAgentCustomers,
   fetchAppointments,
   fetchAppointment,
@@ -33,6 +32,8 @@ import {
   Trash2,
   Eye,
 } from "lucide-react";
+import { getAgentProperties } from "@/api/agent/property";
+import { Customer } from "@/types/appointment";
 
 dayjs.extend(relativeTime);
 
@@ -48,7 +49,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
   const location = useLocation();
 
   const [properties, setProperties] = useState<any[]>([]);
-  const [customers, setCustomers] = useState<any[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -92,12 +93,8 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
 
   const loadProperties = useCallback(async () => {
     try {
-      const data = await fetchAgentProperties(token);
-      const items = Array.isArray(data?.properties)
-        ? data.properties
-        : Array.isArray(data?.data)
-        ? data.data
-        : data;
+      const data = await getAgentProperties();
+      const items = data.data;
       setProperties(items.map((p: any) => ({ ...p, image: resolveImageUrl(API_BASE, p.image) })));
     } catch (e) {
       console.error(e);
@@ -107,12 +104,8 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
 
   const loadCustomers = useCallback(async () => {
     try {
-      const data = await fetchAgentCustomers(token);
-      const items = Array.isArray(data?.customers)
-        ? data.customers
-        : Array.isArray(data?.data)
-        ? data.data
-        : data;
+      const data = await fetchAgentCustomers(token);      
+      const items = data ?? [];
       setCustomers(items);
     } catch (e) {
       console.error(e);
@@ -124,13 +117,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
     setLoading(true);
     try {
       const data = await fetchAppointments(page, 12, token);
-      const items = data?.appointments
-        ? Array.isArray(data.appointments)
-          ? data.appointments
-          : data.appointments.data
-        : Array.isArray(data)
-        ? data
-        : data?.data ?? [];
+      const items = data?.appointments;
       setAppointments(
         items.map((a: any) => ({
           ...a,
@@ -158,8 +145,8 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
     setCheckingSlots(true);
     try {
       const data = await checkAvailability(date, token);
-      const items = data?.time_slots ?? data?.available_slots ?? data ?? [];
-      const normalized = (Array.isArray(items) ? items : items.data || []).map((it: any) => ({
+      const items = data?.time_slots ?? data ?? [];
+      const normalized = items.map((it: any) => ({
         datetime: it.datetime ?? `${date}T${it.start_time ?? "09:00"}:00`,
         is_available:
           typeof it.is_available === "boolean" ? it.is_available : !(it.booked ?? false),

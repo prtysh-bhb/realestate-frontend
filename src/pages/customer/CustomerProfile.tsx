@@ -268,8 +268,8 @@ const CustomerProfile = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-        const data = await getProfile();
-        setUser(data.data);
+        const data = await getProfile();        
+        setUser(data.data.user);
         setLoading(false);
     };
 
