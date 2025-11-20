@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Eye, Edit, Trash2, Filter, UserPlus, Grid3x3, List, Users } from "lucide-react";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
@@ -8,6 +8,8 @@ import { getAgents, Agent } from "@/api/agent/agentList";
 const AgentList = () => {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [search, setSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const debounceRef = useRef<number | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -72,10 +74,16 @@ const AgentList = () => {
                 <input
                   type="text"
                   placeholder="Search agents..."
-                  value={search}
+                  value={searchTerm}
                   onChange={(e) => {
-                    setSearch(e.target.value);
+                    const v = e.target.value;
+                    setSearchTerm(v);
                     setPage(1);
+                    // clear previous timer
+                    if (debounceRef.current) window.clearTimeout(debounceRef.current);
+                    debounceRef.current = window.setTimeout(() => {
+                      setSearch(v.trim());
+                    }, 350); // 350ms debounce
                   }}
                   className="bg-transparent outline-none text-sm text-gray-900 dark:text-white w-full sm:w-48 placeholder-gray-500"
                 />
@@ -152,9 +160,15 @@ const AgentList = () => {
                     <thead>
                       <tr className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 text-gray-700 dark:text-gray-200">
                         <th className="py-4 px-4 sm:px-6 text-left font-semibold">Agent</th>
-                        <th className="py-4 px-4 sm:px-6 text-left font-semibold hidden sm:table-cell">Contact</th>
-                        <th className="py-4 px-4 sm:px-6 text-left font-semibold hidden md:table-cell">Security</th>
-                        <th className="py-4 px-4 sm:px-6 text-left font-semibold hidden lg:table-cell">Joined</th>
+                        <th className="py-4 px-4 sm:px-6 text-left font-semibold hidden sm:table-cell">
+                          Contact
+                        </th>
+                        <th className="py-4 px-4 sm:px-6 text-left font-semibold hidden md:table-cell">
+                          Security
+                        </th>
+                        <th className="py-4 px-4 sm:px-6 text-left font-semibold hidden lg:table-cell">
+                          Joined
+                        </th>
                         <th className="py-4 px-4 sm:px-6 text-left font-semibold">Status</th>
                         <th className="py-4 px-4 sm:px-6 text-center font-semibold">Actions</th>
                       </tr>
@@ -162,7 +176,10 @@ const AgentList = () => {
                     <tbody className="bg-white dark:bg-gray-900">
                       {agents.length === 0 ? (
                         <tr>
-                          <td colSpan={6} className="py-12 text-center text-gray-500 dark:text-gray-400">
+                          <td
+                            colSpan={6}
+                            className="py-12 text-center text-gray-500 dark:text-gray-400"
+                          >
                             <div className="flex flex-col items-center gap-3">
                               <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
                                 <Search className="text-gray-400" size={24} />
@@ -177,7 +194,9 @@ const AgentList = () => {
                           <tr
                             key={agent.id}
                             className={`border-b border-gray-100 dark:border-gray-800 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all group ${
-                              index % 2 === 0 ? "bg-white dark:bg-gray-900" : "bg-gray-50/50 dark:bg-gray-800/50"
+                              index % 2 === 0
+                                ? "bg-white dark:bg-gray-900"
+                                : "bg-gray-50/50 dark:bg-gray-800/50"
                             }`}
                           >
                             <td className="py-4 px-4 sm:px-6">
@@ -189,13 +208,17 @@ const AgentList = () => {
                                   <p className="font-semibold text-gray-900 dark:text-white truncate">
                                     {agent.name}
                                   </p>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">ID: {agent.id}</p>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                    ID: {agent.id}
+                                  </p>
                                 </div>
                               </div>
                             </td>
 
                             <td className="py-4 px-4 sm:px-6 hidden sm:table-cell">
-                              <p className="text-gray-700 dark:text-gray-300 truncate">{agent.email}</p>
+                              <p className="text-gray-700 dark:text-gray-300 truncate">
+                                {agent.email}
+                              </p>
                             </td>
 
                             <td className="py-4 px-4 sm:px-6 hidden md:table-cell">
@@ -226,7 +249,9 @@ const AgentList = () => {
                               >
                                 <span
                                   className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-                                    agent.is_active ? "bg-emerald-600 dark:bg-emerald-400" : "bg-red-600 dark:bg-red-400"
+                                    agent.is_active
+                                      ? "bg-emerald-600 dark:bg-emerald-400"
+                                      : "bg-red-600 dark:bg-red-400"
                                   }`}
                                 ></span>
                                 {agent.is_active ? "Active" : "Inactive"}
@@ -275,7 +300,9 @@ const AgentList = () => {
                         <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
                           <Search className="text-gray-400" size={24} />
                         </div>
-                        <p className="font-medium text-gray-500 dark:text-gray-400">No agents found</p>
+                        <p className="font-medium text-gray-500 dark:text-gray-400">
+                          No agents found
+                        </p>
                         <p className="text-sm text-gray-400">Try adjusting your search criteria</p>
                       </div>
                     </div>
@@ -294,7 +321,9 @@ const AgentList = () => {
                               <h3 className="text-sm font-bold text-gray-900 dark:text-white truncate">
                                 {agent.name}
                               </h3>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{agent.email}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                {agent.email}
+                              </p>
                               <span
                                 className={`inline-flex items-center mt-1 px-2 py-0.5 rounded-md text-xs font-semibold ${
                                   agent.two_factor_enabled
@@ -306,7 +335,11 @@ const AgentList = () => {
                               </span>
                             </div>
                           </div>
-                          <span className={`px-2.5 py-1 text-xs font-bold rounded-full ${badge(agent.is_active)}`}>
+                          <span
+                            className={`px-2.5 py-1 text-xs font-bold rounded-full ${badge(
+                              agent.is_active
+                            )}`}
+                          >
                             {agent.is_active ? "Active" : "Inactive"}
                           </span>
                         </div>
@@ -351,7 +384,8 @@ const AgentList = () => {
           <div className="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Showing page <span className="text-blue-600 dark:text-emerald-400 font-bold">{page}</span> of{" "}
+                Showing page{" "}
+                <span className="text-blue-600 dark:text-emerald-400 font-bold">{page}</span> of{" "}
                 <span className="font-bold">{totalPages}</span>
               </p>
               <div className="flex gap-2 w-full sm:w-auto">

@@ -198,6 +198,7 @@ const menuItems =
           path: "/agent/leads",
           exact: false,
         },
+        { name: "Appointment*", icon: HousePlus, path: "/agent/appointments", exact: true },
         { name: "Inbox*", icon: MailOpen, path: "/admin/inbox", exact: true },
         { name: "Chat*", icon: MessageCircle, path: "/agent/chat", exact: true },
         {

@@ -1,17 +1,15 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { fetchAgentProfile, AgentProfile } from "@/api/agent/agentProfile";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import AgentDetailsTab from "@/pages/admin/agents/components/AgentDetailsTab";
 import AgentActivityLogsTab from "@/pages/admin/agents/components/AgentActivityLogsTab";
 import AgentPerformanceTab from "@/pages/admin/agents/components/AgentPerformanceTab";
-import { Phone, MapPin, Mail, Shield, Calendar, XCircle, Building2, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Phone, MapPin, Mail, Shield, Calendar, XCircle } from "lucide-react";
 
 const AgentProfilePage = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [agent, setAgent] = useState<AgentProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -154,7 +152,7 @@ const AgentProfilePage = () => {
         </div>
 
         {/* Property Management Actions */}
-        <div className="mt-6 px-4 sm:px-8 md:px-10">
+        {/* <div className="mt-6 px-4 sm:px-8 md:px-10">
           <div className="bg-gradient-to-r from-blue-50 to-emerald-50 dark:from-blue-950/20 dark:to-emerald-950/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
@@ -185,7 +183,7 @@ const AgentProfilePage = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Tabs Section */}
         <div className="mt-6 px-4 sm:px-8 md:px-10 pb-8">

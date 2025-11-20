@@ -26,8 +26,13 @@ interface AgentResponse {
 }
 
 export const getAgents = async (page = 1, search = "") => {
-const response = await api.get<AgentResponse>(`/admin/agents`, {
-          params: { page, search },
-        });
-        return response.data;
+  const params: any = { page, per_page: 12 };
+  if (search && search.trim() !== "") {
+    // use 'search' param — change to 'q' or 'term' if your backend uses that
+    params.search = search.trim();
+  }
+  const response = await api.get<AgentResponse>(`/admin/agents`, {
+    params: { page, search },
+  });
+  return response.data;
 };
