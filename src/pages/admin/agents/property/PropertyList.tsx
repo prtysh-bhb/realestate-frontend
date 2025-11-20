@@ -100,7 +100,7 @@ const PropertyList = () => {
 
   return (
     <AdminLayout>
-      <div className="p-6 min-h-screen">
+      <div className="p-0 min-h-screen">
         {/* ---------- Header ---------- */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-semibold text-gray-800">

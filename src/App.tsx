@@ -66,6 +66,7 @@ import ProtectedRoute from "@/lib/ProtectedRoute";
 import PublicRoute from "@/lib/PublicRoute";
 import { ApiInterceptor } from "./api/ApiInterceptor";
 import ScrollToTop from "@/components/ScrollToTop";
+import AgentAppointments from "./pages/admin/agents/appointment/AgentAppointments";
 import ShowSubscriptionPlan from "./pages/admin/subscriptions/ShowSubscriptionPlan";
 
 function App() {
@@ -408,6 +409,24 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
               <ChatPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* ---------------- AGENT CHAT ---------------- */}
+        <Route
+          path="/agent/chat"
+          element={
+            <ProtectedRoute allowedRoles={["agent"]}>
+              <ChatPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* ---------------- Appointment ---------------- */}
+        <Route
+          path="/agent/appointments"
+          element={
+            <ProtectedRoute allowedRoles={["agent"]}>
+              <AgentAppointments />
             </ProtectedRoute>
           }
         />

@@ -1,17 +1,15 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { fetchAgentProfile, AgentProfile } from "@/api/agent/agentProfile";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import AgentDetailsTab from "@/pages/admin/agents/components/AgentDetailsTab";
 import AgentActivityLogsTab from "@/pages/admin/agents/components/AgentActivityLogsTab";
 import AgentPerformanceTab from "@/pages/admin/agents/components/AgentPerformanceTab";
-import { Phone, MapPin, User, Mail, Shield, Calendar, XCircle, Building2, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Phone, MapPin, Mail, Shield, Calendar, XCircle } from "lucide-react";
 
 const AgentProfilePage = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [agent, setAgent] = useState<AgentProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -154,7 +152,7 @@ const AgentProfilePage = () => {
         </div>
 
         {/* Property Management Actions */}
-        <div className="mt-6 px-4 sm:px-8 md:px-10">
+        {/* <div className="mt-6 px-4 sm:px-8 md:px-10">
           <div className="bg-gradient-to-r from-blue-50 to-emerald-50 dark:from-blue-950/20 dark:to-emerald-950/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
@@ -170,14 +168,14 @@ const AgentProfilePage = () => {
                 <Button
                   onClick={() => navigate(`/admin/agents/${id}/properties`)}
                   variant="outline"
-                  className="flex items-center gap-2 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                  className="flex items-center gap-2 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 cursor-pointer"
                 >
                   <Building2 size={18} />
                   <span>View Properties</span>
                 </Button>
                 <Button
                   onClick={() => navigate(`/admin/agents/${id}/properties/new`)}
-                  className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white shadow-md hover:shadow-lg"
+                  className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white shadow-md hover:shadow-lg cursor-pointer"
                 >
                   <Plus size={18} />
                   <span>Add Property</span>
@@ -185,7 +183,7 @@ const AgentProfilePage = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Tabs Section */}
         <div className="mt-6 px-4 sm:px-8 md:px-10 pb-8">
@@ -193,19 +191,19 @@ const AgentProfilePage = () => {
             <TabsList className="flex flex-wrap justify-start gap-2 sm:gap-4 bg-gray-100 dark:bg-gray-800 p-2 rounded-xl mb-6">
               <TabsTrigger
                 value="details"
-                className="px-4 sm:px-6 py-2.5 rounded-lg font-medium transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-md text-gray-600 dark:text-gray-400"
+                className="px-4 sm:px-6 py-2.5 rounded-lg font-medium transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-md text-gray-600 dark:text-gray-400 cursor-pointer"
               >
                 Details
               </TabsTrigger>
               <TabsTrigger
                 value="activity"
-                className="px-4 sm:px-6 py-2.5 rounded-lg font-medium transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-md text-gray-600 dark:text-gray-400"
+                className="px-4 sm:px-6 py-2.5 rounded-lg font-medium transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-md text-gray-600 dark:text-gray-400 cursor-pointer"
               >
                 Activity Logs
               </TabsTrigger>
               <TabsTrigger
                 value="performance"
-                className="px-4 sm:px-6 py-2.5 rounded-lg font-medium transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-md text-gray-600 dark:text-gray-400"
+                className="px-4 sm:px-6 py-2.5 rounded-lg font-medium transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-md text-gray-600 dark:text-gray-400 cursor-pointer"
               >
                 Performance
               </TabsTrigger>

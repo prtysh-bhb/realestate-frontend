@@ -8,7 +8,7 @@ import { getProperties } from "@/api/public/recomandedproperty";
 import PropertyCard from "./PropertyCard";
 import { Property } from "@/types/property";
 import { motion } from "framer-motion";
-import { Sparkles, TrendingUp, Award, ArrowRight } from "lucide-react";
+import { Sparkles, Castle, ArrowRight, House, Building2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const RecommendedProperties = () => {
@@ -19,9 +19,9 @@ const RecommendedProperties = () => {
 
   const categories = [
     { id: "all", label: "All Properties", icon: Sparkles },
-    { id: "apartment", label: "Apartments", icon: TrendingUp },
-    { id: "villa", label: "Villas", icon: Award },
-    { id: "house", label: "Houses", icon: TrendingUp },
+    { id: "apartment", label: "Apartments", icon: Building2 },
+    { id: "villa", label: "Villas", icon: Castle },
+    { id: "house", label: "Houses", icon: House },
   ];
 
   useEffect(() => {
@@ -126,7 +126,7 @@ const RecommendedProperties = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setSelectedCategory(category.id)}
-                className={`px-6 py-3 rounded-2xl font-semibold transition-all duration-300 flex items-center gap-2 ${
+                className={`px-6 py-3 rounded-2xl font-semibold transition-all duration-300 flex items-center gap-2 cursor-pointer ${
                   selectedCategory === category.id
                     ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/30"
                     : "bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-blue-300"

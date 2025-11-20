@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import { register } from "@/api/auth";
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Building2, Sparkles, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Building2, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -437,7 +437,7 @@ const SignupPage = () => {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full h-14 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold rounded-2xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                  className="w-full h-14 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold rounded-2xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {loading ? (
                     "Creating Account..."
@@ -466,7 +466,7 @@ const SignupPage = () => {
                   Already have an account?{" "}
                   <Link
                     to="/login"
-                    className="text-emerald-600 hover:text-emerald-700 font-bold transition-colors"
+                    className="text-emerald-600 hover:text-emerald-700 font-bold transition-colors cursor-pointer"
                   >
                     Sign In
                   </Link>
