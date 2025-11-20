@@ -1,3 +1,4 @@
+// src/pages/agent/leads/ViewLead.tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -104,9 +105,24 @@ const ViewLead = () => {
       </AdminLayout>
     );
 
+  // Build query params to prefill create appointment form
+  const openCreateAppointment = () => {
+    const params = new URLSearchParams();
+    // prefer explicit ids if present
+    if (lead?.customer_id) params.set("customer_id", String(lead.customer_id));
+    // fallback to email or name so frontend can match
+    else if (lead?.customer_email) params.set("customer_email", lead.customer_email);
+    else if (lead?.customer_name) params.set("customer_name", lead.customer_name);
+
+    if (lead?.property?.id) params.set("property_id", String(lead.property.id));
+    else if (lead?.property?.title) params.set("property_title", lead.property.title);
+
+    navigate(`/agent/appointments?${params.toString()}`);
+  };
+
   return (
     <AdminLayout>
-      <div className="max-w-6xl mx-auto p-6 space-y-8">
+      <div className="mx-auto space-y-8">
         <div className="flex items-center mb-2">
           <button
             onClick={() => navigate(-1)}
@@ -154,7 +170,7 @@ const ViewLead = () => {
               </p>
             </div>
 
-            <div className="mt-5">
+            <div className="mt-5 flex items-center gap-3">
               <span
                 className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
                   stageColors[lead?.stage] || "bg-gray-100 text-gray-700"
@@ -162,6 +178,14 @@ const ViewLead = () => {
               >
                 {lead?.stage?.replace("_", " ").toUpperCase()}
               </span>
+
+              {/* New button: Create appointment for this lead */}
+              <Button
+                onClick={openCreateAppointment}
+                className="ml-3 bg-gradient-to-r from-blue-600 to-emerald-600 text-white"
+              >
+                Create Appointment
+              </Button>
             </div>
           </div>
 
@@ -203,11 +227,7 @@ const ViewLead = () => {
               disabled={updating}
               className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-2 cursor-pointer"
             >
-              {updating ? (
-                <Loader2 className="animate-spin mr-2" />
-              ) : (
-                <Send size={16} />
-              )}
+              {updating ? <Loader2 className="animate-spin mr-2" /> : <Send size={16} />}
               Add Note
             </Button>
           </div>
@@ -224,28 +244,17 @@ const ViewLead = () => {
           ) : (
             <div className="space-y-5">
               {history.map((h, i) => (
-                <div
-                  key={i}
-                  className="relative border-l-4 border-indigo-500 pl-4 pb-2"
-                >
+                <div key={i} className="relative border-l-4 border-indigo-500 pl-4 pb-2">
                   <div className="flex justify-between items-center mb-1">
                     <span className="text-sm text-gray-600 dark:text-gray-300">
-                      <Clock size={14} className="inline mr-1" />{" "}
-                      {new Date(h.changed_at).toLocaleString()}
+                      <Clock size={14} className="inline mr-1" /> {new Date(h.changed_at).toLocaleString()}
                     </span>
                     <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
-                      {h.from_stage?.toUpperCase()} →{" "}
-                      {h.to_stage?.toUpperCase()}
+                      {h.from_stage?.toUpperCase()} → {h.to_stage?.toUpperCase()}
                     </span>
                   </div>
-                  {h.note && (
-                    <p className="text-gray-700 dark:text-gray-300 text-sm mt-1">
-                      {h.note}
-                    </p>
-                  )}
-                  <p className="text-xs text-gray-500 mt-1">
-                    By: {h.changed_by}
-                  </p>
+                  {h.note && <p className="text-gray-700 dark:text-gray-300 text-sm mt-1">{h.note}</p>}
+                  <p className="text-xs text-gray-500 mt-1">By: {h.changed_by}</p>
                 </div>
               ))}
             </div>
