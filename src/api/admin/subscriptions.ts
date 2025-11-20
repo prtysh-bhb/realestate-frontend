@@ -96,7 +96,7 @@ export const deleteSubscriptionPlan = async (subscriptionId: number) => {
  */
 export const toggleStatusSubscriptionPlan = async (subscriptionId: number) => {
   try {
-    const response = await api.post(`/admin/subscription-plans/${subscriptionId}/toggle-status`);
+    const response = await api.post<ApiResponse>(`/admin/subscription-plans/${subscriptionId}/toggle-status`);
     return response.data;
   } catch (error: any) {
     throw error.response?.data || { success: false, message: "Failed to update status of subscription" };

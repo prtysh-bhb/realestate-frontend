@@ -97,8 +97,8 @@ const SubscriptionPlanList = () => {
       return;
     }
     try {
-      await toggleStatusSubscriptionPlan(selectedPlan!.id);
-      toast.success("Plan deactivated successfully");
+      const response = await toggleStatusSubscriptionPlan(selectedPlan!.id);
+      toast.success(response.message);
       setShowDeactivatePopup(false);
       refresh();
     } catch (err: any) {
@@ -582,8 +582,12 @@ const SubscriptionPlanList = () => {
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-[90%] max-w-md border border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="text-lg font-semibold flex items-center gap-2 text-gray-800 dark:text-gray-100">
-                  <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+                  <div className={`p-2 ${selectedPlan?.is_active ? 'bg-amber-100' : 'bg-green-100'} dark:bg-amber-900/30 rounded-lg`}>
+                  {selectedPlan?.is_active ? (
                     <AlertTriangle className="text-amber-600 dark:text-amber-400" size={20} />
+                  ) : (
+                    <Check className="text-emerald-600 dark:text-emerald-400" size={20} />
+                  )}
                   </div>
                   {selectedPlan?.is_active ? "Deactivate Plan" : "Activate Plan"}
                 </h4>
