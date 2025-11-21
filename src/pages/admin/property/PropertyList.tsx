@@ -112,9 +112,12 @@ const PropertyList = () => {
 
   // Filter properties by search query
   const filteredProperties = properties.filter((p) =>
-    p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.city?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.agent?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    (p.title || "")
+      .toString()
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase()) ||
+    (p.city || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (p.agent?.name || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -205,107 +208,120 @@ const PropertyList = () => {
             {/* Grid View */}
             {viewMode === "grid" && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProperties.map((p) => (
-                  <div
-                    key={p.id}
-                    className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all group overflow-hidden"
-                  >
-                    {/* Image */}
-                    <div className="relative aspect-[4/3] overflow-hidden bg-gray-100 dark:bg-gray-800">
-                      {p.primary_image_url || p.image_urls?.[0] ? (
-                        <img
-                          src={p.primary_image_url || p.image_urls?.[0]}
-                          alt={p.title}
-                          className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Home className="w-16 h-16 text-gray-300 dark:text-gray-600" />
-                        </div>
-                      )}
+                {filteredProperties.map((p) => {
+                  // showApprove => show approve action (true when not already approved)
+                  const showApprove = (p.approval_status || "").toLowerCase() !== "approved";
+                  // showReject => show reject action (true when not already rejected)
+                  const showReject = (p.approval_status || "").toLowerCase() !== "rejected";
 
-                      {/* Status Badge */}
-                      <div className="absolute top-3 left-3">
-                        <Badge
-                          className={`px-3 py-1 border font-semibold text-xs ${getStatusColor(
-                            p.approval_status
-                          )}`}
-                        >
-                          {p.approval_status}
-                        </Badge>
+                  return (
+                    <div
+                      key={p.id}
+                      className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all group overflow-hidden"
+                    >
+                      {/* Image */}
+                      <div className="relative aspect-[4/3] overflow-hidden bg-gray-100 dark:bg-gray-800">
+                        {p.primary_image_url || p.image_urls?.[0] ? (
+                          <img
+                            src={p.primary_image_url || p.image_urls?.[0]}
+                            alt={p.title}
+                            className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Home className="w-16 h-16 text-gray-300 dark:text-gray-600" />
+                          </div>
+                        )}
+
+                        {/* Status Badge */}
+                        <div className="absolute top-3 left-3">
+                          <Badge
+                            className={`px-3 py-1 border font-semibold text-xs ${getStatusColor(
+                              p.approval_status
+                            )}`}
+                          >
+                            {p.approval_status}
+                          </Badge>
+                        </div>
+
+                        {/* Price Tag */}
+                        <div className="absolute bottom-3 left-3 right-3">
+                          <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-md px-4 py-2 rounded-lg shadow-lg">
+                            <p className="text-xl font-bold text-gray-900 dark:text-white">
+                              ${p.price?.toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
                       </div>
 
-                      {/* Price Tag */}
-                      <div className="absolute bottom-3 left-3 right-3">
-                        <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-md px-4 py-2 rounded-lg shadow-lg">
-                          <p className="text-xl font-bold text-gray-900 dark:text-white">
-                            ${p.price?.toLocaleString()}
-                          </p>
+                      {/* Content */}
+                      <div className="p-5">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-1">
+                          {p.title}
+                        </h3>
+
+                        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-4">
+                          <MapPin className="w-4 h-4 flex-shrink-0" />
+                          <p className="text-sm line-clamp-1">{p.city}, {p.state}</p>
+                        </div>
+
+                        {/* Features */}
+                        <div className="grid grid-cols-3 gap-3 mb-4 pb-4 border-b border-gray-100 dark:border-gray-800">
+                          <div className="flex flex-col items-center">
+                            <div className="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mb-1">
+                              <Bed className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <span className="text-xs text-gray-600 dark:text-gray-400">{p.bedrooms} Beds</span>
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <div className="w-8 h-8 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg flex items-center justify-center mb-1">
+                              <Bath className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                            </div>
+                            <span className="text-xs text-gray-600 dark:text-gray-400">{p.bathrooms} Baths</span>
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <div className="w-8 h-8 bg-amber-50 dark:bg-amber-900/20 rounded-lg flex items-center justify-center mb-1">
+                              <Maximize2 className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                            </div>
+                            <span className="text-xs text-gray-600 dark:text-gray-400">{p.area} sqft</span>
+                          </div>
+                        </div>
+
+                        {/* Agent Info */}
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                          Agent: <span className="font-medium text-gray-700 dark:text-gray-300">{p.agent?.name || "N/A"}</span>
+                        </p>
+
+                        {/* Actions - logic:
+                          - pending => show both approve & reject
+                          - approved => show only reject
+                          - rejected => show only approve
+                        */}
+                        <div className="flex gap-2">
+                          {showApprove && (
+                            <Button
+                              size="sm"
+                              className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+                              onClick={() => handleApprove(p.id)}
+                            >
+                              <Check className="w-4 h-4 mr-1" /> Approve
+                            </Button>
+                          )}
+
+                          {showReject && (
+                            <Button
+                              size="sm"
+                              className="flex-1 bg-red-600 hover:bg-red-700 text-white cursor-pointer"
+                              onClick={() => openRejectPopup(p.id)}
+                            >
+                              <X className="w-4 h-4 mr-1" /> Reject
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </div>
-
-                    {/* Content */}
-                    <div className="p-5">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-1">
-                        {p.title}
-                      </h3>
-
-                      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-4">
-                        <MapPin className="w-4 h-4 flex-shrink-0" />
-                        <p className="text-sm line-clamp-1">{p.city}, {p.state}</p>
-                      </div>
-
-                      {/* Features */}
-                      <div className="grid grid-cols-3 gap-3 mb-4 pb-4 border-b border-gray-100 dark:border-gray-800">
-                        <div className="flex flex-col items-center">
-                          <div className="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mb-1">
-                            <Bed className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                          </div>
-                          <span className="text-xs text-gray-600 dark:text-gray-400">{p.bedrooms} Beds</span>
-                        </div>
-                        <div className="flex flex-col items-center">
-                          <div className="w-8 h-8 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg flex items-center justify-center mb-1">
-                            <Bath className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                          </div>
-                          <span className="text-xs text-gray-600 dark:text-gray-400">{p.bathrooms} Baths</span>
-                        </div>
-                        <div className="flex flex-col items-center">
-                          <div className="w-8 h-8 bg-amber-50 dark:bg-amber-900/20 rounded-lg flex items-center justify-center mb-1">
-                            <Maximize2 className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                          </div>
-                          <span className="text-xs text-gray-600 dark:text-gray-400">{p.area} sqft</span>
-                        </div>
-                      </div>
-
-                      {/* Agent Info */}
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                        Agent: <span className="font-medium text-gray-700 dark:text-gray-300">{p.agent?.name || "N/A"}</span>
-                      </p>
-
-                      {/* Actions */}
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
-                          onClick={() => handleApprove(p.id)}
-                          disabled={p.approval_status === "approved"}
-                        >
-                          <Check className="w-4 h-4 mr-1" /> Approve
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          className="flex-1 cursor-pointer"
-                          onClick={() => openRejectPopup(p.id)}
-                          disabled={p.approval_status === "rejected"}
-                        >
-                          <X className="w-4 h-4 mr-1" /> Reject
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
@@ -340,95 +356,102 @@ const PropertyList = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {filteredProperties.map((p) => (
-                        <tr
-                          key={p.id}
-                          className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                        >
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
-                                {p.primary_image_url || p.image_urls?.[0] ? (
-                                  <img
-                                    src={p.primary_image_url || p.image_urls?.[0]}
-                                    alt={p.title}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center">
-                                    <Home className="w-6 h-6 text-gray-400" />
-                                  </div>
+                      {filteredProperties.map((p) => {
+                        const showApprove = (p.approval_status || "").toLowerCase() !== "approved";
+                        const showReject = (p.approval_status || "").toLowerCase() !== "rejected";
+
+                        return (
+                          <tr
+                            key={p.id}
+                            className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                          >
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                                  {p.primary_image_url || p.image_urls?.[0] ? (
+                                    <img
+                                      src={p.primary_image_url || p.image_urls?.[0]}
+                                      alt={p.title}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                      <Home className="w-6 h-6 text-gray-400" />
+                                    </div>
+                                  )}
+                                </div>
+                                <div>
+                                  <p className="font-semibold text-gray-900 dark:text-white line-clamp-1 max-w-[200px]">
+                                    {p.title}
+                                  </p>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                                    {p.type || "—"}
+                                  </p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                              {p.agent?.name || "N/A"}
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-1 text-gray-900 dark:text-white font-semibold">
+                                <DollarSign size={16} className="text-emerald-600 dark:text-emerald-400" />
+                                {p.price?.toLocaleString()}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                              <div className="flex items-center gap-1">
+                                <MapPin size={14} className="text-gray-400" />
+                                {p.city}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
+                                <span className="flex items-center gap-1">
+                                  <Bed size={14} /> {p.bedrooms}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Bath size={14} /> {p.bathrooms}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Maximize2 size={14} /> {p.area}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <Badge
+                                className={`px-3 py-1 border font-semibold text-xs ${getStatusColor(
+                                  p.approval_status
+                                )}`}
+                              >
+                                {p.approval_status}
+                              </Badge>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex justify-center gap-2">
+                                {showApprove && (
+                                  <Button
+                                    size="sm"
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                                    onClick={() => handleApprove(p.id)}
+                                  >
+                                    <Check className="w-4 h-4" />
+                                  </Button>
+                                )}
+                                {showReject && (
+                                  <Button
+                                    size="sm"
+                                    className="bg-red-600 hover:bg-red-700 text-white"
+                                    onClick={() => openRejectPopup(p.id)}
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </Button>
                                 )}
                               </div>
-                              <div>
-                                <p className="font-semibold text-gray-900 dark:text-white line-clamp-1 max-w-[200px]">
-                                  {p.title}
-                                </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                                  {p.type || "—"}
-                                </p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                            {p.agent?.name || "N/A"}
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-1 text-gray-900 dark:text-white font-semibold">
-                              <DollarSign size={16} className="text-emerald-600 dark:text-emerald-400" />
-                              {p.price?.toLocaleString()}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                            <div className="flex items-center gap-1">
-                              <MapPin size={14} className="text-gray-400" />
-                              {p.city}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
-                              <span className="flex items-center gap-1">
-                                <Bed size={14} /> {p.bedrooms}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Bath size={14} /> {p.bathrooms}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Maximize2 size={14} /> {p.area}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <Badge
-                              className={`px-3 py-1 border font-semibold text-xs ${getStatusColor(
-                                p.approval_status
-                              )}`}
-                            >
-                              {p.approval_status}
-                            </Badge>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex justify-center gap-2">
-                              <Button
-                                size="sm"
-                                className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                                onClick={() => handleApprove(p.id)}
-                                disabled={p.approval_status === "approved"}
-                              >
-                                <Check className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => openRejectPopup(p.id)}
-                                disabled={p.approval_status === "rejected"}
-                              >
-                                <X className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -443,7 +466,7 @@ const PropertyList = () => {
             <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-6 w-[90%] max-w-md border border-gray-200 dark:border-gray-800">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
-                  <AlertTriangle className="text-red-500" size={20} />
+                  <AlertTriangle className="text-red-600" size={20} />
                   Reject Property
                 </h4>
                 <button
