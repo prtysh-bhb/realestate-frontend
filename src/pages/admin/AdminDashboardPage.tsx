@@ -4,25 +4,122 @@ import AdminLayout from "@/components/layout/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import api from "@/api/axios";
 import { getProfile } from "@/api/admin/profileApi";
-import {
-  Home,
-  Users,
-  Building2,
-  TrendingUp,
-  DollarSign,
-  Activity,
-  ArrowUpRight,
-  ArrowDownRight,
-  Clock,
+import { 
+  Users, 
+  Building2, 
+  MessageCircle, 
+  Eye, 
+  UserCheck, 
+  UserX,
   CheckCircle2,
+  Clock4,
   XCircle,
-  AlertCircle
+  TrendingUp,
+  BarChart3,
+  Home,
+  Shield,
+  Mail,
+  Calendar,
+  ArrowUp,
+  ArrowDown,
+  Award,
+  Rocket,
+  Star,
+  Zap
 } from "lucide-react";
+import { formatAmount, formatReadableDate } from "@/helpers/customer_helper";
+import Loader from "@/components/ui/Loader";
 
 interface DashboardResponse {
   success: boolean;
   message: string;
   role: string;
+  data: {
+    stats: {
+      users: {
+        total: number;
+        agents: number;
+        customers: number;
+        admins: number;
+        active: number;
+        deactivated: number;
+        this_month: number;
+      };
+      properties: {
+        total: number;
+        published: number;
+        draft: number;
+        sold: number;
+        rented: number;
+        pending_approval: number;
+        approved: number;
+        rejected: number;
+        this_month: number;
+      };
+      inquiries: {
+        total: number;
+        new: number;
+        contacted: number;
+        closed: number;
+        recent: number;
+        this_month: number;
+      };
+      views: {
+        total: number;
+        this_month: number;
+        today: number;
+      };
+    };
+    recent_users: Array<{
+      id: number;
+      name: string;
+      email: string;
+      role: string;
+      created_at: string;
+    }>;
+    recent_properties: Array<{
+      id: number;
+      title: string;
+      price: number;
+      status: string;
+      approval_status: string;
+      agent_id: number;
+      created_at: string;
+      agent: {
+        id: number;
+        name: string;
+        email: string;
+      };
+    }>;
+    pending_approvals: Array<{
+      id: number;
+      title: string;
+      price: number;
+      agent_id: number;
+      created_at: string;
+      agent: {
+        id: number;
+        name: string;
+        email: string;
+      };
+    }>;
+    top_agents_by_properties: Array<{
+      id: number;
+      name: string;
+      email: string;
+      properties_count: number;
+    }>;
+    top_agents_by_inquiries: Array<{
+      id: number;
+      name: string;
+      email: string;
+      inquiries_count: number;
+    }>;
+    properties_by_type: Array<{
+      type: string;
+      count: number;
+    }>;
+  };
 }
 
 const AdminDashboardPage = () => {
@@ -31,26 +128,16 @@ const AdminDashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // ✅ Load profile + dashboard in parallel
   useEffect(() => {
     const fetchAll = async () => {
       try {
         setLoading(true);
 
-        // 1️⃣ Fetch full profile info (includes avatar, name, role, etc.)
         const profileRes = await getProfile();
         const user = profileRes.data.data.user;
         setProfile(user);
 
-        // 2️⃣ Choose endpoint based on role
-        const endpoint =
-          user.role === "admin"
-            ? "/admin/dashboard"
-            : user.role === "agent"
-            ? "/agent/dashboard"
-            : "/customer/dashboard";
-
-        const res = await api.get<DashboardResponse>(endpoint);
+        const res = await api.get<DashboardResponse>("/admin/dashboard");        
         setDashboardData(res.data);
 
       } catch (err: any) {
@@ -64,227 +151,677 @@ const AdminDashboardPage = () => {
         setLoading(false);
       }
     };
-
+    
     fetchAll();
   }, []);
 
-  // ===============================
-  // Conditional Rendering
-  // ===============================
+  const stats = dashboardData?.data?.stats;
+  const recentUsers = dashboardData?.data?.recent_users || [];
+  const recentProperties = dashboardData?.data?.recent_properties || [];
+  const pendingApprovals = dashboardData?.data?.pending_approvals || [];
+  const topAgentsByProperties = dashboardData?.data?.top_agents_by_properties || [];
+  const topAgentsByInquiries = dashboardData?.data?.top_agents_by_inquiries || [];
+  const propertiesByType = dashboardData?.data?.properties_by_type || [];
 
-  if (loading)
-    return (
-      <AdminLayout>
-        <div className="flex items-center justify-center py-20">
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="text-gray-500 dark:text-gray-400">Loading dashboard...</p>
-          </div>
-        </div>
-      </AdminLayout>
-    );
-
-  if (error)
-    return (
-      <AdminLayout>
-        <div className="flex items-center justify-center py-20">
-          <div className="text-center space-y-3">
-            <XCircle className="w-16 h-16 text-red-500 mx-auto" />
-            <p className="text-red-500 font-medium">{error}</p>
-          </div>
-        </div>
-      </AdminLayout>
-    );
-
-  if (!profile)
-    return (
-      <AdminLayout>
-        <div className="text-center py-10 text-gray-500">No profile data found.</div>
-      </AdminLayout>
-    );
-
-  const avatarUrl = profile.avatar_url || "https://i.pravatar.cc/100";
-  const userName = profile.name || "User";
-  const role = profile.role || "user";
-
-  // Mock stats data - replace with real data from API
-  const stats = [
+  // Overview Statistics with vibrant colors
+  const overviewStats = [
     {
-      title: "Total Properties",
-      value: "2,543",
-      change: "+12.5%",
-      trend: "up",
-      icon: Home,
-      color: "blue",
-      bgColor: "bg-blue-500/10 dark:bg-blue-500/20",
-      iconColor: "text-blue-600 dark:text-blue-400"
-    },
-    {
-      title: role === "admin" ? "Active Agents" : "My Listings",
-      value: role === "admin" ? "342" : "28",
-      change: "+8.2%",
-      trend: "up",
+      label: "Total Users",
+      value: stats?.users.total || 0,
       icon: Users,
-      color: "emerald",
-      bgColor: "bg-emerald-500/10 dark:bg-emerald-500/20",
-      iconColor: "text-emerald-600 dark:text-emerald-400"
+      gradient: "from-blue-500 to-cyan-500",
+      bgGradient: "from-blue-50 to-cyan-50",
+      change: stats?.users.this_month || 0,
+      changeType: "up"
     },
     {
-      title: "Total Revenue",
-      value: "$1.2M",
-      change: "+23.1%",
-      trend: "up",
-      icon: DollarSign,
-      color: "purple",
-      bgColor: "bg-purple-500/10 dark:bg-purple-500/20",
-      iconColor: "text-purple-600 dark:text-purple-400"
+      label: "Total Properties",
+      value: stats?.properties.total || 0,
+      icon: Building2,
+      gradient: "from-emerald-500 to-green-500",
+      bgGradient: "from-emerald-50 to-green-50",
+      change: stats?.properties.this_month || 0,
+      changeType: "up"
     },
     {
-      title: "Conversions",
-      value: "89.4%",
-      change: "-2.4%",
-      trend: "down",
-      icon: TrendingUp,
-      color: "orange",
-      bgColor: "bg-orange-500/10 dark:bg-orange-500/20",
-      iconColor: "text-orange-600 dark:text-orange-400"
+      label: "Total Inquiries",
+      value: stats?.inquiries.total || 0,
+      icon: MessageCircle,
+      gradient: "from-rose-500 to-pink-500",
+      bgGradient: "from-rose-50 to-pink-50",
+      change: stats?.inquiries.this_month || 0,
+      changeType: "up"
+    },
+    {
+      label: "Property Views",
+      value: stats?.views.total || 0,
+      icon: Eye,
+      gradient: "from-violet-500 to-purple-500",
+      bgGradient: "from-violet-50 to-purple-50",
+      change: stats?.views.this_month || 0,
+      changeType: "up"
+    }
+  ];
+
+  // User Statistics with vibrant colors
+  const userStats = [
+    { 
+      label: "Agents", 
+      value: stats?.users.agents || 0, 
+      icon: Users, 
+      gradient: "from-blue-500 to-cyan-500",
+      bgGradient: "from-blue-50 to-cyan-50"
+    },
+    { 
+      label: "Customers", 
+      value: stats?.users.customers || 0, 
+      icon: UserCheck, 
+      gradient: "from-emerald-500 to-green-500",
+      bgGradient: "from-emerald-50 to-green-50"
+    },
+    { 
+      label: "Admins", 
+      value: stats?.users.admins || 0, 
+      icon: Shield, 
+      gradient: "from-violet-500 to-purple-500",
+      bgGradient: "from-violet-50 to-purple-50"
+    },
+    { 
+      label: "Active Users", 
+      value: stats?.users.active || 0, 
+      icon: UserCheck, 
+      gradient: "from-teal-500 to-cyan-500",
+      bgGradient: "from-teal-50 to-cyan-50"
+    },
+    { 
+      label: "Deactivated", 
+      value: stats?.users.deactivated || 0, 
+      icon: UserX, 
+      gradient: "from-rose-500 to-red-500",
+      bgGradient: "from-rose-50 to-red-50"
     },
   ];
 
-  const recentActivity = [
-    { id: 1, action: "New property added", user: "John Doe", time: "5 min ago", status: "success" },
-    { id: 2, action: "Agent registration pending", user: "Jane Smith", time: "1 hour ago", status: "pending" },
-    { id: 3, action: "Property sale completed", user: "Mike Johnson", time: "2 hours ago", status: "success" },
-    { id: 4, action: "Inquiry received", user: "Sarah Williams", time: "3 hours ago", status: "pending" },
-    { id: 5, action: "Document uploaded", user: "Tom Brown", time: "5 hours ago", status: "success" },
+  // Property Statistics with vibrant colors
+  const propertyStats = [
+    { 
+      label: "Published", 
+      value: stats?.properties.published || 0, 
+      icon: CheckCircle2, 
+      gradient: "from-emerald-500 to-green-500",
+      bgGradient: "from-emerald-50 to-green-50"
+    },
+    { 
+      label: "Draft", 
+      value: stats?.properties.draft || 0, 
+      icon: Clock4, 
+      gradient: "from-amber-500 to-yellow-500",
+      bgGradient: "from-amber-50 to-yellow-50"
+    },
+    { 
+      label: "Sold", 
+      value: stats?.properties.sold || 0, 
+      icon: TrendingUp, 
+      gradient: "from-violet-500 to-purple-500",
+      bgGradient: "from-violet-50 to-purple-50"
+    },
+    { 
+      label: "Rented", 
+      value: stats?.properties.rented || 0, 
+      icon: Home, 
+      gradient: "from-blue-500 to-indigo-500",
+      bgGradient: "from-blue-50 to-indigo-50"
+    },
+    { 
+      label: "Pending Approval", 
+      value: stats?.properties.pending_approval || 0, 
+      icon: Clock4, 
+      gradient: "from-orange-500 to-amber-500",
+      bgGradient: "from-orange-50 to-amber-50"
+    },
+    { 
+      label: "Approved", 
+      value: stats?.properties.approved || 0, 
+      icon: CheckCircle2, 
+      gradient: "from-teal-500 to-emerald-500",
+      bgGradient: "from-teal-50 to-emerald-50"
+    },
+    { 
+      label: "Rejected", 
+      value: stats?.properties.rejected || 0, 
+      icon: XCircle, 
+      gradient: "from-rose-500 to-red-500",
+      bgGradient: "from-rose-50 to-red-50"
+    },
   ];
+
+  // Inquiry Statistics with vibrant colors
+  const inquiryStats = [
+    { 
+      label: "New", 
+      value: stats?.inquiries.new || 0, 
+      icon: Mail, 
+      gradient: "from-orange-500 to-amber-500",
+      bgGradient: "from-orange-50 to-amber-50"
+    },
+    { 
+      label: "Contacted", 
+      value: stats?.inquiries.contacted || 0, 
+      icon: MessageCircle, 
+      gradient: "from-blue-500 to-cyan-500",
+      bgGradient: "from-blue-50 to-cyan-50"
+    },
+    { 
+      label: "Closed", 
+      value: stats?.inquiries.closed || 0, 
+      icon: CheckCircle2, 
+      gradient: "from-emerald-500 to-green-500",
+      bgGradient: "from-emerald-50 to-green-50"
+    },
+    { 
+      label: "Recent (7d)", 
+      value: stats?.inquiries.recent || 0, 
+      icon: Calendar, 
+      gradient: "from-purple-500 to-violet-500",
+      bgGradient: "from-purple-50 to-violet-50"
+    },
+  ];
+
+  const getRoleBadge = (role: string) => {
+    const roleConfig: { [key: string]: { color: string; bgColor: string; gradient: string } } = {
+      admin: { color: 'text-purple-700', bgColor: 'bg-purple-100', gradient: 'from-purple-100 to-violet-100' },
+      agent: { color: 'text-blue-700', bgColor: 'bg-blue-100', gradient: 'from-blue-100 to-cyan-100' },
+      customer: { color: 'text-emerald-700', bgColor: 'bg-emerald-100', gradient: 'from-emerald-100 to-green-100' },
+    };
+
+    const config = roleConfig[role] || { color: 'text-gray-700', bgColor: 'bg-gray-100', gradient: 'from-gray-100 to-slate-100' };
+    
+    return (
+      <span className={`px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r ${config.gradient} ${config.color} border border-white/50 shadow-sm`}>
+        {role.toUpperCase()}
+      </span>
+    );
+  };
+
+  const getStatusBadge = (status: string) => {
+    const statusConfig: { [key: string]: { color: string; bgColor: string; gradient: string } } = {
+      published: { color: 'text-emerald-700', bgColor: 'bg-emerald-100', gradient: 'from-emerald-100 to-green-100' },
+      draft: { color: 'text-amber-700', bgColor: 'bg-amber-100', gradient: 'from-amber-100 to-yellow-100' },
+      sold: { color: 'text-violet-700', bgColor: 'bg-violet-100', gradient: 'from-violet-100 to-purple-100' },
+      rented: { color: 'text-blue-700', bgColor: 'bg-blue-100', gradient: 'from-blue-100 to-indigo-100' },
+      pending: { color: 'text-orange-700', bgColor: 'bg-orange-100', gradient: 'from-orange-100 to-amber-100' },
+      approved: { color: 'text-emerald-700', bgColor: 'bg-emerald-100', gradient: 'from-emerald-100 to-lime-100' },
+      rejected: { color: 'text-rose-700', bgColor: 'bg-rose-100', gradient: 'from-rose-100 to-red-100' },
+    };
+
+    const config = statusConfig[status] || { color: 'text-gray-700', bgColor: 'bg-gray-100', gradient: 'from-gray-100 to-slate-100' };
+    
+    return (
+      <span className={`px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r ${config.gradient} ${config.color} border border-white/50 shadow-sm`}>
+        {status.replace('_', ' ').toUpperCase()}
+      </span>
+    );
+  };
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <Loader />
+      </AdminLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center min-h-96">
+          <div className="text-center text-rose-500">
+            <XCircle className="w-16 h-16 mx-auto mb-4" />
+            <p className="text-lg font-semibold">{error}</p>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center min-h-96">
+          <div className="text-center text-gray-500">
+            <Users className="w-16 h-16 mx-auto mb-4" />
+            <p className="text-lg font-semibold">No profile data found.</p>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  const userName = profile.name || "Admin";
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 to-blue-50/30 min-h-screen">
         {/* Welcome Header */}
-        <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-                Welcome back, {userName}
-              </h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Here's what's happening with your {role} account today
-              </p>
-            </div>
-            <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-emerald-50 dark:from-blue-950/30 dark:to-emerald-950/30 rounded-lg border border-blue-100 dark:border-emerald-900/50">
-              <Clock className="text-blue-600 dark:text-emerald-400" size={16} />
-              <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-                {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-              </span>
+        <div className="bg-gradient-to-r from-blue-600 to-emerald-600 p-8 rounded-2xl shadow-2xl border-0 text-white relative overflow-hidden">
+          <div className="absolute inset-0 bg-black/10"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
+          
+          <div className="relative z-10">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-3 mb-3">
+                  <h1 className="text-4xl font-bold">Welcome back, {userName}!</h1>
+                </div>
+                <p className="text-blue-100 text-xl">
+                  System overview and performance analytics for your {profile.role} dashboard
+                </p>
+              </div>
+              <div className="hidden md:flex items-center gap-3 px-5 py-4 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/30">
+                <Calendar className="text-white" size={24} />
+                <div className="text-right">
+                  <span className="font-bold text-lg block">
+                    {new Date().toLocaleDateString('en-US', { 
+                      month: 'short', 
+                      day: 'numeric', 
+                      year: 'numeric' 
+                    })}
+                  </span>
+                  <span className="text-blue-100 text-sm">
+                    {new Date().toLocaleDateString('en-US', { weekday: 'long' })}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map((stat, index) => (
-            <Card
-              key={index}
-              className="border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:shadow-lg hover:border-blue-200 dark:hover:border-blue-800 transition-all group"
-            >
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <div className={`p-3 rounded-xl ${stat.bgColor} group-hover:scale-110 transition-transform`}>
-                    <stat.icon className={`${stat.iconColor}`} size={20} />
+        {/* Overview Statistics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {overviewStats.map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <div 
+                key={stat.label} 
+                className={`bg-gradient-to-br ${stat.bgGradient} rounded-2xl p-6 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2`}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm font-semibold">{stat.label}</p>
+                    <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value.toLocaleString()}</p>
+                    <div className="flex items-center space-x-2 mt-3">
+                      {stat.changeType === 'up' ? (
+                        <ArrowUp className="w-4 h-4 text-emerald-500" />
+                      ) : (
+                        <ArrowDown className="w-4 h-4 text-rose-500" />
+                      )}
+                      <span className={`text-sm font-semibold ${stat.changeType === 'up' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        +{stat.change} this month
+                      </span>
+                    </div>
                   </div>
-                  <div className={`flex items-center gap-0.5 text-xs font-semibold ${
-                    stat.trend === "up" ? "text-emerald-600 dark:text-emerald-500" : "text-red-600 dark:text-red-500"
-                  }`}>
-                    {stat.trend === "up" ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                    <span>{stat.change}</span>
+                  <div className={`p-4 rounded-xl bg-gradient-to-br ${stat.gradient} text-white shadow-lg`}>
+                    <Icon className="w-6 h-6" />
                   </div>
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{stat.title}</p>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</h3>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+              </div>
+            );
+          })}
         </div>
 
-        {/* Main Content Grid */}
+        {/* Detailed Statistics Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Recent Activity */}
-          <Card className="lg:col-span-2 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
+          {/* User Statistics */}
+          <Card className="border-0 shadow-xl bg-white">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h2>
-                <button className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
-                  View all
-                </button>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg">
+                  <Users className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">User Statistics</h3>
               </div>
+              <div className="space-y-4">
+                {userStats.map((stat) => {
+                  const Icon = stat.icon;
+                  return (
+                    <div 
+                      key={stat.label} 
+                      className={`flex items-center justify-between p-4 rounded-xl bg-gradient-to-br ${stat.bgGradient} border-0 shadow-sm hover:shadow-md transition-all duration-200`}
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className={`p-3 rounded-lg bg-gradient-to-br ${stat.gradient} text-white shadow-md`}>
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <span className="text-sm font-semibold text-gray-700">{stat.label}</span>
+                      </div>
+                      <span className="font-bold text-gray-900 text-lg">{stat.value}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
 
-              <div className="space-y-1">
-                {recentActivity.map((activity) => (
-                  <div
-                    key={activity.id}
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-emerald-50/50 dark:hover:from-blue-950/10 dark:hover:to-emerald-950/10 transition-all"
+          {/* Property Statistics */}
+          <Card className="border-0 shadow-xl bg-white">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-gradient-to-br from-emerald-500 to-green-500 rounded-lg">
+                  <Building2 className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">Property Statistics</h3>
+              </div>
+              <div className="space-y-4">
+                {propertyStats.map((stat) => {
+                  const Icon = stat.icon;
+                  return (
+                    <div 
+                      key={stat.label} 
+                      className={`flex items-center justify-between p-4 rounded-xl bg-gradient-to-br ${stat.bgGradient} border-0 shadow-sm hover:shadow-md transition-all duration-200`}
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className={`p-3 rounded-lg bg-gradient-to-br ${stat.gradient} text-white shadow-md`}>
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <span className="text-sm font-semibold text-gray-700">{stat.label}</span>
+                      </div>
+                      <span className="font-bold text-gray-900 text-lg">{stat.value}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Inquiry Statistics */}
+          <Card className="border-0 shadow-xl bg-white">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-gradient-to-br from-rose-500 to-pink-500 rounded-lg">
+                  <MessageCircle className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">Inquiry Statistics</h3>
+              </div>
+              <div className="space-y-4">
+                {inquiryStats.map((stat) => {
+                  const Icon = stat.icon;
+                  return (
+                    <div 
+                      key={stat.label} 
+                      className={`flex items-center justify-between p-4 rounded-xl bg-gradient-to-br ${stat.bgGradient} border-0 shadow-sm hover:shadow-md transition-all duration-200`}
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className={`p-3 rounded-lg bg-gradient-to-br ${stat.gradient} text-white shadow-md`}>
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <span className="text-sm font-semibold text-gray-700">{stat.label}</span>
+                      </div>
+                      <span className="font-bold text-gray-900 text-lg">{stat.value}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Recent Activity & Pending Approvals */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Recent Users */}
+          <Card className="border-0 shadow-xl bg-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg">
+                    <Zap className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900">Recent Users</h3>
+                </div>
+              </div>
+              <div className="space-y-4">
+                {recentUsers.map((user) => (
+                  <div 
+                    key={user.id} 
+                    className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-100 rounded-xl p-4 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                   >
-                    <div className={`p-1.5 rounded-lg ${
-                      activity.status === "success"
-                        ? "bg-emerald-100 dark:bg-emerald-950/30"
-                        : "bg-amber-100 dark:bg-amber-950/30"
-                    }`}>
-                      {activity.status === "success" ? (
-                        <CheckCircle2 className="text-emerald-600 dark:text-emerald-500" size={16} />
-                      ) : (
-                        <AlertCircle className="text-amber-600 dark:text-amber-500" size={16} />
-                      )}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center shadow-lg">
+                          <Users className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">{user.name}</p>
+                          <p className="text-xs text-gray-600">{user.email}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        {getRoleBadge(user.role)}
+                        <p className="text-xs text-gray-500 mt-2 font-medium">{formatReadableDate(user.created_at)}</p>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900 dark:text-white truncate">
-                        {activity.action}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{activity.user}</p>
+                  </div>
+                ))}
+                {recentUsers.length === 0 && (
+                  <div className="text-center py-8 text-gray-500 bg-gradient-to-br from-slate-50 to-gray-100 rounded-2xl">
+                    <Users className="w-12 h-12 mx-auto mb-3 opacity-50 text-blue-400" />
+                    <p className="font-semibold">No recent users</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recent Properties */}
+          <Card className="border-0 shadow-xl bg-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-emerald-500 to-green-500 rounded-lg">
+                    <Rocket className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900">Recent Properties</h3>
+                </div>
+              </div>
+              <div className="space-y-4">
+                {recentProperties.map((property) => (
+                  <div 
+                    key={property.id} 
+                    className="bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-100 rounded-xl p-4 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <h4 className="font-semibold text-gray-900 text-sm line-clamp-2 flex-1 pr-4">{property.title}</h4>
+                      {getStatusBadge(property.status)}
                     </div>
-                    <span className="text-xs text-gray-400 whitespace-nowrap">
-                      {activity.time}
-                    </span>
+                    <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+                      <span className="font-bold text-blue-600">{formatAmount(property.price)}</span>
+                      <span className="font-medium">{property.agent.name}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      {getStatusBadge(property.approval_status)}
+                      <span className="text-xs text-gray-500 font-medium">{formatReadableDate(property.created_at)}</span>
+                    </div>
+                  </div>
+                ))}
+                {recentProperties.length === 0 && (
+                  <div className="text-center py-8 text-gray-500 bg-gradient-to-br from-slate-50 to-gray-100 rounded-2xl">
+                    <Building2 className="w-12 h-12 mx-auto mb-3 opacity-50 text-emerald-400" />
+                    <p className="font-semibold">No recent properties</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Pending Approvals */}
+          <Card className="border-0 shadow-xl bg-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg">
+                    <Clock4 className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900">Pending Approvals</h3>
+                </div>
+                <span className="bg-gradient-to-r from-orange-100 to-amber-100 text-orange-700 px-3 py-1.5 rounded-full text-sm font-bold border border-orange-200">
+                  {pendingApprovals.length}
+                </span>
+              </div>
+              <div className="space-y-4">
+                {pendingApprovals.map((property) => (
+                  <div 
+                    key={property.id} 
+                    className="bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-4 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                  >
+                    <h4 className="font-semibold text-gray-900 text-sm mb-3 line-clamp-2">{property.title}</h4>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-bold text-orange-600">{formatAmount(property.price)}</span>
+                      <span className="font-medium text-gray-700">{property.agent.name}</span>
+                    </div>
+                  </div>
+                ))}
+                {pendingApprovals.length === 0 && (
+                  <div className="text-center py-8 text-gray-500 bg-gradient-to-br from-slate-50 to-gray-100 rounded-2xl">
+                    <CheckCircle2 className="w-12 h-12 mx-auto mb-3 opacity-50 text-emerald-400" />
+                    <p className="font-semibold">No pending approvals</p>
+                    <p className="text-sm mt-1">All caught up! 🎉</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Top Performers */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Top Agents by Properties */}
+          <Card className="border-0 shadow-xl bg-white">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-gradient-to-br from-emerald-500 to-green-500 rounded-lg">
+                  <TrendingUp className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">Top Agents (Properties)</h3>
+              </div>
+              <div className="space-y-4">
+                {topAgentsByProperties.map((agent, index) => (
+                  <div 
+                    key={agent.id} 
+                    className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-100 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg ${
+                        index === 0 ? 'bg-gradient-to-br from-yellow-500 to-amber-500' :
+                        index === 1 ? 'bg-gradient-to-br from-gray-400 to-slate-500' :
+                        index === 2 ? 'bg-gradient-to-br from-amber-600 to-orange-500' :
+                        'bg-gradient-to-br from-blue-500 to-cyan-500'
+                      }`}>
+                        {index < 3 ? (
+                          <Award className="w-5 h-5 text-white" />
+                        ) : (
+                          <span className="text-sm font-bold text-white">{index + 1}</span>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">{agent.name}</p>
+                        <p className="text-xs text-gray-600">{agent.email}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-bold text-gray-900 text-lg">{agent.properties_count}</span>
+                      <p className="text-xs text-gray-500 font-semibold">properties</p>
+                    </div>
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
 
-          {/* Quick Actions */}
-          <Card className="border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
+          {/* Top Agents by Inquiries */}
+          <Card className="border-0 shadow-xl bg-white">
             <CardContent className="p-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-5">Quick Actions</h2>
-
-              <div className="space-y-2">
-                <button className="w-full flex items-center gap-2.5 p-3 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white transition-all shadow-md hover:shadow-lg text-sm font-medium">
-                  <Home size={16} />
-                  <span>Add Property</span>
-                </button>
-
-                {role === "admin" && (
-                  <button className="w-full flex items-center gap-2.5 p-3 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white transition-all shadow-md hover:shadow-lg text-sm font-medium">
-                    <Users size={16} />
-                    <span>Add Agent</span>
-                  </button>
-                )}
-
-                <button className="w-full flex items-center gap-2.5 p-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-emerald-500 hover:bg-blue-50 dark:hover:bg-emerald-950/20 text-gray-700 dark:text-gray-300 transition-all text-sm font-medium">
-                  <Activity size={16} />
-                  <span>View Reports</span>
-                </button>
-
-                <button className="w-full flex items-center gap-2.5 p-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-emerald-500 dark:hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 text-gray-700 dark:text-gray-300 transition-all text-sm font-medium">
-                  <DollarSign size={16} />
-                  <span>Transactions</span>
-                </button>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-gradient-to-br from-purple-500 to-violet-500 rounded-lg">
+                  <BarChart3 className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">Top Agents (Inquiries)</h3>
+              </div>
+              <div className="space-y-4">
+                {topAgentsByInquiries.map((agent, index) => (
+                  <div 
+                    key={agent.id} 
+                    className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-br from-purple-50 to-violet-50 border border-purple-100 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg ${
+                        index === 0 ? 'bg-gradient-to-br from-yellow-500 to-amber-500' :
+                        index === 1 ? 'bg-gradient-to-br from-gray-400 to-slate-500' :
+                        index === 2 ? 'bg-gradient-to-br from-amber-600 to-orange-500' :
+                        'bg-gradient-to-br from-purple-500 to-violet-500'
+                      }`}>
+                        {index < 3 ? (
+                          <Star className="w-5 h-5 text-white" />
+                        ) : (
+                          <span className="text-sm font-bold text-white">{index + 1}</span>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">{agent.name}</p>
+                        <p className="text-xs text-gray-600">{agent.email}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-bold text-gray-900 text-lg">{agent.inquiries_count}</span>
+                      <p className="text-xs text-gray-500 font-semibold">inquiries</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
         </div>
+
+        {/* Property Types Distribution */}
+        <Card className="border-0 shadow-xl bg-white">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg">
+                <Home className="w-5 h-5 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">Properties by Type</h3>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {propertiesByType.map((type, index) => {
+                const colors = [
+                  'from-blue-500 to-cyan-500', 'from-emerald-500 to-green-500', 'from-rose-500 to-pink-500',
+                  'from-violet-500 to-purple-500', 'from-orange-500 to-amber-500', 'from-teal-500 to-cyan-500'
+                ];
+                const bgColors = [
+                  'from-blue-50 to-cyan-50', 'from-emerald-50 to-green-50', 'from-rose-50 to-pink-50',
+                  'from-violet-50 to-purple-50', 'from-orange-50 to-amber-50', 'from-teal-50 to-cyan-50'
+                ];
+                
+                return (
+                  <div 
+                    key={type.type} 
+                    className={`text-center p-5 rounded-xl bg-gradient-to-br ${bgColors[index % colors.length]} border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1`}
+                  >
+                    <div className={`text-3xl font-bold mb-2 bg-gradient-to-br ${colors[index % colors.length]} bg-clip-text text-transparent`}>
+                      {type.count}
+                    </div>
+                    <div className="text-sm font-semibold text-gray-600 capitalize">{type.type || 'Unknown'}</div>
+                  </div>
+                );
+              })}
+              {propertiesByType.length === 0 && (
+                <div className="col-span-full text-center py-12 text-gray-500 bg-gradient-to-br from-slate-50 to-gray-100 rounded-2xl">
+                  <Home className="w-16 h-16 mx-auto mb-4 opacity-50 text-blue-400" />
+                  <p className="text-lg font-semibold">No property type data available</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </AdminLayout>
   );

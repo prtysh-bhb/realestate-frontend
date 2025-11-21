@@ -45,16 +45,16 @@ const ProfileEditForm = () => {
   useEffect(() => {
     const fetchUser = async () => {
         const data = await getProfile();
-        const user = data.data;
+        const user = data.data.user;
         setFormData({
           name: user.name || '',
           email: user.email || '',
           phone: user.phone || '',
-          bio: '',
-          address: '',
-          city: '',
-          state: '',
-          zipcode: ''
+          bio: user.bio || '',
+          address: user.address || '',
+          city: user.city || '',
+          state: user.state || '',
+          zipcode: user.zipcode || '',
         });
         setUser(user);
         setAvatar(user.avatar_url || '');

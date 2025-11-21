@@ -268,8 +268,8 @@ const CustomerProfile = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-        const data = await getProfile();
-        setUser(data.data);
+        const data = await getProfile();        
+        setUser(data.data.user);
         setLoading(false);
     };
 
@@ -305,6 +305,9 @@ const CustomerProfile = () => {
           <div className="flex space-x-3">
             <Link to={"/profile/edit"} className="px-4 py-2 flex bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
               <Edit size={20} className='mr-2' />Edit
+            </Link>
+            <Link to={"/customer/appointment"} className="px-4 py-2 flex bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+              <Edit size={20} className='mr-2' />View Appointment
             </Link>
           </div>
         </div>

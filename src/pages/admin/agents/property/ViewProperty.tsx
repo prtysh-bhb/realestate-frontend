@@ -1,21 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Trash2, AlertTriangle, X } from "lucide-react";
+import { ArrowLeft, Trash2, Home } from "lucide-react";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
-import { getPropertyById, deleteProperty } from "@/api/agent/property";
+import { getPropertyById, deleteProperty, deletePropertyVideo } from "@/api/agent/property";
 import type { Property } from "@/types/property";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import PropertyDocuments from "./PropertyDocuments";
 import { Attributes, propertyAttributes } from "@/api/customer/properties";
-
-const getImageUrl = (path?: string | null) => {
-  if (!path) return "https://placehold.co/800x400?text=No+Image";
-  if (path.startsWith("http")) return path;
-  const clean = path.replace(/^public\//, "").replace(/^storage\//, "");
-  return `${import.meta.env.VITE_API_URL}/storage/${clean}`;
-};
+import { formatAmount } from "@/helpers/customer_helper";
+import ReactPlayer from 'react-player';
+import DeleteModal from "../components/DeleteModal";
 
 const ViewProperty = () => {
   const { id } = useParams<{ id: string }>();
@@ -26,6 +22,7 @@ const ViewProperty = () => {
   const [loading, setLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showVideoDeleteModal, setShowVideoDeleteModal] = useState(false);
 
   const fetchPropertyAttributes = async () => {
     const response = await propertyAttributes();
@@ -65,6 +62,21 @@ const ViewProperty = () => {
     } finally {
       setDeleting(false);
       setShowDeleteModal(false);
+    }
+  };
+
+  const handleVideoDelete = async () => {
+    if (!id) return;
+    setDeleting(true);
+    try {
+      await deletePropertyVideo(Number(id));
+      toast.success("Property video deleted successfully");
+      fetchProperty();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to delete property");
+    } finally {
+      setDeleting(false);
+      setShowVideoDeleteModal(false);
     }
   };
 
@@ -151,11 +163,9 @@ const ViewProperty = () => {
               />
             ))
           ) : (
-            <img
-              src="https://placehold.co/800x400?text=No+Image"
-              alt="No Image"
-              className="w-full h-64 object-cover rounded-xl border border-gray-200"
-            />
+            <div className="w-full h-50 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+              <Home className="w-16 h-16 text-gray-300 dark:text-gray-600" />
+            </div>
           )}
         </div>
 
@@ -163,7 +173,7 @@ const ViewProperty = () => {
         <Card className="shadow-md border border-gray-200">
           <CardContent className="p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Info label="Price" value={`$${property.price.toLocaleString()}`} />
+              <Info label="Price" value={`${formatAmount(property.price)}`} />
               <Info label="Type" value={property.type} />
               <Info label="Property Type" value={propertyTypes?.find(a => a.key === property?.property_type)?.label ?? '-'} />
               <Info label="Bedrooms" value={property.bedrooms} />
@@ -252,51 +262,59 @@ const ViewProperty = () => {
         <div className="mt-8">
           <PropertyDocuments propertyId={property.id} />
         </div>
-      </div>
 
-      {/* ✅ Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-lg p-6 w-[90%] max-w-md animate-fadeIn">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-lg font-semibold flex items-center gap-2">
-                <AlertTriangle className="text-yellow-500" size={20} />
-                Confirm Delete
-              </h4>
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="text-gray-400 hover:text-gray-600 cursor-pointer"
-              >
-                <X size={20} />
-              </button>
+        {property.video_url && (
+          <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-6 relative">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-800">
+                Video
+              </h3>
+
+              <label onClick={() => setShowVideoDeleteModal(true)} className="cursor-pointer inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">
+                  <>
+                    <Trash2 size={16} /> Delete Video
+                  </>
+              </label>
             </div>
-
-            <p className="text-gray-600 text-sm mb-4">
-              Are you sure you want to delete this property? This action cannot
-              be undone.
-            </p>
-
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteProperty}
-                disabled={deleting}
-                className={`px-4 py-2 rounded text-white text-sm cursor-pointer ${
-                  deleting
-                    ? "bg-red-400 cursor-not-allowed"
-                    : "bg-red-600 hover:bg-red-700"
-                }`}
-              >
-                {deleting ? "Deleting..." : "Delete"}
-              </button>
+            <div className="relative h-72 sm:h-[500px] lg:h-[500px] bg-black rounded-xl overflow-hidden">
+              <ReactPlayer
+                src={property?.video_url ?? ''}
+                width="100%"
+                height="100%"
+                controls
+                style={{ borderRadius: '12px' }}
+              />
             </div>
           </div>
-        </div>
+        )}
+      </div>
+
+      {/* ✅ Delete Property Confirmation Modal */}
+      {showDeleteModal && (
+        <DeleteModal
+          show={showDeleteModal}
+          title="Delete Property"
+          message="This action cannot be undone. Do you really want to delete this property?"
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={handleDeleteProperty}
+          loading={deleting}
+          confirmText="Delete"
+          cancelText="Cancel"
+        />
+      )}
+
+      {/* ✅ Delete Property Video Confirmation Modal */}
+      {showVideoDeleteModal && (
+        <DeleteModal
+          show={showVideoDeleteModal}
+          title="Delete Property Video"
+          message="This action cannot be undone. Do you really want to delete this property video?"
+          onClose={() => setShowVideoDeleteModal(false)}
+          onConfirm={handleVideoDelete}
+          loading={deleting}
+          confirmText="Delete"
+          cancelText="Cancel"
+        />
       )}
     </AdminLayout>
   );

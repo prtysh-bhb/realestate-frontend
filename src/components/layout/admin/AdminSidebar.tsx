@@ -20,6 +20,7 @@ import {
   Menu,
   X,
   ClipboardList,
+  CreditCard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
@@ -55,7 +56,7 @@ const menuItems =
   role === "admin"
     ? [
         {
-          name: "Dashboard*",
+          name: "Dashboard",
           icon: LayoutDashboard,
           path: "/admin/dashboard",
           exact: true,
@@ -115,6 +116,24 @@ const menuItems =
           ],
         },
         {
+          name: "Subscriptions",
+          icon: CreditCard,
+          children: [
+            {
+              name: "Subscription List",
+              icon: List,
+              path: "/admin/subscriptions",
+              exact: true,
+            },
+            {
+              name: "Add Subscription*",
+              icon: PlusCircle,
+              path: "/admin/subscriptions/new",
+              exact: true,
+            },
+          ],
+        },
+        {
           name: "Transactions*",
           icon: ArrowLeftRight,
           children: [
@@ -151,7 +170,7 @@ const menuItems =
     : role === "agent"
     ? [
         {
-          name: "Dashboard*",
+          name: "Dashboard",
           icon: LayoutDashboard,
           path: "/agent/dashboard",
           exact: true,
@@ -198,8 +217,9 @@ const menuItems =
           path: "/agent/leads",
           exact: false,
         },
+        { name: "Appointment*", icon: HousePlus, path: "/agent/appointments", exact: true },
         { name: "Inbox*", icon: MailOpen, path: "/admin/inbox", exact: true },
-        { name: "Chat*", icon: MessageCircle, path: "/admin/chat", exact: true },
+        { name: "Chat*", icon: MessageCircle, path: "/agent/chat", exact: true },
         {
           name: "Settings*",
           icon: Settings,
@@ -285,7 +305,7 @@ const menuItems =
                 </p>
               </div>
             )}
-            <div className="flex gap-1">
+            <div className="grid gap-1">
               <button
                 onClick={() => onCollapseChange?.(!collapsed)}
                 className="text-gray-400 hover:text-emerald-400 transition-all cursor-pointer p-2 rounded-lg hover:bg-white/10 backdrop-blur-sm"

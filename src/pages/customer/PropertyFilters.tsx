@@ -35,6 +35,7 @@ const PropertyFilters = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [isOpen, setIsOpen] = useState(false);
   const [totalRecords, setTotalRecords] = useState<number>(0);
+  
   const [filters, setFilters] = useState<FilterState>({
     keyword: '',
     location: '',
@@ -47,7 +48,7 @@ const PropertyFilters = () => {
     bathrooms: '',
     min_area: '',
     max_area: '',
-    type: 'rent',
+    type: propType,
     amenities: [],
     sort_by: '',
     sort_order: '',
@@ -129,10 +130,13 @@ const PropertyFilters = () => {
   };
 
   useEffect(() => {
-    const filterData = location.state?.filters;
-    setFilters(filterData);
+    const filterData = location.state?.filters ?? filters;
+    setFilters(() => ({
+      ...filterData,
+      type: propType
+    }));
     setShouldFetch(true);
-  }, [location.search, propType]);
+  }, [propType]);
 
   const fetchProperties = async () => {
     setLoading(true);

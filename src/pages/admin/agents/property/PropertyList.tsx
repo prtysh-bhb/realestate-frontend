@@ -18,6 +18,7 @@ import {
   AlertTriangle,
   X,
 } from "lucide-react";
+import { formatAmount } from "@/helpers/customer_helper";
 
 const PropertyList = () => {
   const [properties, setProperties] = useState<Property[]>([]);
@@ -99,7 +100,7 @@ const PropertyList = () => {
 
   return (
     <AdminLayout>
-      <div className="p-6 min-h-screen">
+      <div className="p-0 min-h-screen">
         {/* ---------- Header ---------- */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-semibold text-gray-800">
@@ -165,7 +166,7 @@ const PropertyList = () => {
 
                   <div className="text-sm text-gray-500 flex items-center gap-1">
                     <DollarSign size={14} className="text-green-500" />
-                    ${property.price.toLocaleString()}
+                    {formatAmount(property.price)}
                   </div>
                 </div>
 

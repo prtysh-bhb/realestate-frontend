@@ -118,7 +118,7 @@ const HeroSection = () => {
             <div className="flex gap-4 mb-6">
               <button
                 onClick={() => setActiveTab("sale")}
-                className={`flex-1 py-4 px-6 rounded-2xl font-semibold text-lg transition-all duration-300 ${
+                className={`flex-1 py-4 px-6 rounded-2xl font-semibold text-lg transition-all duration-300 cursor-pointer ${
                   activeTab === "sale"
                     ? "bg-white text-slate-900 shadow-lg"
                     : "text-white/70 hover:text-white hover:bg-white/5"
@@ -129,7 +129,7 @@ const HeroSection = () => {
               </button>
               <button
                 onClick={() => setActiveTab("rent")}
-                className={`flex-1 py-4 px-6 rounded-2xl font-semibold text-lg transition-all duration-300 ${
+                className={`flex-1 py-4 px-6 rounded-2xl font-semibold text-lg transition-all duration-300 cursor-pointer ${
                   activeTab === "rent"
                     ? "bg-white text-slate-900 shadow-lg"
                     : "text-white/70 hover:text-white hover:bg-white/5"
@@ -152,16 +152,16 @@ const HeroSection = () => {
                     value={filters.location}
                     onChange={handleInputChange}
                     placeholder="Enter location, city, or neighborhood"
-                    className="w-full pl-12 pr-4 py-4 bg-white/95 border-0 rounded-2xl text-slate-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-lg shadow-sm"
+                    className="w-full pl-12 pr-4 py-4 bg-white/95 border-0 rounded-2xl  text-slate-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-lg shadow-sm"
                   />
                 </div>
 
                 {/* Search Button */}
                 <button
                   onClick={handleSearch}
-                  className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap"
+                  className="px-8 py-4 bg-gradient-to-r cursor-pointer from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap"
                 >
-                  <Search className="w-5 h-5" />
+                  <Search className="w-5 h-5 " />
                   Search
                 </button>
               </div>

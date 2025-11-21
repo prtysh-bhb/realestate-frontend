@@ -13,7 +13,7 @@ export const formatReadableDate = (dateInput: string | Date): string => {
 export const formatAmount = (amount: number | string): string => {
   const num = Number(amount);
   if (isNaN(num)) return "0";
-  return num.toLocaleString("en-IN", {
+  return '$'+num.toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });

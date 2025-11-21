@@ -4,8 +4,7 @@
  */
 
 import api from "./axios";
-import type { User, UpdateProfileData } from "@/types/user";
-import type { LoginCredentials, RegisterData, AuthResponse } from "@/types/auth";
+import type { User } from "@/types/user";
 import type { ApiResponse } from "@/types/api";
 import { handleApiError, getErrorMessage } from "@/services/errorHandler";
 
@@ -71,7 +70,9 @@ export interface ForgotPasswordResponse {
 export interface ProfileResponse {
   success: boolean;
   message?: string;
-  data: User;
+  data: {
+    user: User;
+  };
 }
 
 /**
@@ -129,7 +130,7 @@ export const register = async (
  */
 export const forgotPassword = async (email: string): Promise<ForgotPasswordResponse> => {
   try {
-    const response = await api.post<ForgotPasswordResponse>("/forgot-password", { email });
+    const response = await api.post<ForgotPasswordResponse>("/password/email", { email });
     return response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -172,7 +173,9 @@ export const updateProfile = async (formData: ProfileFormData): Promise<ProfileR
     return {
       success: false,
       message: errorMessage || "Failed to update profile. Please try again.",
-      data: {} as User,
+      data: {
+        user: {} as User
+      },
     };
   }
 };
@@ -196,7 +199,9 @@ export const updateAvatar = async (avatar: File): Promise<ProfileResponse> => {
     return {
       success: false,
       message: errorMessage || "Failed to update avatar. Please try again.",
-      data: {} as User,
+      data: {
+        user: {} as User
+      },
     };
   }
 };
