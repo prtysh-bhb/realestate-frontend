@@ -88,8 +88,8 @@ const ProfileEditForm = () => {
     e.preventDefault();
     const response = await updateProfile(formData);
 
-    if(response.success){
-      setUser(response.data);
+    if(response.success){      
+      setUser(response.data.user);
       toast.success(response.message);
     }else{
       toast.error(response.message);
@@ -171,6 +171,7 @@ const ProfileEditForm = () => {
                   id="name"
                   value={formData.name}
                   onChange={handleInputChange}
+                  maxLength={50}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 />
               </div>
@@ -183,6 +184,7 @@ const ProfileEditForm = () => {
                 <input
                   type="email"
                   id="email"
+                  maxLength={50}
                   value={formData.email}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
@@ -198,6 +200,7 @@ const ProfileEditForm = () => {
               <input
                 type="tel"
                 id="phone"
+                maxLength={15}
                 value={formData.phone}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
@@ -227,6 +230,7 @@ const ProfileEditForm = () => {
               <input
                 type="text"
                 id="address"
+                maxLength={255}
                 value={formData.address}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
@@ -242,6 +246,7 @@ const ProfileEditForm = () => {
                 <input
                   type="text"
                   id="city"
+                  maxLength={50}
                   value={formData.city}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
@@ -256,6 +261,7 @@ const ProfileEditForm = () => {
                 <input
                   type="text"
                   id="state"
+                  maxLength={50}
                   value={formData.state}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
@@ -270,6 +276,7 @@ const ProfileEditForm = () => {
                 <input
                   type="text"
                   id="zipcode"
+                  maxLength={10}
                   value={formData.zipcode}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"

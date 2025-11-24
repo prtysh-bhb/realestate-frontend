@@ -252,6 +252,7 @@ const AdminProfilePage = () => {
                 </label>
                 <Input
                   value={user.email || ""}
+                  maxLength={50}
                   disabled
                   placeholder="Email"
                   className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
@@ -265,7 +266,7 @@ const AdminProfilePage = () => {
                   value={user.phone || ""}
                   onChange={(e) => setUser({ ...user, phone: e.target.value })}
                   placeholder="Phone Number"
-                  maxLength={20}
+                  maxLength={15}
                   inputMode="tel"
                   className="border-gray-200 dark:border-gray-700"
                 />

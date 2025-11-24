@@ -99,8 +99,8 @@ return [];
 };
 
 
-export const fetchAppointments = async (page = 1, per_page = 12, token?: string | null) => {
-const resp = await axios.get<AppointmentListResponse>(`${API_BASE}/agent/appointments`, { headers: getAuthHeaders(token), params: { page, per_page } });
+export const fetchAppointments = async (per_page = 12, token?: string | null) => {
+const resp = await axios.get<AppointmentListResponse>(`${API_BASE}/agent/appointments`, { headers: getAuthHeaders(token), params: { per_page } });
 return resp.data?.data ?? resp.data;
 };
 
