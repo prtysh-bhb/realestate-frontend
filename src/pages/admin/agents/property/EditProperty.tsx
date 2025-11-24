@@ -179,10 +179,7 @@ const EditProperty = () => {
 
     // size limit: 50MB
     if (file.size > 50 * 1024 * 1024) {
-      setErrors((prev) => ({
-        ...prev,
-        video: "Video exceeds 50MB size limit.",
-      }));
+      toast.error("Video exceeds 50MB size limit.");
       return;
     }
 
@@ -303,6 +300,7 @@ const EditProperty = () => {
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
+                maxLength={100}
                 error={errors.title}
               />
               <div>
@@ -485,7 +483,7 @@ const EditProperty = () => {
             <h3 className="text-2xl font-semibold text-gray-800 mb-4 mt-4">Add Property Video</h3>
             <div className="mt-4">
               <label className="block text-sm font-medium mb-1 text-gray-600">
-                Upload Video (MP4 only, max 1 file)
+                Upload Video (Supported Extensions: MP4,MOV,AVI,WMV)
               </label>
               <Input
                 type="file"
@@ -493,7 +491,7 @@ const EditProperty = () => {
                 className={`border-gray-300 ${
                   errors.video ? "border-red-500" : ""
                 }`}
-                accept="video/mp4"
+                accept="video/mp4, video/quicktime, video/x-msvideo, video/x-ms-wmv"
                 onChange={handleVideoChange}
               />
               {errors.video && (
@@ -516,7 +514,7 @@ const EditProperty = () => {
                   value={formData.address}
                   onChange={handleChange}
                   className={`border-gray-300 ${errors.address ? "border-red-500" : ""}`}
-                  maxLength={200}
+                  maxLength={255}
                 />
                 {errors.address && (
                   <p className="text-red-500 text-xs mt-1">{errors.address}</p>
@@ -532,7 +530,7 @@ const EditProperty = () => {
                   value={formData.location}
                   onChange={handleChange}
                   className={`border-gray-300 ${errors.location ? "border-red-500" : ""}`}
-                  maxLength={200}
+                  maxLength={50}
                 />
                 {errors.location && (
                   <p className="text-red-500 text-xs mt-1">{errors.location}</p>

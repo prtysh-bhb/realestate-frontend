@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* ========================================================= */
 import React, { useEffect, useState, useCallback } from "react";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
+import moment from "moment-timezone";
 import { useLocation } from "react-router-dom";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
 import { toast } from "sonner";
@@ -26,16 +25,12 @@ import {
   Search,
   Filter,
   X,
-  ChevronLeft,
-  ChevronRight,
   Edit,
   Trash2,
   Eye,
 } from "lucide-react";
 import { getAgentProperties } from "@/api/agent/property";
 import { Customer } from "@/types/appointment";
-
-dayjs.extend(relativeTime);
 
 function resolveImageUrl(API_BASE: string, img?: string | null) {
   if (!img) return null;
@@ -45,14 +40,14 @@ function resolveImageUrl(API_BASE: string, img?: string | null) {
 }
 
 export default function AgentAppointments({ token }: { token?: string | null }) {
-  const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000/api";
+
+  const API_BASE = import.meta.env.VITE_API_URL;
   const location = useLocation();
 
   const [properties, setProperties] = useState<any[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
 
   const [showCreate, setShowCreate] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -91,21 +86,33 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
     }
   }, [location.search]);
 
+  // helper to normalize API results (small safety wrapper)
+  const toArray = (resp: any): any[] => {
+    if (!resp) return [];
+    if (Array.isArray(resp)) return resp;
+    if (Array.isArray(resp.data)) return resp.data;
+    if (Array.isArray(resp.appointments)) return resp.appointments;
+    if (Array.isArray(resp.appointments?.data)) return resp.appointments.data;
+    if (Array.isArray(resp.properties)) return resp.properties;
+    if (Array.isArray(resp.customers)) return resp.customers;
+    return [];
+  };
+
   const loadProperties = useCallback(async () => {
     try {
       const data = await getAgentProperties();
-      const items = data.data;
+      const items = (data && data.data) ? data.data : toArray(data);
       setProperties(items.map((p: any) => ({ ...p, image: resolveImageUrl(API_BASE, p.image) })));
     } catch (e) {
       console.error(e);
       setProperties([]);
     }
-  }, [token]);
+  }, [token, API_BASE]);
 
   const loadCustomers = useCallback(async () => {
     try {
-      const data = await fetchAgentCustomers(token);      
-      const items = data ?? [];
+      const data = await fetchAgentCustomers(token);
+      const items = toArray(data);
       setCustomers(items);
     } catch (e) {
       console.error(e);
@@ -116,8 +123,9 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
   const loadAppointments = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await fetchAppointments(page, 12, token);
-      const items = data?.appointments;
+      const data = await fetchAppointments(12, token);
+      const items = toArray(data?.appointments ?? data);
+      
       setAppointments(
         items.map((a: any) => ({
           ...a,
@@ -132,7 +140,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
     } finally {
       setLoading(false);
     }
-  }, [page, token]);
+  }, [token, API_BASE]);
 
   useEffect(() => {
     loadProperties();
@@ -146,10 +154,9 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
     try {
       const data = await checkAvailability(date, token);
       const items = data?.time_slots ?? data ?? [];
-      const normalized = items.map((it: any) => ({
+      const normalized = (Array.isArray(items) ? items : []).map((it: any) => ({
         datetime: it.datetime ?? `${date}T${it.start_time ?? "09:00"}:00`,
-        is_available:
-          typeof it.is_available === "boolean" ? it.is_available : !(it.booked ?? false),
+        is_available: typeof it.is_available === "boolean" ? it.is_available : !(it.booked ?? false),
       }));
       setSlots(normalized);
     } catch (e) {
@@ -181,20 +188,21 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
   const handleOpenEdit = async (appt: any) => {
     try {
       const data = await fetchAppointment(appt.id, token);
+      const row = data;
       setForm({
-        id: data.id,
-        property_id: data.property_id?.toString() ?? "",
-        customer_id: data.customer_id?.toString() ?? "",
-        inquiry_id: data.inquiry_id?.toString() ?? "",
-        type: data.type,
-        date: dayjs(data.scheduled_at).format("YYYY-MM-DD"),
-        slot: data.scheduled_at,
-        duration_minutes: data.duration_minutes ?? 30,
-        location: data.location ?? "",
-        phone_number: data.phone_number ?? "",
-        notes: data.notes ?? "",
+        id: row.id,
+        property_id: row.property_id?.toString() ?? "",
+        customer_id: row.customer_id?.toString() ?? "",
+        inquiry_id: row.inquiry_id?.toString() ?? "",
+        type: row.type,
+        date: moment.utc(row.scheduled_at).format("YYYY-MM-DD"),
+        slot: row.scheduled_at,
+        duration_minutes: row.duration_minutes ?? 30,
+        location: row.location ?? "",
+        phone_number: row.phone_number ?? "",
+        notes: row.notes ?? "",
       });
-      await handleCheckAvailability(dayjs(data.scheduled_at).format("YYYY-MM-DD"));
+      await handleCheckAvailability(moment(row.scheduled_at).format("YYYY-MM-DD"));
       setShowCreate(true);
       setShowEdit(true);
     } catch (e) {
@@ -209,16 +217,17 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
     if (!form.date) return toast.error("Select date");
     if (!form.slot) return toast.error("Pick a slot");
     if (form.type === "visit" && !form.location) return toast.error("Enter visit location");
-    if (form.type === "call" && !form.phone_number)
-      return toast.error("Enter phone number for call");
+    if (form.type === "call" && !form.phone_number) return toast.error("Enter phone number for call");
 
     setCreating(true);
     try {
+      const combinedDateSlot = moment.tz(`${form.date} ${form.slot}`, "YYYY-MM-DD HH:mm", "Asia/Kolkata").format();
+      
       const payload: any = {
         property_id: form.property_id,
         customer_id: form.customer_id,
         type: form.type,
-        scheduled_at: form.slot,
+        scheduled_at: combinedDateSlot,
         duration_minutes: Number(form.duration_minutes) || 30,
         notes: form.notes || undefined,
       };
@@ -260,7 +269,13 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
     }
   };
 
+  // Only allow cancel when appointment.status === "scheduled"
   const handleOpenCancel = (appt: any) => {
+    if (!appt) return;
+    if (appt.status !== "scheduled") {
+      toast.error("Only scheduled appointments can be cancelled");
+      return;
+    }
     setSelected(appt);
     setCancelReason("");
     setShowCancelModal(true);
@@ -272,11 +287,14 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
     try {
       await cancelAppointment(selected.id, cancelReason, token);
       toast.success("Appointment cancelled");
+
+      // Immediately update local state so Cancel becomes disabled and (since we hide cancelled by default) it disappears from main list
+      setAppointments((prev) => prev.map((a) => (a.id === selected.id ? { ...a, status: "cancelled" } : a)));
+      setSelected((prev: any) => (prev ? { ...prev, status: "cancelled" } : prev));
+
       setShowCancelModal(false);
-      setSelected(null);
+      // refresh to ensure server-state sync (optional but recommended)
       await loadAppointments();
-      const dateOnly = dayjs(selected.scheduled_at).format("YYYY-MM-DD");
-      await handleCheckAvailability(dateOnly);
     } catch (e) {
       console.error(e);
       toast.error("Cancel failed");
@@ -286,7 +304,8 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
   const openDetails = async (id: number) => {
     try {
       const data = await fetchAppointment(id, token);
-      setSelected(data);
+      const row = data;
+      setSelected(row);
     } catch (e) {
       console.error("openDetails", e);
       toast.error("Failed to load appointment");
@@ -325,15 +344,19 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
   };
 
   // Filter appointments based on search and status
+  // IMPORTANT: default behaviour = hide cancelled appointments (unless user selects 'cancelled' filter)
   const filteredAppointments = appointments.filter((appointment) => {
+    // hide cancelled by default
+    if (statusFilter === "all" && appointment.status === "cancelled") return false;
+    // if other filter selected, obey it
+    if (statusFilter !== "all" && appointment.status !== statusFilter) return false;
+
     const matchesSearch =
       searchTerm === "" ||
-      appointment.property?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.customer?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+      (appointment.property?.title ?? "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (appointment.customer?.name ?? "").toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus = statusFilter === "all" || appointment.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
 
   return (
@@ -344,9 +367,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Appointments</h1>
-              <p className="text-sm text-gray-600 mt-1">
-                Manage and schedule customer appointments
-              </p>
+              <p className="text-sm text-gray-600 mt-1">Manage and schedule customer appointments</p>
             </div>
             <button
               onClick={handleOpenCreate}
@@ -441,7 +462,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                         onChange={(e) => setStatusFilter(e.target.value)}
                         className="px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
-                        <option value="all">All Status</option>
+                        <option value="all">All Status (hide cancelled)</option>
                         <option value="scheduled">Scheduled</option>
                         <option value="completed">Completed</option>
                         <option value="cancelled">Cancelled</option>
@@ -466,121 +487,94 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                       <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                       <p className="text-gray-500 text-lg font-medium">No appointments found</p>
                       <p className="text-gray-400 text-sm mt-1">
-                        {searchTerm || statusFilter !== "all"
-                          ? "Try adjusting your filters"
-                          : "Get started by creating your first appointment"}
+                        {searchTerm || statusFilter !== "all" ? "Try adjusting your filters" : "Get started by creating your first appointment"}
                       </p>
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {filteredAppointments.map((appointment) => (
-                        <div
-                          key={appointment.id}
-                          className="flex-1 md:flex items-center gap-5 p-4 rounded-xl border border-gray-100 hover:shadow-md transition-all duration-200 bg-white"
-                        >
-                          <div className="flex-shrink-0 w-16 h-16 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
-                            {appointment.type === "visit" ? (
-                              <MapPin className="w-6 h-6 text-blue-600" />
-                            ) : (
-                              <Phone className="w-6 h-6 text-green-600" />
-                            )}
-                          </div>
+                      {filteredAppointments.map((appointment) => {
+                        const isScheduled = appointment.status === "scheduled";
+                        return (
+                          <div
+                            key={appointment.id}
+                            className="flex-1 md:flex items-center gap-5 p-4 rounded-xl border border-gray-100 hover:shadow-md transition-all duration-200 bg-white"
+                          >
+                            <div className="flex-shrink-0 w-16 h-16 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
+                              {appointment.type === "visit" ? (
+                                <MapPin className="w-6 h-6 text-blue-600" />
+                              ) : (
+                                <Phone className="w-6 h-6 text-green-600" />
+                              )}
+                            </div>
 
-                          <div className="flex-1 min-w-0">
-                            <div className="flex-1 md:flex gap-3 items-start justify-between">
-                              <div>
-                                <h3 className="font-semibold text-gray-900 truncate text-[22px] lg:text-3xl">
-                                  {appointment.property?.title ||
-                                    `Property #${appointment.property_id}`}
-                                </h3>
-                                <div className="flex items-center gap-2 mt-1 ">
-                                  <User className="w-4 h-4 text-gray-400" />
-                                  <span className="text-sm text-gray-600">
-                                    {appointment.customer?.name || "Unknown Customer"}
-                                  </span>
-                                  <div className="flex items-center gap-1">
-                                    <button
-                                      onClick={() => openDetails(appointment.id)}
-                                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                                    >
-                                      <Eye className="w-4 h-4 text-gray-400" />
-                                    </button>
-                                    <button
-                                      onClick={() => handleOpenEdit(appointment)}
-                                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                                    >
-                                      <Edit className="w-4 h-4 text-gray-400" />
-                                    </button>
-                                    <button
-                                      onClick={() => handleOpenCancel(appointment)}
-                                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                                    >
-                                      <Trash2 className="w-4 h-4 text-gray-400" />
-                                    </button>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex-1 md:flex gap-3 items-start justify-between">
+                                <div>
+                                  <h3 className="font-semibold text-gray-900 truncate text-[22px] lg:text-3xl">
+                                    {appointment.property?.title || `Property #${appointment.property_id}`}
+                                  </h3>
+                                  <div className="flex items-center gap-2 mt-1 ">
+                                    <User className="w-4 h-4 text-gray-400" />
+                                    <span className="text-sm text-gray-600">
+                                      {appointment.customer?.name || "Unknown Customer"}
+                                    </span>
+                                    <div className="flex items-center gap-1">
+                                      <button
+                                        onClick={() => openDetails(appointment.id)}
+                                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                      >
+                                        <Eye className="w-4 h-4 text-gray-400" />
+                                      </button>
+                                      <button
+                                        onClick={() => handleOpenEdit(appointment)}
+                                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                      >
+                                        <Edit className="w-4 h-4 text-gray-400" />
+                                      </button>
+
+                                      {/* Cancel button: only allowed when scheduled */}
+                                      <button
+                                        onClick={() => handleOpenCancel(appointment)}
+                                        disabled={!isScheduled}
+                                        aria-disabled={!isScheduled}
+                                        className={`p-2 rounded-lg transition-colors ${
+                                          !isScheduled ? "text-gray-300 cursor-not-allowed bg-gray-50" : "hover:bg-gray-100 text-gray-600"
+                                        }`}
+                                        title={!isScheduled ? "Only scheduled appointments can be cancelled" : "Cancel appointment"}
+                                      >
+                                        <Trash2 className={`w-4 h-4 ${!isScheduled ? "text-gray-300" : "text-gray-400"}`} />
+                                      </button>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
-                            </div>
 
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-3">
-                              <div className="flex items-center gap-1.5">
-                                <Calendar className="w-4 h-4 text-gray-400" />
-                                <span className="text-sm text-gray-600">
-                                  {dayjs(appointment.scheduled_at).format("MMM D, YYYY")}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                <Clock className="w-4 h-4 text-gray-400" />
-                                <span className="text-sm text-gray-600">
-                                  {dayjs(appointment.scheduled_at).format("h:mm A")}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span
-                                  className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                                    appointment.status
-                                  )}`}
-                                >
-                                  {appointment.status}
-                                </span>
-                                <span
-                                  className={`px-2.5 py-1 rounded-full text-xs font-medium ${getTypeColor(
-                                    appointment.type
-                                  )}`}
-                                >
-                                  {appointment.type}
-                                </span>
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-3">
+                                <div className="flex items-center gap-1.5">
+                                  <Calendar className="w-4 h-4 text-gray-400" />
+                                  <span className="text-sm text-gray-600">
+                                    {moment.utc(appointment.scheduled_at).format("MMM D, YYYY")}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <Clock className="w-4 h-4 text-gray-400" />
+                                  <span className="text-sm text-gray-600">
+                                    {moment.utc(appointment.scheduled_at).format("h:mm A")}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>
+                                    {appointment.status}
+                                  </span>
+                                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getTypeColor(appointment.type)}`}>
+                                    {appointment.type}
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Pagination */}
-                  {filteredAppointments.length > 0 && (
-                    <div className="flex flex-col sm:flex-row items-center justify-between mt-6 pt-6 border-t border-gray-100 gap-4">
-                      <div className="text-sm text-gray-500">
-                        Showing {filteredAppointments.length} of {appointments.length} appointments
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          disabled={page === 1}
-                          onClick={() => setPage((p) => Math.max(1, p - 1))}
-                          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-                        >
-                          <ChevronLeft className="w-4 h-4" />
-                          Previous
-                        </button>
-                        <button
-                          onClick={() => setPage((p) => p + 1)}
-                          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700"
-                        >
-                          Next
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
-                      </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -640,31 +634,21 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                     <div>
                       <label className="text-sm font-medium text-gray-600">Customer</label>
                       <p className="text-gray-900 font-medium mt-1">{selected.customer?.name}</p>
-                      {selected.customer?.email && (
-                        <p className="text-sm text-gray-500 mt-1">{selected.customer.email}</p>
-                      )}
+                      {selected.customer?.email && <p className="text-sm text-gray-500 mt-1">{selected.customer.email}</p>}
                     </div>
 
                     <div>
                       <label className="text-sm font-medium text-gray-600">Date & Time</label>
                       <p className="text-gray-900 font-medium mt-1">
-                        {dayjs(selected.scheduled_at).format("MMMM D, YYYY [at] h:mm A")}
+                        {moment(selected.scheduled_at).format("MMMM D, YYYY [at] h:mm A")}
                       </p>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                          selected.status
-                        )}`}
-                      >
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selected.status)}`}>
                         {selected.status}
                       </span>
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm font-medium ${getTypeColor(
-                          selected.type
-                        )}`}
-                      >
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getTypeColor(selected.type)}`}>
                         {selected.type}
                       </span>
                     </div>
@@ -679,7 +663,13 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                     <div className="flex gap-2 pt-2">
                       <button
                         onClick={() => handleOpenCancel(selected)}
-                        className="flex-1 px-4 py-2.5 rounded-xl bg-red-50 text-red-600 font-medium hover:bg-red-100 transition-colors"
+                        disabled={selected.status !== "scheduled"}
+                        aria-disabled={selected.status !== "scheduled"}
+                        className={`flex-1 px-4 py-2.5 rounded-xl ${
+                          selected.status !== "scheduled"
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "bg-red-50 text-red-600 hover:bg-red-100"
+                        } font-medium transition-colors`}
                       >
                         Cancel
                       </button>
@@ -703,13 +693,8 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
             <div className="absolute inset-0 bg-black/40" onClick={() => setShowCreate(false)} />
             <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-xl p-6 z-10 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-900">
-                  {showEdit ? "Edit Appointment" : "Create New Appointment"}
-                </h3>
-                <button
-                  onClick={() => setShowCreate(false)}
-                  className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
-                >
+                <h3 className="text-xl font-bold text-gray-900">{showEdit ? "Edit Appointment" : "Create New Appointment"}</h3>
+                <button onClick={() => setShowCreate(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
                   <X className="w-5 h-5 text-gray-400" />
                 </button>
               </div>
@@ -719,45 +704,23 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Property</label>
-                    <select
-                      value={form.property_id}
-                      onChange={(e) => setForm((s: any) => ({ ...s, property_id: e.target.value }))}
-                      className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
+                    <select value={form.property_id} onChange={(e) => setForm((s: any) => ({ ...s, property_id: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                       <option value="">Select property</option>
-                      {properties.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.title}
-                        </option>
-                      ))}
+                      {properties.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
                     </select>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Customer</label>
-                    <select
-                      value={form.customer_id}
-                      onChange={(e) => setForm((s: any) => ({ ...s, customer_id: e.target.value }))}
-                      className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
+                    <select value={form.customer_id} onChange={(e) => setForm((s: any) => ({ ...s, customer_id: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                       <option value="">Select customer</option>
-                      {customers.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name} {c.email ? `(${c.email})` : ""}
-                        </option>
-                      ))}
+                      {customers.map((c) => <option key={c.id} value={c.id}>{c.name} {c.email ? `(${c.email})` : ""}</option>)}
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Appointment Type
-                    </label>
-                    <select
-                      value={form.type}
-                      onChange={(e) => setForm((s: any) => ({ ...s, type: e.target.value }))}
-                      className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Appointment Type</label>
+                    <select value={form.type} onChange={(e) => setForm((s: any) => ({ ...s, type: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                       <option value="visit">Property Visit</option>
                       <option value="call">Phone Call</option>
                     </select>
@@ -765,151 +728,56 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
-                    <input
-                      type="date"
-                      value={form.date}
-                      onChange={(e) =>
-                        setForm((s: any) => ({ ...s, date: e.target.value, slot: "" }))
-                      }
-                      className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
+                    <input type="date" value={form.date} onChange={(e) => setForm((s: any) => ({ ...s, date: e.target.value, slot: "" }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Duration (minutes)
-                    </label>
-                    <input
-                      type="number"
-                      min={15}
-                      max={480}
-                      value={form.duration_minutes}
-                      onChange={(e) =>
-                        setForm((s: any) => ({ ...s, duration_minutes: Number(e.target.value) }))
-                      }
-                      className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Duration (minutes)</label>
+                    <input type="number" min={15} max={480} value={form.duration_minutes} onChange={(e) => setForm((s: any) => ({ ...s, duration_minutes: Number(e.target.value) }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                   </div>
                 </div>
 
                 {/* Right Column */}
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {form.type === "call" ? "Phone Number" : "Meeting Location"}
-                    </label>
-                    <input
-                      value={form.type === "call" ? form.phone_number : form.location}
-                      onChange={(e) =>
-                        form.type === "call"
-                          ? setForm((s: any) => ({ ...s, phone_number: e.target.value }))
-                          : setForm((s: any) => ({ ...s, location: e.target.value }))
-                      }
-                      className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder={
-                        form.type === "call"
-                          ? "Enter phone number"
-                          : "Enter address or meeting spot"
-                      }
-                    />
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{form.type === "call" ? "Phone Number" : "Meeting Location"}</label>
+                    <input maxLength={form.type === "call" ? 15 : 50} value={form.type === "call" ? form.phone_number : form.location} onChange={(e) => form.type === "call" ? setForm((s: any) => ({ ...s, phone_number: e.target.value })) : setForm((s: any) => ({ ...s, location: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder={form.type === "call" ? "Enter phone number" : "Enter address or meeting spot"} />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Inquiry ID (optional)
-                    </label>
-                    <input
-                      value={form.inquiry_id}
-                      onChange={(e) => setForm((s: any) => ({ ...s, inquiry_id: e.target.value }))}
-                      className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Link an inquiry ID"
-                    />
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Inquiry ID (optional)</label>
+                    <input value={form.inquiry_id} onChange={(e) => setForm((s: any) => ({ ...s, inquiry_id: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Link an inquiry ID" />
                   </div>
 
-                  {/* Availability Slots */}
                   <div>
                     <div className="flex items-center gap-3 mb-3">
-                      <button
-                        onClick={() => handleCheckAvailability(form.date)}
-                        disabled={!form.date}
-                        className="px-4 py-2.5 rounded-xl bg-blue-600 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
-                      >
-                        Check Availability
-                      </button>
+                      <button onClick={() => handleCheckAvailability(form.date)} disabled={!form.date} className="px-4 py-2.5 rounded-xl bg-blue-600 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors">Check Availability</button>
                       <span className="text-sm text-gray-500">Find available time slots</span>
                     </div>
 
                     <div className="flex flex-wrap gap-2">
-                      {checkingSlots ? (
-                        <div className="text-sm text-gray-500">Checking available slots...</div>
-                      ) : slots.length === 0 ? (
-                        <div className="text-sm text-gray-400">
-                          Select a date to see available slots
-                        </div>
-                      ) : (
-                        slots.map((slot) => {
-                          const isAvailable = slot.is_available !== false;
-                          return (
-                            <button
-                              key={slot.datetime}
-                              onClick={() =>
-                                isAvailable && setForm((f: any) => ({ ...f, slot: slot.datetime }))
-                              }
-                              disabled={!isAvailable}
-                              className={`px-4 py-2 rounded-xl border-2 transition-all ${
-                                form.slot === slot.datetime
-                                  ? "border-blue-600 bg-blue-600 text-white"
-                                  : isAvailable
-                                  ? "border-gray-200 hover:border-blue-300 hover:bg-blue-50 text-gray-700"
-                                  : "border-gray-100 bg-gray-50 text-gray-400 line-through cursor-not-allowed"
-                              }`}
-                            >
-                              {dayjs(slot.datetime).format("h:mm A")}
-                            </button>
-                          );
-                        })
-                      )}
+                      {checkingSlots ? <div className="text-sm text-gray-500">Checking available slots...</div> : slots.length === 0 ? <div className="text-sm text-gray-400">Select a date to see available slots</div> : slots.map((slot) => {
+                        const isAvailable = slot.is_available !== false;
+                        return (
+                          <button key={slot.datetime} onClick={() => isAvailable && setForm((f: any) => ({ ...f, slot: moment(slot.datetime).format("HH:mm") }))} disabled={!isAvailable} className={`px-4 py-2 rounded-xl border-2 transition-all ${form.slot === moment(slot.datetime).format("HH:mm") ? "border-blue-600 bg-blue-600 text-white" : isAvailable ? "border-gray-200 hover:border-blue-300 hover:bg-blue-50 text-gray-700" : "border-gray-100 bg-gray-50 text-gray-400 line-through cursor-not-allowed"}`}>
+                            {moment(slot.datetime).format("h:mm A")}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-                    <textarea
-                      value={form.notes}
-                      onChange={(e) => setForm((s: any) => ({ ...s, notes: e.target.value }))}
-                      className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-24"
-                      placeholder="Additional notes about the appointment..."
-                    />
+                    <textarea value={form.notes} onChange={(e) => setForm((s: any) => ({ ...s, notes: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-24" placeholder="Additional notes about the appointment..." />
                   </div>
                 </div>
               </div>
 
               <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
-                <button
-                  onClick={() => setShowCreate(false)}
-                  className="px-6 py-3 rounded-xl border border-gray-200 font-medium hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSubmit}
-                  disabled={creating || !canCreate()}
-                  className={`px-6 py-3 rounded-xl font-medium transition-colors ${
-                    creating || !canCreate()
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : "bg-green-600 text-white hover:bg-green-700"
-                  }`}
-                >
-                  {creating ? (
-                    <div className="flex items-center gap-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      {showEdit ? "Updating..." : "Creating..."}
-                    </div>
-                  ) : showEdit ? (
-                    "Save Changes"
-                  ) : (
-                    "Create Appointment"
-                  )}
+                <button onClick={() => setShowCreate(false)} className="px-6 py-3 rounded-xl border border-gray-200 font-medium hover:bg-gray-50 transition-colors">Cancel</button>
+                <button onClick={handleSubmit} disabled={creating || !canCreate()} className={`px-6 py-3 rounded-xl font-medium transition-colors ${creating || !canCreate() ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-green-600 text-white hover:bg-green-700"}`}>
+                  {creating ? <div className="flex items-center gap-2"><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>{showEdit ? "Updating..." : "Creating..."}</div> : showEdit ? "Save Changes" : "Create Appointment"}
                 </button>
               </div>
             </div>
@@ -919,10 +787,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
         {/* Cancel Modal */}
         {showCancelModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div
-              className="absolute inset-0 bg-black/40"
-              onClick={() => setShowCancelModal(false)}
-            />
+            <div className="absolute inset-0 bg-black/40" onClick={() => setShowCancelModal(false)} />
             <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl p-6 z-10">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 bg-red-100 rounded-lg">
@@ -935,33 +800,13 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Cancellation Reason <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  value={cancelReason}
-                  onChange={(e) => setCancelReason(e.target.value)}
-                  className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-red-500 focus:border-transparent h-28"
-                  placeholder="Please provide a reason for cancellation..."
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Cancellation Reason <span className="text-red-500">*</span></label>
+                <textarea value={cancelReason} onChange={(e) => setCancelReason(e.target.value)} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-red-500 focus:border-transparent h-28" placeholder="Please provide a reason for cancellation..." />
               </div>
 
               <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setShowCancelModal(false)}
-                  className="px-6 py-3 rounded-xl border border-gray-200 font-medium hover:bg-gray-50 transition-colors"
-                >
-                  Keep Appointment
-                </button>
-                <button
-                  onClick={handleConfirmCancel}
-                  disabled={!cancelReason.trim()}
-                  className={`px-6 py-3 rounded-xl font-medium transition-colors ${
-                    !cancelReason.trim()
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : "bg-red-600 text-white hover:bg-red-700"
-                  }`}
-                >
+                <button onClick={() => setShowCancelModal(false)} className="px-6 py-3 rounded-xl border border-gray-200 font-medium hover:bg-gray-50 transition-colors">Keep Appointment</button>
+                <button onClick={handleConfirmCancel} disabled={!cancelReason.trim()} className={`px-6 py-3 rounded-xl font-medium transition-colors ${!cancelReason.trim() ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-red-600 text-white hover:bg-red-700"}`}>
                   Confirm Cancellation
                 </button>
               </div>
