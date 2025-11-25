@@ -123,6 +123,7 @@ function App() {
 
           {/* Contact Page */}
           <Route path="/contact" element={<ContactPage />} />
+          {/* Customer Protected Route */}
         </Route>
 
         {/* ---------------- ADMIN DASHBOARD ---------------- */}
