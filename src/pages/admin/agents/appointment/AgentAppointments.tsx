@@ -123,7 +123,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
   const loadAppointments = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await fetchAppointments(12, token);
+      const data = await fetchAppointments(12, token);      
       const items = toArray(data?.appointments ?? data);
       
       setAppointments(

@@ -10,6 +10,7 @@ interface DeleteModalProps {
   loading?: boolean;
   cancelText?: string;
   confirmText?: string;
+  loadingText?: string;
 }
 
 const DeleteModal: React.FC<DeleteModalProps> = ({
@@ -21,6 +22,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
   loading = false,
   cancelText = "Cancel",
   confirmText = "Delete",
+  loadingText = "Deleting...",
 }) => {
   if (!show) return null;
 
@@ -64,7 +66,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
                 : "bg-red-600 hover:bg-red-700"
             }`}
           >
-            {loading ? "Deleting..." : confirmText}
+            {loading ? loadingText : confirmText}
           </button>
         </div>
 

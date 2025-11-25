@@ -1,4 +1,4 @@
-export const formatReadableDate = (dateInput: string | Date): string => {
+export const formatReadableDate = (dateInput: string | Date, isTimeVisible:boolean = false): string => {
   if (!dateInput) return "";
   const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
   if (isNaN(date.getTime())) return "";

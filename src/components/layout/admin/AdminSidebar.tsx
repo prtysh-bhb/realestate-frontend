@@ -21,6 +21,7 @@ import {
   X,
   ClipboardList,
   CreditCard,
+  Bell,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
@@ -217,7 +218,8 @@ const menuItems =
           path: "/agent/leads",
           exact: false,
         },
-        { name: "Appointment*", icon: HousePlus, path: "/agent/appointments", exact: true },
+        { name: "Appointment", icon: HousePlus, path: "/agent/appointments", exact: true },
+        { name: "Reminders", icon: Bell, path: "/agent/reminders", exact: true },
         { name: "Inbox*", icon: MailOpen, path: "/admin/inbox", exact: true },
         { name: "Chat*", icon: MessageCircle, path: "/agent/chat", exact: true },
         {
