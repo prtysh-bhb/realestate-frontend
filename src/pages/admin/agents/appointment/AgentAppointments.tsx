@@ -32,6 +32,13 @@ import {
 } from "lucide-react";
 import { getAgentProperties } from "@/api/agent/property";
 import { Customer } from "@/types/appointment";
+import { Button } from "@/components/ui/button";
+
+/**
+ * Note: This component uses a safeApiCall helper to handle functions that may
+ * accept a `token` param or may not. That avoids runtime signature errors if
+ * different API helpers expect different argument lists.
+ */
 
 function resolveImageUrl(API_BASE: string, img?: string | null) {
   if (!img) return null;
@@ -40,8 +47,29 @@ function resolveImageUrl(API_BASE: string, img?: string | null) {
   return `${API_BASE.replace(/\/api\/?$/, "")}/${img}`.replace(/([^:]\/)\/+/, "$1");
 }
 
+/** Try calling fn(...args). If it throws due to unexpected extra arg (e.g. token),
+ * try calling again with trailing arg removed. This is defensive to support
+ * mixed function signatures across your API helpers.
+ */
+async function safeApiCall(fn: (...a: any[]) => Promise<any>, ...args: any[]) {
+  try {
+    return await fn(...args);
+  } catch (err: any) {
+    // If there was a token as the last arg, try without it
+    if (args.length > 0) {
+      try {
+        const argsWithoutLast = args.slice(0, -1);
+        return await fn(...argsWithoutLast);
+      } catch (err2) {
+        throw err; // original error
+      }
+    }
+    throw err;
+  }
+}
+
 export default function AgentAppointments({ token }: { token?: string | null }) {
-  const API_BASE = import.meta.env.VITE_API_URL;
+  const API_BASE = import.meta.env.VITE_API_URL || "";
   const location = useLocation();
 
   const [properties, setProperties] = useState<any[]>([]);
@@ -108,22 +136,22 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
 
   const loadProperties = useCallback(async () => {
     try {
-      const data = await getAgentProperties();
+      const data = await safeApiCall(getAgentProperties, token);
       const items = (data && data.data) ? data.data : toArray(data);
       setProperties(items.map((p: any) => ({ ...p, image: resolveImageUrl(API_BASE, p.image) })));
     } catch (e) {
-      console.error(e);
+      console.error("loadProperties", e);
       setProperties([]);
     }
   }, [token, API_BASE]);
 
   const loadCustomers = useCallback(async () => {
     try {
-      const data = await fetchAgentCustomers(token);
+      const data = await safeApiCall(fetchAgentCustomers, token);
       const items = toArray(data);
       setCustomers(items);
     } catch (e) {
-      console.error(e);
+      console.error("loadCustomers", e);
       setCustomers([]);
     }
   }, [token]);
@@ -131,9 +159,9 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
   const loadAppointments = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await fetchAppointments(12, token);
+      const data = await safeApiCall(fetchAppointments, 12, token);
+      // handle multiple shapes
       const items = toArray(data?.appointments ?? data);
-
       setAppointments(
         items.map((a: any) => ({
           ...a,
@@ -143,7 +171,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
         }))
       );
     } catch (e) {
-      console.error(e);
+      console.error("loadAppointments", e);
       setAppointments([]);
     } finally {
       setLoading(false);
@@ -160,16 +188,18 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
     if (!date) return;
     setCheckingSlots(true);
     try {
-      const data = await checkAvailability(date, token);
-      const items = data?.time_slots ?? data ?? [];
+      // call checkAvailability(date[, token]) safely
+      const data = await safeApiCall(checkAvailability, date, token);
+      const items = data?.time_slots ?? data?.data?.time_slots ?? data ?? [];
       const normalized = (Array.isArray(items) ? items : []).map((it: any) => ({
         datetime: it.datetime ?? `${date}T${it.start_time ?? "09:00"}:00`,
         is_available: typeof it.is_available === "boolean" ? it.is_available : !(it.booked ?? false),
       }));
       setSlots(normalized);
     } catch (e) {
-      console.error(e);
+      console.error("checkAvailability", e);
       setSlots([]);
+      toast.error("Failed to load availability");
     } finally {
       setCheckingSlots(false);
     }
@@ -196,27 +226,28 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
 
   const handleOpenEdit = async (appt: any) => {
     try {
-      const data = await fetchAppointment(appt.id, token);
-      const row = data;
+      const data = await safeApiCall(fetchAppointment, appt.id, token);
+      // data might be wrapper or direct
+      const row = data?.appointment ?? data;
       setForm({
         id: row.id,
         property_id: row.property_id?.toString() ?? "",
         customer_id: row.customer_id?.toString() ?? "",
         inquiry_id: row.inquiry_id?.toString() ?? "",
         type: row.type,
-        date: moment.utc(row.scheduled_at).format("YYYY-MM-DD"),
-        slot: moment.utc(row.scheduled_at).format("HH:mm"),
+        date: moment.utc(row.scheduled_at).tz("Asia/Kolkata").format("YYYY-MM-DD"),
+        slot: moment.utc(row.scheduled_at).tz("Asia/Kolkata").format("HH:mm"),
         duration_minutes: row.duration_minutes ?? 30,
         location: row.location ?? "",
         phone_number: row.phone_number ?? "",
         notes: row.notes ?? "",
       });
       // fetch availability for the date so agent can change slot
-      await handleCheckAvailability(moment.utc(row.scheduled_at).format("YYYY-MM-DD"));
+      await handleCheckAvailability(moment.utc(row.scheduled_at).tz("Asia/Kolkata").format("YYYY-MM-DD"));
       setShowCreate(true);
       setShowEdit(true);
     } catch (e) {
-      console.error(e);
+      console.error("handleOpenEdit", e);
       toast.error("Failed to open appointment for edit");
     }
   };
@@ -231,8 +262,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
 
     setCreating(true);
     try {
-      // convert local date + time to Asia/Kolkata time ISO (backend expects timezone-aware)
-      // build using moment.tz to avoid confusion
+      // combine local date + time with Asia/Kolkata tz
       const combinedDateSlot = moment.tz(`${form.date} ${form.slot}`, "YYYY-MM-DD HH:mm", "Asia/Kolkata").toISOString();
 
       const payload: any = {
@@ -248,10 +278,11 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
       if (form.inquiry_id) payload.inquiry_id = form.inquiry_id;
 
       if (showEdit && form.id) {
-        await updateAppointment(form.id, payload, token);
+        // update
+        await safeApiCall(updateAppointment, form.id, payload, token);
         toast.success("Appointment updated");
       } else {
-        await createAppointment(payload, token);
+        await safeApiCall(createAppointment, payload, token);
         toast.success("Appointment created");
       }
 
@@ -274,7 +305,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
       await loadAppointments();
       if (form.date) await handleCheckAvailability(form.date);
     } catch (err: any) {
-      console.error(err);
+      console.error("handleSubmit", err);
       toast.error(err?.response?.data?.message ?? "Failed to save appointment");
     } finally {
       setCreating(false);
@@ -296,8 +327,9 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
   const handleConfirmCancel = async () => {
     if (!selected) return;
     if (!cancelReason.trim()) return toast.error("Cancellation reason required");
+    setActionLoading((prev) => ({ ...prev, [selected.id]: "cancelling" }));
     try {
-      await cancelAppointment(selected.id, cancelReason, token);
+      await safeApiCall(cancelAppointment, selected.id, { cancellation_reason: cancelReason }, token);
       toast.success("Appointment cancelled");
 
       // Update local state quickly
@@ -307,15 +339,21 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
       setShowCancelModal(false);
       await loadAppointments();
     } catch (e) {
-      console.error(e);
+      console.error("handleConfirmCancel", e);
       toast.error("Cancel failed");
+    } finally {
+      setActionLoading((prev) => {
+        const newState = { ...prev };
+        delete newState[selected.id];
+        return newState;
+      });
     }
   };
 
   const openDetails = async (id: number) => {
     try {
-      const data = await fetchAppointment(id, token);
-      const row = data;
+      const data = await safeApiCall(fetchAppointment, id, token);
+      const row = data?.appointment ?? data;
       setSelected(row);
     } catch (e) {
       console.error("openDetails", e);
@@ -366,24 +404,22 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
   // Agent actions: Approve
   const handleApprove = async (appt: any) => {
     if (!appt || !canTakeAction(appt)) return;
-    
-    setActionLoading(prev => ({ ...prev, [appt.id]: "approving" }));
-    
+
+    setActionLoading((prev) => ({ ...prev, [appt.id]: "approving" }));
     try {
-      // Use updateAppointment to change status to approved
-      await updateAppointment(appt.id, { status: "approved" }, token);
+      await safeApiCall(updateAppointment, appt.id, { status: "approved" }, token);
       toast.success("Appointment approved");
-      
-      // Update local copy immediately
+
       setAppointments((prev) => prev.map((a) => (a.id === appt.id ? { ...a, status: "approved" } : a)));
       if (selected?.id === appt.id) setSelected((s: any) => ({ ...s, status: "approved" }));
-      
+
+      // refresh list
       await loadAppointments();
     } catch (e: any) {
-      console.error(e);
+      console.error("handleApprove", e);
       toast.error(e?.response?.data?.message ?? "Failed to approve appointment");
     } finally {
-      setActionLoading(prev => {
+      setActionLoading((prev) => {
         const newState = { ...prev };
         delete newState[appt.id];
         return newState;
@@ -391,7 +427,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
     }
   };
 
-  // Decline now opens a modal instead of prompt
+  // Decline modal flow
   const openDeclineModal = (appt: any) => {
     if (!appt || !canTakeAction(appt)) {
       if (appt?.status !== "scheduled") {
@@ -411,40 +447,32 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
       return;
     }
 
-    setActionLoading(prev => ({ ...prev, [declineTarget.id]: "declining" }));
-    
+    setActionLoading((prev) => ({ ...prev, [declineTarget.id]: "declining" }));
     try {
-      // Use updateAppointment to change status to declined with reason
-      await updateAppointment(
-        declineTarget.id, 
-        { 
-          status: "declined", 
-          decline_reason: declineReason 
-        }, 
+      await safeApiCall(
+        updateAppointment,
+        declineTarget.id,
+        {
+          status: "declined",
+          decline_reason: declineReason,
+        },
         token
       );
+
       toast.success("Appointment declined");
-      
-      setAppointments((prev) => 
-        prev.map((a) => 
-          a.id === declineTarget.id ? { ...a, status: "declined" } : a
-        )
-      );
-      
-      if (selected?.id === declineTarget.id) {
-        setSelected((s: any) => ({ ...s, status: "declined" }));
-      }
-      
+      setAppointments((prev) => prev.map((a) => (a.id === declineTarget.id ? { ...a, status: "declined" } : a)));
+      if (selected?.id === declineTarget.id) setSelected((s: any) => ({ ...s, status: "declined", decline_reason: declineReason }));
+
       setShowDeclineModal(false);
       setDeclineTarget(null);
       await loadAppointments();
     } catch (e: any) {
-      console.error(e);
+      console.error("confirmDecline", e);
       toast.error(e?.response?.data?.message ?? "Failed to decline appointment");
     } finally {
-      setActionLoading(prev => {
+      setActionLoading((prev) => {
         const newState = { ...prev };
-        delete newState[declineTarget.id];
+        if (declineTarget) delete newState[declineTarget.id];
         return newState;
       });
     }
@@ -475,6 +503,12 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Appointments</h1>
               <p className="text-sm text-gray-600 mt-1">Manage and schedule customer appointments</p>
+            </div>
+
+            <div>
+              <Button onClick={handleOpenCreate} disabled={false} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-medium">
+                Create Appointment
+              </Button>
             </div>
             {/* intentionally removed "New Appointment" CTA per request */}
           </div>
@@ -598,7 +632,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                       {filteredAppointments.map((appointment) => {
                         const canAction = canTakeAction(appointment);
                         const isActionLoading = actionLoading[appointment.id];
-                        
+
                         return (
                           <div
                             key={appointment.id}
@@ -674,13 +708,13 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                                 <div className="flex items-center gap-1.5">
                                   <Calendar className="w-4 h-4 text-gray-400" />
                                   <span className="text-sm text-gray-600">
-                                    {moment.utc(appointment.scheduled_at).format("MMM D, YYYY")}
+                                    {moment.utc(appointment.scheduled_at).tz("Asia/Kolkata").format("MMM D, YYYY")}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                   <Clock className="w-4 h-4 text-gray-400" />
                                   <span className="text-sm text-gray-600">
-                                    {moment.utc(appointment.scheduled_at).format("h:mm A")}
+                                    {moment.utc(appointment.scheduled_at).tz("Asia/Kolkata").format("h:mm A")}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -761,7 +795,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                     <div>
                       <label className="text-sm font-medium text-gray-600">Date & Time</label>
                       <p className="text-gray-900 font-medium mt-1">
-                        {moment(selected.scheduled_at).format("MMMM D, YYYY [at] h:mm A")}
+                        {moment(selected.scheduled_at).tz("Asia/Kolkata").format("MMMM D, YYYY [at] h:mm A")}
                       </p>
                     </div>
 
@@ -897,10 +931,10 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                       <div className="flex flex-wrap gap-2">
                         {checkingSlots ? <div className="text-sm text-gray-500">Checking available slots...</div> : slots.length === 0 ? <div className="text-sm text-gray-400">Select a date to see available slots</div> : slots.map((slot: any) => {
                           const isAvailable = slot.is_available !== false;
-                          const hhmm = moment(slot.datetime).format("HH:mm");
+                          const hhmm = moment(slot.datetime).tz("Asia/Kolkata").format("HH:mm");
                           return (
                             <button key={slot.datetime} onClick={() => isAvailable && setForm((f: any) => ({ ...f, slot: hhmm }))} disabled={!isAvailable} className={`px-4 py-2 rounded-xl border-2 transition-all ${form.slot === hhmm ? "border-blue-600 bg-blue-600 text-white" : isAvailable ? "border-gray-200 hover:border-blue-300 hover:bg-blue-50 text-gray-700" : "border-gray-100 bg-gray-50 text-gray-400 line-through cursor-not-allowed"}`}>
-                              {moment(slot.datetime).format("h:mm A")}
+                              {moment(slot.datetime).tz("Asia/Kolkata").format("h:mm A")}
                             </button>
                           );
                         })}

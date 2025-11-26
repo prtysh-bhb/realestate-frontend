@@ -1,4 +1,5 @@
-import { ApiResponse, Inquiry } from '@/types';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Inquiry } from '@/types';
 import { Customer, Property } from '@/types/appointment';
 import axios from 'axios';
 

@@ -98,10 +98,24 @@ const SignupPage = () => {
       const data = await register(name, email, password, role);
 
       if (data.success) {
-        localStorage.setItem("token", data.data.token);
-        localStorage.setItem("user", JSON.stringify(data.data.user));
-        toast.success("Account created successfully! 🎉");
-        navigate("/two-factor-setup");
+        const userObj = data.data?.user ?? null;
+      const token = data.data?.token ?? null;
+      if (token) localStorage.setItem("token", token);
+      if (userObj) localStorage.setItem("user", JSON.stringify(userObj));
+
+      toast.success("Account created successfully! 🎉");
+
+      // prefer server-provided role, fallback to form role
+      const assignedRole = (userObj?.role ?? role ?? "").toString().toLowerCase();
+
+      if (assignedRole === "admin") {
+        navigate("/admin/dashboard");
+      } else if (assignedRole === "agent") {
+        navigate("/agent/dashboard");
+      } else {
+        // default -> customer profile
+        navigate("/profile");
+      }
       } else {
         toast.error("Registration failed");
         setError("Registration failed");

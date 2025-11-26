@@ -25,7 +25,7 @@ type ChatMessage = {
   time?: string;
 };
 
-const SOCKET_SERVER = import.meta.env.VITE_SOCKET_URL || "http://127.0.0.1:6000";
+const SOCKET_SERVER = import.meta.env.VITE_SOCKET_URL;
 const getAuthToken = () => localStorage.getItem("token") ?? undefined;
 
 // localStorage keys (if using persistence)
@@ -146,7 +146,6 @@ const ChatPage = () => {
     }
   }, [messagesByConversation, isTyping, selectedChat]);
 
-  // ---------- socket initialization ----------
   useEffect(() => {
     const token = getAuthToken();
     let socket: Socket | null = null;
@@ -225,7 +224,6 @@ const ChatPage = () => {
   const handleSelectConversation = (conversationId: number) => {
     setSelectedChat(conversationId);
     if (isMobile) {
-      // on mobile open chat view
       setMobileChatOpen(true);
     }
   };
