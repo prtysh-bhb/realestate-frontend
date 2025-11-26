@@ -371,7 +371,6 @@ const PropertyView = () => {
                 </>
               ) : (
                 <>
-                {console.log(property?.video_url)}
                   {property?.video_url ? (
                     <div className="space-y-4">
                       {/* Main Video Player */}

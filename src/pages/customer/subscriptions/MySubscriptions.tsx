@@ -39,8 +39,6 @@ const MySubscriptions = () => {
       setLoading(true);
       // Replace with your actual API endpoint
       const response = await mySubscriptions();
-      console.log(response);
-      
       
       if (response.success) {
         setSubscriptions(response.data.subscriptions);

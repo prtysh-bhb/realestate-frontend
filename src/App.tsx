@@ -76,6 +76,7 @@ import RemindersList from "./pages/admin/agents/reminders/RemindersList";
 import CreateReminder from "./pages/admin/agents/reminders/CreateReminder";
 import EditReminder from "./pages/admin/agents/reminders/EditReminder";
 import ShowReminder from "./pages/admin/agents/reminders/ShowReminder";
+import CustomerChatPage from "./pages/customer/CustomerChatPage";
 
 function App() {
   return (
@@ -113,6 +114,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CustomerProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chat"
+              element={
+                <ProtectedRoute>
+                  <CustomerChatPage />
                 </ProtectedRoute>
               }
             />

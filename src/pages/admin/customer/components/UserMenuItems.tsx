@@ -1,5 +1,5 @@
 import { logout } from '@/api/auth';
-import { User, LogOut, CreditCard } from 'lucide-react';
+import { User, LogOut, CreditCard, MessageCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 
@@ -33,6 +33,14 @@ const UserMenuItems = ({
             <CreditCard size={20} />
           </span>
           {'My Subscriptions'}
+        </Link>
+        <Link to={'/chat'}
+          className="flex items-center cursor-pointer w-full text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150 py-2"
+        >
+          <span className="mr-3 text-base">
+            <MessageCircle size={20} />
+          </span>
+          {'Chat'}
         </Link>
       </div>
 
