@@ -21,8 +21,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { ReminderFormData, storeReminder } from "@/api/agent/reminders";
-import { Appointment, fetchAgentCustomers, fetchAppointments } from "@/api/agent/appointment";
-import { Customer, Property } from "@/types/appointment";
+import { Appointment, fetchAgentCustomers, fetchAppointmentByCustomers, fetchAppointments, fetchInquiriesByCustomers } from "@/api/agent/appointment";
+import { Customer } from "@/types/appointment";
 import { Inquiry } from "@/types";
 
 const customStyles = {
@@ -126,7 +126,6 @@ const CreateReminder = () => {
   const [loading, setLoading] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [properties, setProperties] = useState<Property[]>([]);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
 
   const [formData, setFormData] = useState<ReminderFormData>({
@@ -210,7 +209,22 @@ const CreateReminder = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleChange = (field: keyof ReminderFormData, value: string | number) => {
+  const handleChange = async (field: keyof ReminderFormData, value: string | number, property_id?: any|null) => {
+    if(field == 'customer_id'){
+      const resAppointment = await fetchAppointmentByCustomers(value, localStorage.getItem("token"));
+      setAppointments(resAppointment.appointments);
+
+      const resInquiry = await fetchInquiriesByCustomers(value, localStorage.getItem("token"));
+      setInquiries(resInquiry.inquiries);
+    }
+
+    if((field == 'appointment_id' || field == 'inquiry_id') && property_id){
+      setFormData(prev => ({
+        ...prev,
+        ['property_id']: property_id
+      }));
+    }
+
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -609,15 +623,15 @@ const CreateReminder = () => {
                             <Select
                             options={inquiries.map(inquiry => ({
                                 value: inquiry.id,
-                                label: `${inquiry?.customer?.name ?? ''} - ${inquiry.message.substring(0, 50)}...`,
+                                label: `${inquiry?.name ?? ''} - ${inquiry.message.substring(0, 100)}...`,
                                 data: inquiry
                             }))}
                             value={formData.inquiry_id ? {
                                 value: formData.inquiry_id,
-                                label: `${inquiries.find(i => i.id == formData.inquiry_id)?.customer.name} - ${inquiries.find(i => i.id == formData.inquiry_id)?.message.substring(0, 50)}...`,
+                                label: `${inquiries.find(i => i.id == formData.inquiry_id)?.name} - ${inquiries.find(i => i.id == formData.inquiry_id)?.message.substring(0, 100)}...`,
                                 data: inquiries.find(i => i.id == formData.inquiry_id)
                             } : null}
-                            onChange={(selectedOption) => handleChange('inquiry_id', selectedOption?.value?.toString() || '')}
+                            onChange={(selectedOption) => handleChange('inquiry_id', selectedOption?.value?.toString() || '', selectedOption?.data?.property_id)}
                             placeholder="Search and select an inquiry..."
                             isSearchable
                             isClearable
@@ -639,15 +653,15 @@ const CreateReminder = () => {
                             <Select
                             options={appointments.map(appointment => ({
                                 value: appointment.id,
-                                label: `${appointment?.customer?.name ?? ""} - ${new Date(appointment?.scheduled_at ?? "").toLocaleDateString()} - ${appointment.type}`,
+                                label: `${new Date(appointment?.scheduled_at ?? "").toLocaleDateString()} - ${appointment.type}`,
                                 data: appointment
                             }))}
                             value={formData.appointment_id ? {
                                 value: formData.appointment_id,
-                                label: `${appointments.find(a => a.id == formData.appointment_id)?.customer?.name ?? ""} - ${new Date(appointments.find(a => a.id == formData.appointment_id)?.scheduled_at || '').toLocaleDateString()} - ${appointments.find(a => a.id == formData.appointment_id)?.type}`,
+                                label: `${new Date(appointments.find(a => a.id == formData.appointment_id)?.scheduled_at || '').toLocaleDateString()} - ${appointments.find(a => a.id == formData.appointment_id)?.type}`,
                                 data: appointments.find(a => a.id == formData.appointment_id)
                             } : null}
-                            onChange={(selectedOption) => handleChange('appointment_id', selectedOption?.value?.toString() || '')}
+                            onChange={(selectedOption) => handleChange('appointment_id', selectedOption?.value?.toString() || '', selectedOption?.data?.property_id)}
                             placeholder="Search and select an appointment..."
                             isSearchable
                             isClearable

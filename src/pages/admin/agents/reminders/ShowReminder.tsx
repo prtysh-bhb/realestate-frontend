@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { getReminderById, Reminder } from "@/api/agent/reminders";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatReadableDate } from "@/utils";
@@ -214,10 +214,10 @@ const ShowReminder = () => {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-semibold text-emerald-600 flex items-center gap-1">
+                          <Link to={`/agent/properties/${reminder.property_id}`} className="text-sm font-semibold text-emerald-600 flex items-center gap-1">
                             <MapPin className="w-4 h-4" />
                             View
-                          </p>
+                          </Link>
                           <p className="text-sm text-gray-500 truncate max-w-[120px]">{reminder.property.address}</p>
                         </div>
                       </div>

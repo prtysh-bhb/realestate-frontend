@@ -246,54 +246,6 @@ const EditReminder = () => {
     }
   };
 
-  const handleMarkComplete = async () => {
-    try {
-      const response = await fetch(`/api/reminders/${id}/complete`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        toast.success("Reminder marked as completed!");
-        fetchReminder(); // Refresh the data
-      } else {
-        toast.error(data.message || "Failed to complete reminder");
-      }
-    } catch (error: any) {
-      toast.error("Error completing reminder: " + (error.message || ""));
-    }
-  };
-
-  const handleSnooze = async (hours: number) => {
-    try {
-      const until = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
-      
-      const response = await fetch(`/api/reminders/${id}/snooze`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ until })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        toast.success(`Reminder snoozed for ${hours} hours`);
-        fetchReminder(); // Refresh the data
-      } else {
-        toast.error(data.message || "Failed to snooze reminder");
-      }
-    } catch (error: any) {
-      toast.error("Error snoozing reminder: " + (error.message || ""));
-    }
-  };
-
   if (loading) {
     return (
       <AdminLayout>
@@ -647,46 +599,6 @@ const EditReminder = () => {
 
           {/* Sidebar - Actions & Info */}
           <div className="space-y-6">
-            {/* Quick Actions */}
-            {reminder.status === 'pending' && (
-              <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl shadow-xl">
-                <CardContent className="p-6">
-                  <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <Zap className="w-5 h-5 text-amber-600" />
-                    Quick Actions
-                  </h3>
-                  
-                  <div className="space-y-3">
-                    <Button
-                      onClick={handleMarkComplete}
-                      className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-semibold py-3 rounded-xl transition-all duration-300 hover:scale-105"
-                    >
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Mark as Completed
-                    </Button>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      <Button
-                        onClick={() => handleSnooze(1)}
-                        variant="outline"
-                        className="border-amber-300 text-amber-600 hover:bg-amber-50 font-semibold py-2 rounded-xl transition-all duration-300"
-                      >
-                        <RefreshCw className="w-4 h-4 mr-2" />
-                        1 Hour
-                      </Button>
-                      <Button
-                        onClick={() => handleSnooze(24)}
-                        variant="outline"
-                        className="border-amber-300 text-amber-600 hover:bg-amber-50 font-semibold py-2 rounded-xl transition-all duration-300"
-                      >
-                        <RefreshCw className="w-4 h-4 mr-2" />
-                        1 Day
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
 
             {/* Reminder Information */}
             <Card className="bg-gradient-to-br from-purple-50 to-violet-50 border-2 border-purple-200 rounded-2xl shadow-xl">
