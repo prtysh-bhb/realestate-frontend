@@ -20,6 +20,7 @@ export interface User {
   email_verified_at: string | null;
   last_login_at: string | null;
   created_at: string;
+  two_factor_enabled?: boolean | null;
 }
 
 interface ProfileResponse{
@@ -54,3 +55,21 @@ export const deleteAvatar = () => api.delete("/profile/avatar");
 /** Delete account */
 export const deleteAccount = (data: { password: string; confirmation: string }) =>
   api.request({ method: "delete", url: "/profile/account", data });
+
+export const generateTwoFactorSetup = () =>
+  api.post<{ success: boolean; data?: { secret?: string; qr_code_url?: string } }>(
+    "/2fa/generate"
+  );
+
+/** Enable two-factor by validating a one-time code */
+export const enableTwoFactor = (code: string) =>
+  api.post<{ success: boolean; data?: { user?: User }; message?: string }>(
+    "/2fa/enable",
+    { code }
+  );
+
+/** Disable two-factor for user */
+export const disableTwoFactor = () =>
+  api.post<{ success: boolean; data?: { user?: User }; message?: string }>(
+    "/2fa/disable"
+  );

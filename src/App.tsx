@@ -167,7 +167,8 @@ function App() {
                 </ProtectedRoute>
               }
             />
-          </Route>
+            {/* Customer Protected Route */}
+        </Route>
 
           {/* ---------------- ADMIN DASHBOARD ---------------- */}
           <Route
