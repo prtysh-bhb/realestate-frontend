@@ -127,3 +127,29 @@ export const cancelSubscription = async (id: number) => {
   const response = await api.post<SubscriptionResponse>(`/subscriptions/${id}/cancel`);
   return response.data;
 };
+
+/**
+ * View invoice (open in browser)
+ */
+export const viewInvoice = async (paymentId: number) => {
+  const response = await api.get(`/payments/${paymentId}/invoice/view`);
+  return response.data;
+};
+
+/**
+ * Download invoice (returns PDF)
+ */
+export const fetchInvoicePdf = async (paymentId: number) => {
+  const response = await api.get(`/payments/${paymentId}/invoice/download`, {
+    responseType: "blob", // IMPORTANT
+  });
+  return response.data; // Blob
+};
+
+/**
+ * Email invoice to customer
+ */
+export const emailInvoice = async (paymentId: number) => {
+  const response = await api.post(`/payments/${paymentId}/invoice/email`);
+  return response.data;
+};
