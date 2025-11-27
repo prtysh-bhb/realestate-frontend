@@ -117,6 +117,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            {/* Customer Chat */}
             <Route
               path="/chat"
               element={
@@ -125,6 +126,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/profile/edit"
               element={
@@ -168,7 +170,7 @@ function App() {
               }
             />
             {/* Customer Protected Route */}
-        </Route>
+          </Route>
 
           {/* ---------------- ADMIN DASHBOARD ---------------- */}
           <Route

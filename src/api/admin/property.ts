@@ -27,19 +27,21 @@ export const getAdminProperties = async (
   return res.data.data;
 };
 
-// ✅ Approve property
+// Approve property
 export const approveProperty = async (id: number) => {
   const res = await api.post(`/admin/properties/${id}/approve`);
   return res.data;
 };
 
-// ✅ Reject property
-export const rejectProperty = async (id: number, reason: string) => {
-  const res = await api.post(`/admin/properties/${id}/reject`, { reason });
-  return res.data;
+// Reject property
+export const rejectProperty = async (propertyId: number, reason?: string) => {
+  const response = await api.post(`/agent/properties/${propertyId}/reject`, {
+    reason: reason ?? null,
+  });
+  return response.data;
 };
 
-// ✅ get property statistics
+// get property statistics
 export const getPropertyStats = async (): Promise<{
   total: number;
   published: number;

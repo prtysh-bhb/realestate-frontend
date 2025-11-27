@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -26,7 +27,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { SubscriptionPlan } from "@/api/admin/subscriptions";
-import { confirmSubscriptionPlanPayment, createSubscriptionPlanIntent, getSubscriptionPlan } from "@/api/customer/subscriptions";
+import { confirmSubscriptionPlanPayment, createSubscriptionPlanIntent, getSubscriptionPlan , emailInvoice, fetchInvoicePdf } from "@/api/customer/subscriptions";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
@@ -62,39 +63,107 @@ function CheckoutForm() {
   }, [planId, navigate]);
 
   // Handle form submit
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+// Handle form submit
+async function handleSubmit(e: React.FormEvent) {
+  e.preventDefault();
 
-    if (!stripe || !elements) return;
-    setLoading(true);
+  if (!stripe || !elements) return;
+  setLoading(true);
 
-    const card = elements.getElement(CardElement);
-    if (!card) return;
-
-    try {
-      const result = await stripe.confirmCardPayment(clientSecret!, {
-        payment_method: {
-          card,
-        },
-      });
-
-      if (result.error) {
-        toast.error(result.error.message || "Payment failed");
-      } else {
-        if (result.paymentIntent?.status === "succeeded") {
-          // Inform backend to activate subscription
-          await confirmSubscriptionPlanPayment(Number(planId), result.paymentIntent.id);
-
-          toast.success("🎉 Subscription Activated Successfully!");
-          setTimeout(() => navigate('/dashboard'), 2000);
-        }
-      }
-    } catch (error: any) {
-      toast.error("Payment processing failed: " + (error.message || ""));
-    } finally {
-      setLoading(false);
-    }
+  const card = elements.getElement(CardElement);
+  if (!card) {
+    toast.error("Card input not found");
+    setLoading(false);
+    return;
   }
+
+  try {
+    const result = await stripe.confirmCardPayment(clientSecret!, {
+      payment_method: { card },
+    });
+
+    if (result.error) {
+      toast.error(result.error.message || "Payment failed");
+      setLoading(false);
+      return;
+    }
+
+    if (result.paymentIntent?.status === "succeeded") {
+      // 1) Confirm subscription + get payment ID from your backend
+      const confirmRes = await confirmSubscriptionPlanPayment(
+        Number(planId),
+        result.paymentIntent.id
+      );
+
+      if (!confirmRes?.success) {
+        toast.error("Subscription activation failed");
+        setLoading(false);
+        return;
+      }
+
+      const paymentId = confirmRes.data?.payment?.id;
+      if (!paymentId) {
+        toast.success("Subscription activated (no invoice ID returned)");
+        // navigate to dashboard anyway
+        navigate("/dashboard");
+        return;
+      }
+
+      // 2) Open a blank tab immediately to avoid popup blocking
+      const invoiceWindow = window.open("", "_blank");
+
+      // 3) Fetch protected PDF via axios (sanctum/auth included in `api`)
+      try {
+        const pdfBlob = await fetchInvoicePdf(paymentId); // returns Blob
+        const fileURL = window.URL.createObjectURL(pdfBlob as Blob);
+
+        // If the new window was opened successfully, set its location to the blob URL.
+        // If popup was blocked and invoiceWindow is null, fallback to open in same tab.
+        if (invoiceWindow) {
+          // set location of opened tab to the blob URL
+          invoiceWindow.location.href = fileURL;
+        } else {
+          // popup blocked — open in same tab
+          window.location.href = fileURL;
+        }
+
+        // 4) Fire-and-forget email invoice (don't await — so navigation is immediate)
+        emailInvoice(paymentId).catch((err) => {
+          console.error("Email invoice failed:", err);
+        });
+
+        // 5) Notify user and navigate current tab to dashboard immediately
+        toast.success("🎉 Subscription active — Invoice opened & emailed!");
+        navigate("/my-subscriptions");
+
+      } catch (invErr) {
+        console.error("Invoice fetch/open error:", invErr);
+
+        try {
+          if (invoiceWindow && !invoiceWindow.closed) invoiceWindow.close();
+        } catch (err) {
+          // ignore
+        }
+
+        // Fallback: ask backend to email invoice, then redirect to dashboard
+        try {
+          await emailInvoice(paymentId);
+        } catch (emailErr) {
+          console.error("Fallback email failed:", emailErr);
+        }
+
+        toast.success("Subscription active! Invoice will be emailed shortly.");
+        navigate("/dashboard");
+      }
+    }
+  } catch (error: any) {
+    console.error("Payment processing failed:", error);
+    toast.error("Payment failed: " + (error.message || ""));
+  } finally {
+    setLoading(false);
+  }
+}
+
 
   const cardElementOptions = {
     style: {
