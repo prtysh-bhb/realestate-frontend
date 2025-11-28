@@ -46,11 +46,11 @@ const CustomerList = () => {
     const loadCustomers = async () => {
       try {
         setLoading(true);
-        const params: Record<string, any> = { page, search };
-        if (filter === "active") params.is_active = 1;
-        if (filter === "inactive") params.is_active = 0;
+        let is_active = "";
+        if (filter === "active") is_active = "1";
+        if (filter === "inactive") is_active = "0";
 
-        const data = await getCustomers(page, search);
+        const data = await getCustomers(page, search, is_active);
         if (data.success) {
           setCustomers(data.data.customers || []);
           setTotalPages(data.data.pagination.last_page || 1);
@@ -65,10 +65,11 @@ const CustomerList = () => {
   }, [page, search, filter]);
 
   const refresh = async () => {
-    const params: Record<string, any> = { page, search };
-    if (filter === "active") params.is_active = 1;
-    if (filter === "inactive") params.is_active = 0;
-    const data = await getCustomers(page, search);
+    let is_active = "";
+    if (filter === "active") is_active = "1";
+    if (filter === "inactive") is_active = "0";
+
+    const data = await getCustomers(page, search, is_active);
     setCustomers(data.data.customers || []);
   };
 

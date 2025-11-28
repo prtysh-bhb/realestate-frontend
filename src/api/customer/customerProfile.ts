@@ -18,7 +18,9 @@ export interface CustomerProfile {
 interface CustomerProfileResponse {
   success: boolean;
   message: string;
-  data: CustomerProfile;
+  data: {
+    customer: CustomerProfile
+  };
 }
 
 export const fetchCustomerProfile = async (id: string) => {
@@ -26,6 +28,6 @@ export const fetchCustomerProfile = async (id: string) => {
 
   return {
     success: res.data.success,
-    data: res.data.data,
+    data: res.data.data.customer,
   };
 };

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Eye, Edit, Trash2, Filter, UserPlus, Grid3x3, List, Users, Shield } from "lucide-react";
+import { Search, Eye, Edit, Trash2, UserPlus, Grid3x3, List, Users, Shield } from "lucide-react";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
 import { getAgents, Agent } from "@/api/agent/agentList";
 
@@ -113,14 +113,6 @@ const AgentList = () => {
                   <List size={18} />
                 </button>
               </div>
-
-              <button
-                className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-950/20 hover:border-blue-400 dark:hover:border-emerald-600 text-gray-700 dark:text-gray-300 transition-all text-sm shadow-sm w-full sm:w-auto"
-                title="Filters"
-              >
-                <Filter size={16} />
-                <span className="hidden sm:inline">Filter</span>
-              </button>
 
               <button
                 onClick={() => navigate("/admin/agents/new")}

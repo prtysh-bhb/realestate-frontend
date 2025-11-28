@@ -29,9 +29,9 @@ export interface CustomerResponse {
 /**
  * Fetch customers (with pagination + search)
  */
-export const getCustomers = async (page = 1, search = "") => {
+export const getCustomers = async (page = 1, search = "", status: string) => {
   const response = await api.get<CustomerResponse>("/admin/customers", {
-    params: { page, search },
+    params: { page, search, status },
   });
   return response.data;
 };

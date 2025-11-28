@@ -18,7 +18,7 @@ const CustomerDetailsTab = ({ customer }: CustomerDetailsTabProps) => {
         <p><strong>Joined:</strong> {customer?.joined ? new Date(customer.joined).toLocaleDateString() : "N/A"}</p>
         <p><strong>Total Inquiries:</strong> {customer?.total_inquiries || "N/A"}</p>
         <p><strong>Total Favorites:</strong> {customer?.total_favorites || "N/A"}</p>
-        <p><strong>Status:</strong> {customer?.status || "Inactive"}</p>
+        <p><strong>Status:</strong> {customer?.status ? "Active" : "Inactive"}</p>
         <p><strong>Bio:</strong> {customer?.bio || "N/A"}</p>
       </div>
     </div>

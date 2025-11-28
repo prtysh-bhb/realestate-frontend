@@ -20,7 +20,7 @@ const AgentProfilePage = () => {
         setLoading(true);
         const data = await fetchAgentProfile(id!);
 
-        if (data.success) setAgent(data.data ?? null);
+        if (data.success) setAgent(data.data.agent ?? null);
         else setError("Failed to load agent profile");
       } catch (err) {
         console.error(err);

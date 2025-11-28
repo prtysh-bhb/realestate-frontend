@@ -21,7 +21,9 @@ export interface AgentProfile {
 interface AgentProfileResponse {
   success: boolean;
   message: string;
-  data: AgentProfile
+  data: {
+    agent: AgentProfile
+  }
 }
 
 export const fetchAgentProfile = async (id: string) => {
