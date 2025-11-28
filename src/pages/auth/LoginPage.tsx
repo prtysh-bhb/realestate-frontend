@@ -18,6 +18,7 @@ import facebook from "/assets/Facebook.svg";
 import { useAuth } from "@/context/AuthContext";
 import { motion } from "framer-motion";
 import { APP_NAME } from "@/constants";
+import { handleKeyPress } from "@/helpers/customer_helper";
 
 const LoginPage = () => {
   const { fetchUserProfile } = useAuth();
@@ -221,6 +222,7 @@ const LoginPage = () => {
                     <Input
                       type="email"
                       placeholder="you@example.com"
+                      onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => handleKeyPress(e, /[a-zA-Z0-9@._-]/, false)}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required

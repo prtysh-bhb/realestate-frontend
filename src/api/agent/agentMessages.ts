@@ -7,10 +7,11 @@ export interface ChatMessage {
   id: number;
   sender_id: number;
   receiver_id: number;
-  type: "text" | "image" | "file" | "property" | "system";
+  type: "text" | "image" | "file" | "property" | "video";
   message: string | null;
   image_url?: string | null;
   file_url?: string | null;
+  file_name?: string | null;
   property_id?: number | null;
   meta?: Record<string, any> | null;
   is_read: boolean;
@@ -26,7 +27,7 @@ export interface ChatMessage {
 
 export interface MessageFormData {
   receiver_id: number | null;
-  type: "text" | "image" | "file" | "property" | "system";
+  type: "text" | "image" | "file" | "property" | "video";
   message?: string;
   file?: File | null;
   property_id?: number | null;
@@ -58,7 +59,11 @@ export interface UnreadCountResponse{
  * Sent message
  */
 export const sentMessage = async (data: MessageFormData | undefined) => {
-  const response = await api.post<ApiResponse>(`/agent/messages/sent`, data);
+  const response = await api.post<ApiResponse>(`/agent/messages/sent`, data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
   return response.data;
 };
 

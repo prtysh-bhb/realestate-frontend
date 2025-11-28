@@ -1,7 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from "react";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
-import { MessageCircle, Search, Send, ArrowLeft } from "lucide-react";
+import ReactPlayer from 'react-player';
+import { 
+  MessageCircle, 
+  Search, 
+  Send, 
+  ArrowLeft, 
+  Paperclip, 
+  Image as ImageIcon,
+  FileText,
+  X,
+  Download,
+  ArrowDown
+} from "lucide-react";
 import { ChatMessage, getAgentCustomers, getMessages, isTypingCall, MessageFormData, readCustomerMessages, sentMessage, UnreadCountMap, unreadMessagesCountAgent } from "@/api/agent/agentMessages";
 import { Customer } from "@/types/appointment";
 import { useAuth } from "@/context/AuthContext";
@@ -18,7 +30,12 @@ const ChatPage = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState<UnreadCountMap>();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [fileType, setFileType] = useState<"image" | "file" | "video">("file");
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const selectedChatRef = useRef<number | null>(null);
+  const scrollButtonRef = useRef<HTMLButtonElement>(null);
 
   // mobile UI
   const [isMobile, setIsMobile] = useState<boolean>(false);
@@ -31,6 +48,7 @@ const ChatPage = () => {
   // refs
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
   const typingTimeoutRef = useRef<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchCustomers = async () => {
     const data = await getAgentCustomers();    
@@ -99,6 +117,37 @@ const ChatPage = () => {
     return () => window.removeEventListener("resize", check);
   }, []);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      if (chatScrollRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = chatScrollRef.current;
+        const isAtBottom = scrollHeight - scrollTop <= clientHeight + 100; // 100px threshold
+        setShowScrollToBottom(!isAtBottom);
+      }
+    };
+
+    const scrollContainer = chatScrollRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll);
+      handleScroll();
+    }
+
+    return () => {
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, [messagesByConversation, selectedChat]);
+
+  const scrollToBottom = () => {
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTo({
+        top: chatScrollRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   // auto-scroll messages to bottom when messages change
   useEffect(() => {
     if (chatScrollRef.current) {
@@ -106,7 +155,7 @@ const ChatPage = () => {
         if (chatScrollRef.current) {
           chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
         }
-      }, 10);
+      }, 1000);
     }
   }, [messagesByConversation, isTyping, selectedChat]);
 
@@ -115,24 +164,60 @@ const ChatPage = () => {
     await readCustomerMessages(conversationId);
     fetchUnreadCounts();
     setSelectedChat(conversationId);
+    setSelectedFile(null);
     if (isMobile) {
       setMobileChatOpen(true);
     }
   };
 
-  // handle sending message
+  // File handling functions
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setSelectedFile(file);
+    
+    // Determine file type
+    if (file.type.startsWith("image/")) {
+      setFileType("image");
+    } else if (file.type.startsWith("video/")) {
+      setFileType("video");
+    } else {
+      setFileType("file");
+      setFilePreview(null);
+      return;
+    }
+
+    // Only run preview logic for image & video
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setFilePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const removeSelectedFile = () => {
+    setSelectedFile(null);
+    setFilePreview(null);
+  };
+
   const handleSendMessage = async () => {
-    if (!messageInput.trim() || selectedChat == null || isSending) return;
+    if ((!messageInput.trim() && !selectedFile) || selectedChat == null || isSending) return;
 
     const convId = selectedChat;
     const text = messageInput.trim();
 
     // Create form data for API call
     const formData: MessageFormData = {
-      receiver_id: convId, // Using conversation ID as receiver_id
-      type: "text",
+      receiver_id: convId,
+      type: selectedFile ? fileType : "text",
       message: text,
-      file: null,
+      file: selectedFile,
       property_id: null,
       meta: null
     };
@@ -142,11 +227,15 @@ const ChatPage = () => {
     emitTyping(false);
 
     try {
+      console.log(formData);
+      
       // Call Laravel API
       const response = await sentMessage(formData);
       
       if (response.success) {
         console.log("Message sent successfully");
+        // Clear file selection after successful send
+        removeSelectedFile();
       } else {
         console.error("Failed to send message:", response.message);
       }
@@ -160,7 +249,6 @@ const ChatPage = () => {
 
   // typing events
   const emitTyping = async (typing: boolean) => {
-    // Simulate typing indicator for demo
     if (typing) {
       await isTypingCall(Number(selectedChat));
     }
@@ -183,6 +271,24 @@ const ChatPage = () => {
       e.preventDefault();
       handleSendMessage();
     }
+  };
+
+  const getFileIcon = (fileType: string) => {
+    switch (fileType) {
+      case 'image':
+        return <ImageIcon className="w-4 h-4" />;
+      case 'file':
+      default:
+        return <FileText className="w-4 h-4" />;
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   const selectedConversation = conversations?.find((c) => c.id === selectedChat);
@@ -238,9 +344,6 @@ const ChatPage = () => {
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-emerald-500 flex items-center justify-center text-white font-bold text-sm">
                           {conversation.name.charAt(0)}
                         </div>
-                        {/* {conversation.is_active && (
-                          <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-gray-900 rounded-full"></div>
-                        )} */}
                       </div>
                       <div>
                         <p className="font-semibold text-gray-900 dark:text-white text-sm">
@@ -293,9 +396,6 @@ const ChatPage = () => {
                       <p className="font-semibold text-gray-900 dark:text-white">
                         {selectedConversation?.name ?? "User"}
                       </p>
-                      {/* <p className="text-xs text-emerald-600 dark:text-emerald-400">
-                        {selectedConversation?.is_active ? "Online" : "Offline"}
-                      </p> */}
                     </div>
                   </div>
                 </div>
@@ -308,16 +408,113 @@ const ChatPage = () => {
                 >
                   {messagesByConversation?.map((message) => (
                     <div key={message.id} className={`flex ${message.sender_id == user.id ? "justify-end" : "justify-start"}`}>
-                      <div className={`max-w-[70%] ${message.sender == user.id ? "order-2" : "order-1"}`}>
+                      <div className={`max-w-[70%] ${message.sender_id == user.id ? "order-2" : "order-1"}`}>
                         <div
                           className={`p-3 rounded-lg ${
                             message.sender_id == user.id
                               ? "bg-gradient-to-r from-blue-600 to-emerald-600 text-white"
                               : "bg-white dark:bg-gray-900 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700"
                           }`}
-                          style={{ maxWidth: "100%", maxHeight: "12rem", overflow: "auto" }}
+                          style={{ maxWidth: "100%", maxHeight: "35rem", overflow: "auto" }}
                         >
-                          <p className="text-sm break-words whitespace-pre-wrap">{message.message}</p>
+                          {/* Text Message */}
+                          {message.type === 'text' && (
+                            <p className="text-sm break-words whitespace-pre-wrap">{message.message}</p>
+                          )}
+                          
+                          {/* Image Message */}
+                          {message.type === 'image' && message.file_url && (
+                            <div className="space-y-2">
+                              <div className="relative group">
+                                <img 
+                                  src={message.file_url} 
+                                  alt={message.file_name || 'Shared image'}
+                                  className="max-w-full max-h-64 rounded-lg object-cover"
+                                />
+                                <a target="_blank"
+                                  href={message.file_url} 
+                                  download={message.file_name}
+                                  className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <Download size={16} />
+                                </a>
+                              </div>
+                              {message.file_name && (
+                              <p className="text-xs text-gray-300 dark:text-gray-400 truncate">
+                                {message.file_name.length > 30
+                                ? message.file_name.substring(0, 30) + "..."
+                                : message.file_name}
+                              </p>
+                              )}
+
+                              {message.message && (
+                                <p className="text-sm break-words whitespace-pre-wrap mt-2">{message.message}</p>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Video Message */}
+                          {message.type === 'video' && message.file_url && (
+                            <div className="space-y-2">
+                              <div className="relative group">
+                                <ReactPlayer
+                                  src={message?.file_url ?? ''}
+                                  width="100%"
+                                  height="80%"
+                                  controls
+                                  style={{ borderRadius: '12px' }}
+                                />
+                                <a target="_blank"
+                                  href={message.file_url} 
+                                  download={message.file_name}
+                                  className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <Download size={16} />
+                                </a>
+                              </div>
+                              {message.file_name && (
+                              <p className="text-xs text-gray-300 dark:text-gray-400 truncate">
+                                {message.file_name.length > 30
+                                ? message.file_name.substring(0, 30) + "..."
+                                : message.file_name}
+                              </p>
+                              )}
+
+                              {message.message && (
+                                <p className="text-sm break-words whitespace-pre-wrap mt-2">{message.message}</p>
+                              )}
+                            </div>
+                          )}
+                          
+                          {/* File Message */}
+                          {(message.type === 'file') && (
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-3 p-3 bg-white/10 rounded-lg">
+                                <FileText className="w-8 h-8 " />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium truncate">
+                                    {message?.file_name && message?.file_name.length > 30
+                                    ? message?.file_name.substring(0, 30) + "..."
+                                    : message.file_name || 'Document'}
+                                  </p>
+                                  <p className="text-xs capitalize">
+                                    {message.type || 'File'}
+                                  </p>
+                                </div>
+                                <a 
+                                  href={message?.file_url ?? ""}
+                                  download={message.file_url}
+                                  className="p-2 bg-white/20 hover:bg-white/30 rounded transition-colors"
+                                >
+                                  <Download size={16} />
+                                </a>
+                              </div>
+
+                              {message.message && (
+                                <p className="text-sm break-words whitespace-pre-wrap mt-2">{message.message}</p>
+                              )}
+                            </div>
+                          )}
                         </div>
                         <p className={`text-xs text-gray-500 dark:text-gray-400 mt-1 ${message.sender_id == user.id ? "text-right" : "text-left"}`}>
                           {formatTime(message.created_at)}
@@ -326,22 +523,87 @@ const ChatPage = () => {
                     </div>
                   ))}
 
-                {isTyping && (
-                  <div className="flex justify-start">
-                    <div className="max-w-[60%]">
-                      <div className="p-3 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {selectedConversation?.name || "Agent"} is typing...
-                        </p>
+                  {showScrollToBottom && (
+                  <button
+                    ref={scrollButtonRef}
+                    onClick={scrollToBottom}
+                    className="fixed bottom-32 right-8 cursor-pointer md:right-12 p-3 bg-gray-400 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-10"
+                    title="Scroll to bottom"
+                  >
+                    <ArrowDown size={20} />
+                  </button>
+                )}
+
+                  {isTyping && (
+                    <div className="flex justify-start">
+                      <div className="max-w-[60%]">
+                        <div className="p-3 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {selectedConversation?.name || "Agent"} is typing...
+                          </p>
+                        </div>
                       </div>
                     </div>
+                  )}
+                </div>
+
+                {/* File Preview */}
+                {selectedFile && (
+                  <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                    <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                          {getFileIcon(fileType)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            {selectedFile.name}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {formatFileSize(selectedFile.size)} • {fileType}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={removeSelectedFile}
+                        className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                    
+                    {/* Image Preview */}
+                    {filePreview && fileType === 'image' && (
+                      <div className="mt-2">
+                        <img 
+                          src={filePreview} 
+                          alt="Preview" 
+                          className="max-w-48 max-h-32 rounded-lg object-cover border border-gray-200 dark:border-gray-600"
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
-                </div>
 
                 {/* Input Area */}
                 <div className="p-4 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
                   <div className="flex items-center gap-2">
+                    {/* File Upload Button */}
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileSelect}
+                      accept="image/*,video/*,.pdf,.doc,.docx,.txt,.xlsx,.xls,.mp4,.mov,.avi,.mkv,.webm"
+                      className="hidden"
+                    />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors"
+                      title="Attach file"
+                    >
+                      <Paperclip size={20} />
+                    </button>
+                    
                     <input
                       type="text"
                       value={messageInput}
@@ -353,7 +615,7 @@ const ChatPage = () => {
                     />
                     <button
                       onClick={handleSendMessage}
-                      disabled={!messageInput.trim() || isSending}
+                      disabled={(!messageInput.trim() && !selectedFile) || isSending}
                       className="p-2 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white rounded-lg transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isSending ? (

@@ -25,7 +25,7 @@ import { getReminderById, Reminder } from "@/api/agent/reminders";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatReadableDate } from "@/utils";
+import { formatReadableDate } from "@/helpers/customer_helper";
 
 const ShowReminder = () => {
   const { id } = useParams();
@@ -137,14 +137,14 @@ const ShowReminder = () => {
                       <div>
                         <p className="text-3xl font-bold flex items-center gap-2">
                           <Clock className="w-7 h-7" />
-                          {formatReadableDate(reminder.remind_at)}
+                          {formatReadableDate(reminder.remind_at, true)}
                         </p>
                         <p className="text-white/80 text-lg">Reminder Time</p>
                       </div>
                       {reminder.completed_at && (
                         <div className="text-right">
                           <p className="text-white/80 text-sm">Completed At</p>
-                          <p className="text-xl font-bold">{formatReadableDate(reminder.completed_at)}</p>
+                          <p className="text-xl font-bold">{formatReadableDate(reminder.completed_at, true)}</p>
                         </div>
                       )}
                     </div>
@@ -364,27 +364,27 @@ const ShowReminder = () => {
                 <div className="space-y-3">
                   <div>
                     <p className="text-sm font-semibold text-gray-900">Remind At</p>
-                    <p className="text-sm text-gray-600">{formatReadableDate(reminder.remind_at)}</p>
+                    <p className="text-sm text-gray-600">{formatReadableDate(reminder.remind_at, true)}</p>
                   </div>
                   {reminder.snoozed_until && (
                     <div>
                       <p className="text-sm font-semibold text-gray-900">Snoozed Until</p>
-                      <p className="text-sm text-gray-600">{formatReadableDate(reminder.snoozed_until)}</p>
+                      <p className="text-sm text-gray-600">{formatReadableDate(reminder.snoozed_until, true)}</p>
                     </div>
                   )}
                   {reminder.completed_at && (
                     <div>
                       <p className="text-sm font-semibold text-gray-900">Completed At</p>
-                      <p className="text-sm text-gray-600">{formatReadableDate(reminder.completed_at)}</p>
+                      <p className="text-sm text-gray-600">{formatReadableDate(reminder.completed_at, true)}</p>
                     </div>
                   )}
                   <div>
                     <p className="text-sm font-semibold text-gray-900">Created</p>
-                    <p className="text-sm text-gray-600">{formatReadableDate(reminder.created_at)}</p>
+                    <p className="text-sm text-gray-600">{formatReadableDate(reminder.created_at, true)}</p>
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-gray-900">Last Updated</p>
-                    <p className="text-sm text-gray-600">{formatReadableDate(reminder.updated_at)}</p>
+                    <p className="text-sm text-gray-600">{formatReadableDate(reminder.updated_at, true)}</p>
                   </div>
                 </div>
               </CardContent>

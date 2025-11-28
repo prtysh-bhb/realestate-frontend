@@ -312,7 +312,9 @@ const CreateReminder = () => {
     }
 
     setLoading(true);
-    try {        
+    try {
+      formData.remind_at = new Date(formData.remind_at).toISOString();
+
       const response = await storeReminder(formData);
 
       if (response.success) {

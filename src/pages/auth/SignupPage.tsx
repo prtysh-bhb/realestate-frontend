@@ -4,16 +4,17 @@
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
-import { register } from "@/api/auth";
+import { getRestrictedMailDomains, register } from "@/api/auth";
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Building2, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { APP_NAME } from "@/constants";
+import { handleKeyPress } from "@/helpers/customer_helper";
 
 const SignupPage = () => {
   const [name, setName] = useState("");
@@ -24,6 +25,7 @@ const SignupPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
+  const [restrictedDomains, setRestrictedDomains] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({
     name: "",
@@ -32,6 +34,20 @@ const SignupPage = () => {
     confirmPassword: "",
   });
   const navigate = useNavigate();
+
+  const getRestrictedDomains = async () => {
+    const res = await getRestrictedMailDomains();
+    setRestrictedDomains(res.domains);
+  }
+
+  useEffect(() => {
+    getRestrictedDomains();
+  }, []);
+
+  const isRestrictedEmail = (email: string): boolean => {
+    const domain = email.split('@')[1]?.toLowerCase();
+    return restrictedDomains.map(d => d.toLowerCase()).includes(domain);
+  };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +82,18 @@ const SignupPage = () => {
 
     if (email.length > 70) {
       newErrors.email = "Email can't exceed 70 characters.";
+      hasError = true;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+      newErrors.email = "Enter a valid email address.";
+      hasError = true;
+    }
+    
+    if (isRestrictedEmail(email)) {
+      newErrors.email = "This email domain is not allowed!";
       hasError = true;
     }
 
@@ -121,7 +149,7 @@ const SignupPage = () => {
         setError("Registration failed");
       }
     } catch (err: any) {
-      const msg = err.response?.data?.message || "Error during registration";
+      const msg = err?.message || "Error during registration";
       toast.error(msg);
       setError(msg);
     } finally {
@@ -281,6 +309,7 @@ const SignupPage = () => {
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Enter your name"
                       maxLength={50}
+                      onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => handleKeyPress(e, /[a-zA-Z ]/, false)}
                       required
                       className={`pl-12 h-14 bg-gray-50 border-2 ${
                         fieldErrors.name ? "border-red-300" : "border-gray-200"
@@ -307,6 +336,7 @@ const SignupPage = () => {
                     <Input
                       type="email"
                       value={email}
+                      onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => handleKeyPress(e, /[a-z0-9@._-]/, false)}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
                       maxLength={70}
