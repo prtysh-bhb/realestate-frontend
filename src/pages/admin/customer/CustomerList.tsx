@@ -397,7 +397,7 @@ const CustomerList = () => {
                       <div className="flex justify-between items-start mb-4">
                         <div className="flex items-center gap-3">
                           <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-emerald-500 flex items-center justify-center text-white font-bold text-lg shadow-md">
-                           <img src={c.avatar || undefined} alt={c.name} className="w-full h-full object-cover rounded-xl" />
+                           <img src={c.avatar || "/assets/user.jpg"} alt={c.name} className="w-full h-full object-cover rounded-xl" />
                           </div>
                           <div>
                             <h3 className="text-sm font-bold text-gray-900 dark:text-white">

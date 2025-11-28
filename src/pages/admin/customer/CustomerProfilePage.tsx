@@ -51,7 +51,7 @@ const CustomerProfilePage = () => {
         {/* Cover Banner */}
         <div className="relative h-48 sm:h-56 md:h-64 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-500 rounded-t-2xl overflow-hidden">
           <img
-            src={customer?.avatar || `https://i.pravatar.cc/800?u=${customer?.id}`}
+            src={customer?.avatar || `/assets/user.jpg`}
             alt="cover"
             className="absolute inset-0 w-full h-full object-cover opacity-40 blur-sm"
           />
@@ -62,7 +62,7 @@ const CustomerProfilePage = () => {
           {/* Avatar */}
           <div className="relative flex-shrink-0 self-center sm:self-start">
             <img
-              src={customer?.avatar || `https://i.pravatar.cc/150?u=${customer?.id}`}
+              src={customer?.avatar || `/assets/user.jpg`}
               alt={customer?.name || "Customer"}
               className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-white shadow-xl object-cover"
             />

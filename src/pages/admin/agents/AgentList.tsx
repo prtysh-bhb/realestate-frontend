@@ -194,7 +194,9 @@ const AgentList = () => {
                             <td className="py-4 px-4 sm:px-6">
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-emerald-500 flex items-center justify-center text-white font-bold text-sm shadow-md flex-shrink-0">
-                                  <img src={agent.avatar ?? ""} alt={agent.name} className="w-full h-full object-cover rounded-full" />
+                                  <img src={agent?.avatar ?? ""} alt={agent.name} className="w-full h-full object-cover rounded-full" onError={(e) => {
+                                    e.currentTarget.src = "/assets/user.jpg";
+                                  }} />
                                 </div>
                                 <div className="min-w-0">
                                   <p className="font-semibold text-gray-900 dark:text-white truncate">
@@ -308,7 +310,7 @@ const AgentList = () => {
                         <div className="flex justify-between items-start mb-4">
                           <div className="flex items-center gap-3">
                             <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-emerald-500 flex items-center justify-center text-white font-bold text-lg shadow-md flex-shrink-0">
-                              <img src={agent.avatar ?? ""} alt={agent.name} className="w-full h-full object-cover rounded-xl" />
+                              <img src={agent.avatar ?? "/assets/user.jpg"} alt={agent.name} className="w-full h-full object-cover rounded-xl" />
                             </div>
                             <div className="min-w-0">
                               <h3 className="text-sm font-bold text-gray-900 dark:text-white truncate">

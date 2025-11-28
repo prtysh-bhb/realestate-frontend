@@ -78,7 +78,7 @@ const AgentProfilePage = () => {
             <div className="relative flex-shrink-0 self-center sm:self-start">
               <div className="relative group">
                 <img
-                  src={agent?.avatar || `https://i.pravatar.cc/200?u=${agent?.id}`}
+                  src={agent?.avatar || "/assets/user.jpg"}
                   alt={agent?.name || "Agent"}
                   className="w-32 h-32 sm:w-40 sm:h-40 rounded-3xl border-4 border-white dark:border-gray-900 shadow-2xl object-cover ring-4 ring-blue-500/20"
                 />
