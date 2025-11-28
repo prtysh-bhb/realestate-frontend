@@ -13,6 +13,7 @@ import {
   Grid3x3,
   List,
   UserPlus,
+  Shield,
 } from "lucide-react";
 import { exportUsers } from "@/api/admin/userExport";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
@@ -283,7 +284,7 @@ const CustomerList = () => {
                             <td className="py-4 px-6">
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-emerald-500 flex items-center justify-center text-white font-bold text-sm shadow-md">
-                                  {c.name.charAt(0).toUpperCase()}
+                                  <img src={c.avatar || undefined} alt={c.name} className="w-full h-full object-cover rounded-full" />
                                 </div>
                                 <div>
                                   <p className="font-semibold text-gray-900 dark:text-white">
@@ -297,7 +298,7 @@ const CustomerList = () => {
                               <p className="text-gray-700 dark:text-gray-300">{c.email}</p>
                             </td>
                             <td className="py-4 px-6 text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                              {new Date(c.created_at).toLocaleDateString('en-US', {
+                              {new Date(c.joined).toLocaleDateString('en-US', {
                                 month: 'short',
                                 day: 'numeric',
                                 year: 'numeric'
@@ -306,25 +307,26 @@ const CustomerList = () => {
                             <td className="py-4 px-6">
                               <span
                                 className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${badge(
-                                  c.is_active
+                                  c.status
                                 )}`}
                               >
                                 <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-                                  c.is_active ? "bg-emerald-600 dark:bg-emerald-400" : "bg-red-600 dark:bg-red-400"
+                                  c.status ? "bg-emerald-600 dark:bg-emerald-400" : "bg-red-600 dark:bg-red-400"
                                 }`}></span>
-                                {c.is_active ? "Active" : "Inactive"}
+                                {c.status ? "Active" : "Inactive"}
                               </span>
                             </td>
-                            <td className="py-4 px-6">
-                              {c.two_factor_enabled ? (
-                                <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
-                                  Enabled
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
-                                  Disabled
-                                </span>
-                              )}
+                            <td className="py-4 px-4 sm:px-6 hidden md:table-cell">
+                              <span
+                                className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${
+                                  c.two_factor_enabled
+                                    ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
+                                    : "bg-red-100 dark:bg-gray-800 text-red-700 dark:text-gray-400"
+                                }`}
+                              >
+                                <Shield className="mr-1" size={14} />
+                                {c.two_factor_enabled ? "2FA Enabled" : "2FA Disabled"}
+                              </span>
                             </td>
                             <td className="py-4 px-6">
                               <div className="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -337,7 +339,7 @@ const CustomerList = () => {
                                 >
                                   <Eye size={18} />
                                 </button>
-                                {c.is_active ? (
+                                {c.status ? (
                                   <button
                                     onClick={() => openDeactivatePopup(c)}
                                     className="px-3 py-1 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50 text-xs font-semibold transition-all"
@@ -394,7 +396,7 @@ const CustomerList = () => {
                       <div className="flex justify-between items-start mb-4">
                         <div className="flex items-center gap-3">
                           <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-emerald-500 flex items-center justify-center text-white font-bold text-lg shadow-md">
-                            {c.name.charAt(0).toUpperCase()}
+                           <img src={c.avatar || undefined} alt={c.name} className="w-full h-full object-cover rounded-xl" />
                           </div>
                           <div>
                             <h3 className="text-sm font-bold text-gray-900 dark:text-white">
@@ -402,27 +404,28 @@ const CustomerList = () => {
                             </h3>
                             <p className="text-xs text-gray-500 dark:text-gray-400">{c.email}</p>
                             <span
-                              className={`inline-flex items-center mt-1 px-2 py-0.5 rounded-md text-xs font-semibold ${
+                              className={`inline-flex items-center mt-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
                                 c.two_factor_enabled
                                   ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
-                                  : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                                  : "bg-red-100 dark:bg-gray-700 text-red-700 dark:text-gray-400"
                               }`}
                             >
+                              <Shield className="mr-1" size={14} />
                               {c.two_factor_enabled ? "2FA On" : "2FA Off"}
                             </span>
                           </div>
                         </div>
                         <span
                           className={`px-2.5 py-1 text-xs font-bold rounded-full ${badge(
-                            c.is_active
+                            c.status
                           )}`}
                         >
-                          {c.is_active ? "Active" : "Inactive"}
+                          {c.status ? "Active" : "Inactive"}
                         </span>
                       </div>
 
                       <div className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                        Joined: {new Date(c.created_at).toLocaleDateString('en-US', {
+                        Joined: {new Date(c.joined).toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric',
                           year: 'numeric'
@@ -438,7 +441,7 @@ const CustomerList = () => {
                           <Eye size={16} />
                           <span>View</span>
                         </button>
-                        {c.is_active ? (
+                        {c.status ? (
                           <button
                             onClick={() => openDeactivatePopup(c)}
                             className="flex-1 px-3 py-2 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-semibold rounded-xl hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-all cursor-pointer"

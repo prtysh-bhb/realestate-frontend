@@ -7,8 +7,9 @@ export interface Customer {
   id: number;
   name: string;
   email: string;
-  is_active: boolean;
-  created_at: string;
+  status: boolean;
+  joined: string;
+  avatar?: string | null;
 }
 
 export interface CustomerResponse {

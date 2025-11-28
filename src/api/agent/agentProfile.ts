@@ -7,29 +7,25 @@ export interface AgentProfile {
   id: number;
   name: string;
   email: string;
-  is_active: boolean;
-  two_factor_enabled: boolean;
-  created_at: string;
+  status: boolean;
+  two_factor_enabled: boolean | null;
+  company_name: string;
+  licence_number: string;
+  joined: string;
   updated_at: string;
-  image?: string | null;
+  avatar?: string | null;
   phone?: string | null;
-  location?: string | null;
+  city?: string | null;
 }
 
 interface AgentProfileResponse {
   success: boolean;
   message: string;
-  data: {
-    agent: AgentProfile;
-  };
+  data: AgentProfile
 }
 
 export const fetchAgentProfile = async (id: string) => {
   const response = await api.get<AgentProfileResponse>(`/admin/agents/${id}`);
-  const res = response.data;
-
-  return {
-    success: res.success,
-    data: res.data.agent, // ✅ flattened
-  };
+  
+  return response.data;  
 };

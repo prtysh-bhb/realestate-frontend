@@ -14,7 +14,7 @@ export interface Customer {
   license_number?: string;
   is_active: boolean;
   role: string;
-  two_factor_enabled?: boolean;
+  two_factor_enabled?: boolean | null;
   created_at?: string;
 }
 

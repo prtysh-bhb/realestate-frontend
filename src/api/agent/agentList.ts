@@ -6,9 +6,10 @@ export interface Agent {
   id: number;
   name: string;
   email: string;
-  is_active: boolean;
-  two_factor_enabled: boolean;
-  created_at: string;
+  status: boolean;
+  two_factor_enabled: boolean | null;
+  joined: string;
+  avatar?: string | null;
 }
 
 interface AgentResponse {

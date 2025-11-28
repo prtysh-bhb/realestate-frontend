@@ -154,7 +154,7 @@ const menuItems =
         },
         { name: "Orders*", icon: HousePlus, path: "/admin/orders", exact: true },
         { name: "Inbox*", icon: MailOpen, path: "/admin/inbox", exact: true },
-        { name: "Chat*", icon: MessageCircle, path: "/admin/chat", exact: true },
+        // { name: "Chat*", icon: MessageCircle, path: "/admin/chat", exact: true },
         {
           name: "Reviews*",
           icon: MessageSquare,
@@ -194,24 +194,24 @@ const menuItems =
             },
           ],
         },
-        {
-          name: "Customers*",
-          icon: Contact,
-          children: [
-            {
-              name: "Customer List*",
-              icon: List,
-              path: "/agent/customers",
-              exact: true,
-            },
-            {
-              name: "Add Customer*",
-              icon: PlusCircle,
-              path: "/agent/customers/new",
-              exact: true,
-            },
-          ],
-        },
+        // {
+        //   name: "Customers*",
+        //   icon: Contact,
+        //   children: [
+        //     {
+        //       name: "Customer List*",
+        //       icon: List,
+        //       path: "/agent/customers",
+        //       exact: true,
+        //     },
+        //     {
+        //       name: "Add Customer*",
+        //       icon: PlusCircle,
+        //       path: "/agent/customers/new",
+        //       exact: true,
+        //     },
+        //   ],
+        // },
         {
           name: "Leads",
           icon: ClipboardList,
