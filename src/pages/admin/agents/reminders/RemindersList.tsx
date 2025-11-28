@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import Loader from "@/components/ui/Loader";
 import DeleteModal from "../components/DeleteModal";
 import { completeReminder, deleteReminder, getAgentReminders, Reminder, setSnoozeReminder } from "@/api/agent/reminders";
+import { formatReadableDate } from "@/helpers/customer_helper";
 
 const RemindersList = () => {
   const [reminders, setReminders] = useState<Reminder[]>([]);
@@ -221,28 +222,6 @@ const RemindersList = () => {
     const today = new Date();
     const remindDate = new Date(remindAt);
     return remindDate.toDateString() === today.toDateString();
-  };
-
-  const formatRemindTime = (remindAt: string) => {
-    const date = new Date(remindAt);
-    const now = new Date();
-    const diffTime = date.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) {
-      return `Today at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-    } else if (diffDays === 1) {
-      return `Tomorrow at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-    } else if (diffDays > 1 && diffDays <= 7) {
-      return `${date.toLocaleDateString([], { weekday: 'long', hour: '2-digit', minute: '2-digit' })}`;
-    } else {
-      return date.toLocaleDateString([], { 
-        month: 'short', 
-        day: 'numeric', 
-        hour: '2-digit', 
-        minute: '2-digit' 
-      });
-    }
   };
 
   return (
@@ -475,7 +454,7 @@ const RemindersList = () => {
                                     ? 'text-red-600 dark:text-red-400' 
                                     : 'text-gray-900 dark:text-white'
                                 }`}>
-                                  {formatRemindTime(reminder.remind_at)}
+                                  {formatReadableDate(reminder.remind_at, true)}
                                 </span>
                                 {isOverdue(reminder.remind_at) && reminder.status === 'pending' && (
                                   <span className="text-xs text-red-500 font-medium">Overdue</span>
@@ -644,7 +623,7 @@ const RemindersList = () => {
                             ? 'text-red-600 dark:text-red-300'
                             : 'text-gray-600 dark:text-gray-300'
                         }`}>
-                          {formatRemindTime(reminder.remind_at)}
+                          {formatReadableDate(reminder.remind_at, true)}
                         </p>
                       </div>
 

@@ -23,6 +23,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { getReminderById, Reminder, ReminderFormData, updateReminder } from "@/api/agent/reminders";
+import { convertUTCToLocalInput, formatReadableDate } from "@/helpers/customer_helper";
 
 interface Errors {
   title?: string;
@@ -80,7 +81,7 @@ const EditReminder = () => {
           description: reminderData.description || '',
           type: reminderData.type || "general",
           priority: reminderData.priority,
-          remind_at: reminderData.remind_at ? new Date(reminderData.remind_at).toISOString().slice(0, 16) : '',
+          remind_at: reminderData.remind_at ? convertUTCToLocalInput(reminderData.remind_at) : '',
           notes: reminderData.notes || '',
           customer_id: reminderData.customer?.id || null,
           agent_id: reminderData.agent_id || undefined,
@@ -231,6 +232,8 @@ const EditReminder = () => {
 
     setSaving(true);
     try {
+      formData.remind_at = new Date(formData.remind_at).toISOString();
+      
       const response = await updateReminder(Number(id), formData);
 
       if (response.success) {
@@ -349,7 +352,7 @@ const EditReminder = () => {
                       </div>
                       {reminder.completed_at && (
                         <p className="text-sm text-gray-600 mt-2">
-                          Completed on: {new Date(reminder.completed_at).toLocaleDateString()}
+                          Completed on: {formatReadableDate(reminder.completed_at, true)}
                         </p>
                       )}
                     </div>
@@ -612,14 +615,14 @@ const EditReminder = () => {
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-semibold text-gray-900">Created:</span>
                     <span className="text-sm text-gray-600">
-                      {new Date(reminder?.created_at).toLocaleDateString()}
+                      {formatReadableDate(reminder?.created_at, true)}
                     </span>
                   </div>
                   
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-semibold text-gray-900">Last Updated:</span>
                     <span className="text-sm text-gray-600">
-                      {new Date(reminder.updated_at).toLocaleDateString()}
+                      {formatReadableDate(reminder.updated_at, true)}
                     </span>
                   </div>
 

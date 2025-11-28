@@ -1,13 +1,27 @@
-export const formatReadableDate = (dateInput: string | Date, isTimeVisible:boolean = false): string => {
+export const formatReadableDate = (
+  dateInput: string | Date,
+  isTimeVisible: boolean = false
+): string => {
   if (!dateInput) return "";
+
   const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
   if (isNaN(date.getTime())) return "";
 
-  return date.toLocaleDateString("en-US", {
+  const formattedDate = date.toLocaleDateString("en-US", {
     day: "numeric",
     month: "short",
     year: "numeric",
   });
+
+  if (!isTimeVisible) return formattedDate;
+
+  const formattedTime = date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  return `${formattedDate} • ${formattedTime}`;
 };
 
 export const formatAmount = (amount: number | string): string => {
@@ -52,3 +66,36 @@ export function formatTime(datetime: string): string {
   return `${hours}:${minutesStr} ${ampm}`;
 }
 
+export const handleKeyPress = (
+  e: React.KeyboardEvent<HTMLInputElement>,
+  allowedPattern: RegExp,
+  allowLeadingSpace: boolean = false
+) => {
+  const allowedKeys = ["Enter", "Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"];
+  const value = (e.target as HTMLInputElement).value;
+
+  // Block characters not matching pattern
+  if (!allowedPattern.test(e.key) && !allowedKeys.includes(e.key)) {
+    e.preventDefault();
+    return;
+  }
+
+  // Block leading space if not allowed
+  if (!allowLeadingSpace && e.key === " " && value.length === 0) {
+    e.preventDefault();
+  }
+};
+
+export const convertUTCToLocalInput = (utcString: string): string => {
+  if (!utcString) return "";
+
+  const date = new Date(utcString);
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
