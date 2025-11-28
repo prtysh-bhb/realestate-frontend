@@ -8,6 +8,11 @@ import type { User } from "@/types/user";
 import type { ApiResponse } from "@/types/api";
 import { handleApiError, getErrorMessage } from "@/services/errorHandler";
 
+export interface RestrictedMailDomainsResponse {
+  success: boolean;
+  domains: string[];
+};
+
 export interface ProfileFormData {
   name: string;
   email: string;
@@ -267,4 +272,14 @@ export const verifyTwoFactor = async (code: string): Promise<TwoFactorResponse> 
     throw handleApiError(error);
   }
 };
+
+/**
+ * Get restricted mail domains
+ */
+export const getRestrictedMailDomains = async () => {
+  const res = await api.get<RestrictedMailDomainsResponse>("/restricted-mail-domains");
+  return res.data;
+};
+
+
 

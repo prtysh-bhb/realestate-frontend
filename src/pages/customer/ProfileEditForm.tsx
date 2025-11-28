@@ -184,6 +184,7 @@ const ProfileEditForm = () => {
                 <input
                   type="email"
                   id="email"
+                  disabled
                   maxLength={50}
                   value={formData.email}
                   onChange={handleInputChange}
