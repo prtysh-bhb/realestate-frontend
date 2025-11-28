@@ -1,4 +1,5 @@
-import { ApiResponse, Inquiry } from '@/types';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Inquiry } from '@/types';
 import { Customer, Property } from '@/types/appointment';
 import axios from 'axios';
 
@@ -14,7 +15,25 @@ export interface AppointmentListResponse{
     success: boolean;
     message: string;
     data: {
-        appointments: Appointment[];
+        appointments: {
+          data: Appointment[]
+        };
+    };
+}
+
+export interface CustomerAppointmentsResponse{
+    success: boolean;
+    message: string;
+    data: {
+        appointments: Appointment[]
+    };
+}
+
+export interface CustomerInquiriesResponse{
+    success: boolean;
+    message: string;
+    data: {
+        inquiries: Inquiry[]
     };
 }
 
@@ -85,17 +104,20 @@ return t ? { Authorization: `Bearer ${t}` } : {};
 
 export const fetchAgentCustomers = async (token?: string | null) => {
 // try multiple endpoints (some installs expose different routes)
-const endpoints = [`${API_BASE}/agent/customers`, `${API_BASE}/customers`, `${API_BASE}/admin/customers`];
-for (const url of endpoints) {
-try {
-const resp = await axios.get<CustomersResponse>(url, { headers: getAuthHeaders(token), params: { per_page: 200 } });
+const resp = await axios.get<CustomersResponse>(`${API_BASE}/agent/customers/my`, { headers: getAuthHeaders(token), params: { per_page: 200 } });
 return resp.data?.data.customers;
-} catch (err: any) {
-if (err?.response?.status === 404 || err?.response?.status === 403) continue;
-throw err;
-}
-}
-return [];
+};
+
+export const fetchAppointmentByCustomers = async (customerId: number | string, token?: string | null) => {
+// try multiple endpoints (some installs expose different routes)
+const resp = await axios.get<CustomerAppointmentsResponse>(`${API_BASE}/agent/customers/${customerId}/appointments`, { headers: getAuthHeaders(token), params: { per_page: 200 } });
+return resp.data?.data;
+};
+
+export const fetchInquiriesByCustomers = async (customerId: number | string, token?: string | null) => {
+// try multiple endpoints (some installs expose different routes)
+const resp = await axios.get<CustomerInquiriesResponse>(`${API_BASE}/agent/customers/${customerId}/inquiries`, { headers: getAuthHeaders(token), params: { per_page: 200 } });
+return resp.data?.data;
 };
 
 

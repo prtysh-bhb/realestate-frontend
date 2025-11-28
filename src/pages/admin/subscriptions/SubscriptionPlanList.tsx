@@ -41,9 +41,7 @@ const SubscriptionPlanList = () => {
   const navigate = useNavigate();
 
   const deleteModal = (planId: number) => {
-    setSelectedPlan(plans.find(plan => plan.id === planId) || null);
-    console.log(selectedPlan);
-    
+    setSelectedPlan(plans.find(plan => plan.id === planId) || null);    
     setShowDeleteModal(true);
   }
 

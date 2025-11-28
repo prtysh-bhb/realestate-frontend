@@ -71,12 +71,19 @@ const PropertyCard: FC<PropertyCardProps> = ({
     }
   };
 
-  const handleShare = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    // Share functionality
+  const handleShare = async (e: React.MouseEvent) => {
+  e.preventDefault();
+  e.stopPropagation();
+
+  const shareUrl = `${window.location.origin}/properties/view/${property.id}`;
+
+  try {
+    await navigator.clipboard.writeText(shareUrl);
     toast.success("Link copied to clipboard!");
-  };
+  } catch (err) {
+    toast.error("Failed to copy link");
+  }
+};
 
   return (
     <Link to={`/properties/view/${property.id}`}>
@@ -121,7 +128,7 @@ const PropertyCard: FC<PropertyCardProps> = ({
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleShare}
-              className="w-10 h-10 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors"
+              className="w-10 h-10 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors cursor-pointer"
             >
               <Share2 className="w-5 h-5 text-slate-700" />
             </motion.button>
@@ -129,7 +136,7 @@ const PropertyCard: FC<PropertyCardProps> = ({
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleFavorite}
-              className="w-10 h-10 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors"
+              className="w-10 h-10 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors cursor-pointer"
             >
               <Heart
                 className={`w-5 h-5 ${

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* ========================================================= */
 import React, { useEffect, useState, useCallback } from "react";
@@ -21,16 +22,23 @@ import {
   Phone,
   User,
   Home,
-  Plus,
   Search,
   Filter,
   X,
   Edit,
-  Trash2,
   Eye,
+  Check,
+  Slash,
 } from "lucide-react";
 import { getAgentProperties } from "@/api/agent/property";
 import { Customer } from "@/types/appointment";
+import { Button } from "@/components/ui/button";
+
+/**
+ * Note: This component uses a safeApiCall helper to handle functions that may
+ * accept a `token` param or may not. That avoids runtime signature errors if
+ * different API helpers expect different argument lists.
+ */
 
 function resolveImageUrl(API_BASE: string, img?: string | null) {
   if (!img) return null;
@@ -39,9 +47,29 @@ function resolveImageUrl(API_BASE: string, img?: string | null) {
   return `${API_BASE.replace(/\/api\/?$/, "")}/${img}`.replace(/([^:]\/)\/+/, "$1");
 }
 
-export default function AgentAppointments({ token }: { token?: string | null }) {
+/** Try calling fn(...args). If it throws due to unexpected extra arg (e.g. token),
+ * try calling again with trailing arg removed. This is defensive to support
+ * mixed function signatures across your API helpers.
+ */
+async function safeApiCall(fn: (...a: any[]) => Promise<any>, ...args: any[]) {
+  try {
+    return await fn(...args);
+  } catch (err: any) {
+    // If there was a token as the last arg, try without it
+    if (args.length > 0) {
+      try {
+        const argsWithoutLast = args.slice(0, -1);
+        return await fn(...argsWithoutLast);
+      } catch (err2) {
+        throw err; // original error
+      }
+    }
+    throw err;
+  }
+}
 
-  const API_BASE = import.meta.env.VITE_API_URL;
+export default function AgentAppointments({ token }: { token?: string | null }) {
+  const API_BASE = import.meta.env.VITE_API_URL || "";
   const location = useLocation();
 
   const [properties, setProperties] = useState<any[]>([]);
@@ -76,6 +104,14 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
     notes: "",
   });
 
+  // Decline modal state
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
+  const [declineTarget, setDeclineTarget] = useState<any | null>(null);
+  const [declineReason, setDeclineReason] = useState("");
+
+  // Loading states for individual actions to prevent multiple clicks
+  const [actionLoading, setActionLoading] = useState<{ [key: number]: string }>({});
+
   // prefill customer via ?customer_id=
   useEffect(() => {
     const q = new URLSearchParams(location.search);
@@ -100,22 +136,22 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
 
   const loadProperties = useCallback(async () => {
     try {
-      const data = await getAgentProperties();
+      const data = await safeApiCall(getAgentProperties, token);
       const items = (data && data.data) ? data.data : toArray(data);
       setProperties(items.map((p: any) => ({ ...p, image: resolveImageUrl(API_BASE, p.image) })));
     } catch (e) {
-      console.error(e);
+      console.error("loadProperties", e);
       setProperties([]);
     }
   }, [token, API_BASE]);
 
   const loadCustomers = useCallback(async () => {
     try {
-      const data = await fetchAgentCustomers(token);
+      const data = await safeApiCall(fetchAgentCustomers, token);
       const items = toArray(data);
       setCustomers(items);
     } catch (e) {
-      console.error(e);
+      console.error("loadCustomers", e);
       setCustomers([]);
     }
   }, [token]);
@@ -123,9 +159,9 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
   const loadAppointments = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await fetchAppointments(12, token);
+      const data = await safeApiCall(fetchAppointments, 12, token);      
+      // handle multiple shapes
       const items = toArray(data?.appointments ?? data);
-      
       setAppointments(
         items.map((a: any) => ({
           ...a,
@@ -135,7 +171,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
         }))
       );
     } catch (e) {
-      console.error(e);
+      console.error("loadAppointments", e);
       setAppointments([]);
     } finally {
       setLoading(false);
@@ -152,16 +188,18 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
     if (!date) return;
     setCheckingSlots(true);
     try {
-      const data = await checkAvailability(date, token);
-      const items = data?.time_slots ?? data ?? [];
+      // call checkAvailability(date[, token]) safely
+      const data = await safeApiCall(checkAvailability, date, token);
+      const items = data?.time_slots ?? data?.data?.time_slots ?? data ?? [];
       const normalized = (Array.isArray(items) ? items : []).map((it: any) => ({
         datetime: it.datetime ?? `${date}T${it.start_time ?? "09:00"}:00`,
         is_available: typeof it.is_available === "boolean" ? it.is_available : !(it.booked ?? false),
       }));
       setSlots(normalized);
     } catch (e) {
-      console.error(e);
+      console.error("checkAvailability", e);
       setSlots([]);
+      toast.error("Failed to load availability");
     } finally {
       setCheckingSlots(false);
     }
@@ -183,30 +221,33 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
     });
     setShowCreate(true);
     setShowEdit(false);
+    setSlots([]);
   };
 
   const handleOpenEdit = async (appt: any) => {
     try {
-      const data = await fetchAppointment(appt.id, token);
-      const row = data;
+      const data = await safeApiCall(fetchAppointment, appt.id, token);
+      // data might be wrapper or direct
+      const row = data?.appointment ?? data;
       setForm({
         id: row.id,
         property_id: row.property_id?.toString() ?? "",
         customer_id: row.customer_id?.toString() ?? "",
         inquiry_id: row.inquiry_id?.toString() ?? "",
         type: row.type,
-        date: moment.utc(row.scheduled_at).format("YYYY-MM-DD"),
-        slot: row.scheduled_at,
+        date: moment.utc(row.scheduled_at).tz("Asia/Kolkata").format("YYYY-MM-DD"),
+        slot: moment.utc(row.scheduled_at).tz("Asia/Kolkata").format("HH:mm"),
         duration_minutes: row.duration_minutes ?? 30,
         location: row.location ?? "",
         phone_number: row.phone_number ?? "",
         notes: row.notes ?? "",
       });
-      await handleCheckAvailability(moment(row.scheduled_at).format("YYYY-MM-DD"));
+      // fetch availability for the date so agent can change slot
+      await handleCheckAvailability(moment.utc(row.scheduled_at).tz("Asia/Kolkata").format("YYYY-MM-DD"));
       setShowCreate(true);
       setShowEdit(true);
     } catch (e) {
-      console.error(e);
+      console.error("handleOpenEdit", e);
       toast.error("Failed to open appointment for edit");
     }
   };
@@ -221,8 +262,9 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
 
     setCreating(true);
     try {
-      const combinedDateSlot = moment.tz(`${form.date} ${form.slot}`, "YYYY-MM-DD HH:mm", "Asia/Kolkata").format();
-      
+      // combine local date + time with Asia/Kolkata tz
+      const combinedDateSlot = moment.tz(`${form.date} ${form.slot}`, "YYYY-MM-DD HH:mm", "Asia/Kolkata").toISOString();
+
       const payload: any = {
         property_id: form.property_id,
         customer_id: form.customer_id,
@@ -236,10 +278,11 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
       if (form.inquiry_id) payload.inquiry_id = form.inquiry_id;
 
       if (showEdit && form.id) {
-        await updateAppointment(form.id, payload, token);
+        // update
+        await safeApiCall(updateAppointment, form.id, payload, token);
         toast.success("Appointment updated");
       } else {
-        await createAppointment(payload, token);
+        await safeApiCall(createAppointment, payload, token);
         toast.success("Appointment created");
       }
 
@@ -262,7 +305,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
       await loadAppointments();
       if (form.date) await handleCheckAvailability(form.date);
     } catch (err: any) {
-      console.error(err);
+      console.error("handleSubmit", err);
       toast.error(err?.response?.data?.message ?? "Failed to save appointment");
     } finally {
       setCreating(false);
@@ -284,27 +327,33 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
   const handleConfirmCancel = async () => {
     if (!selected) return;
     if (!cancelReason.trim()) return toast.error("Cancellation reason required");
+    setActionLoading((prev) => ({ ...prev, [selected.id]: "cancelling" }));
     try {
-      await cancelAppointment(selected.id, cancelReason, token);
+      await safeApiCall(cancelAppointment, selected.id, { cancellation_reason: cancelReason }, token);
       toast.success("Appointment cancelled");
 
-      // Immediately update local state so Cancel becomes disabled and (since we hide cancelled by default) it disappears from main list
+      // Update local state quickly
       setAppointments((prev) => prev.map((a) => (a.id === selected.id ? { ...a, status: "cancelled" } : a)));
       setSelected((prev: any) => (prev ? { ...prev, status: "cancelled" } : prev));
 
       setShowCancelModal(false);
-      // refresh to ensure server-state sync (optional but recommended)
       await loadAppointments();
     } catch (e) {
-      console.error(e);
+      console.error("handleConfirmCancel", e);
       toast.error("Cancel failed");
+    } finally {
+      setActionLoading((prev) => {
+        const newState = { ...prev };
+        delete newState[selected.id];
+        return newState;
+      });
     }
   };
 
   const openDetails = async (id: number) => {
     try {
-      const data = await fetchAppointment(id, token);
-      const row = data;
+      const data = await safeApiCall(fetchAppointment, id, token);
+      const row = data?.appointment ?? data;
       setSelected(row);
     } catch (e) {
       console.error("openDetails", e);
@@ -327,6 +376,10 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
         return "bg-red-100 text-red-700";
       case "completed":
         return "bg-blue-100 text-blue-700";
+      case "approved":
+        return "bg-emerald-100 text-emerald-700";
+      case "declined":
+        return "bg-rose-100 text-rose-700";
       default:
         return "bg-gray-100 text-gray-700";
     }
@@ -340,6 +393,88 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
         return "bg-orange-100 text-orange-700";
       default:
         return "bg-gray-100 text-gray-700";
+    }
+  };
+
+  // Check if appointment can be approved/declined
+  const canTakeAction = (appt: any) => {
+    return appt.status === "scheduled" && !actionLoading[appt.id];
+  };
+
+  // Agent actions: Approve
+  const handleApprove = async (appt: any) => {
+    if (!appt || !canTakeAction(appt)) return;
+
+    setActionLoading((prev) => ({ ...prev, [appt.id]: "approving" }));
+    try {
+      await safeApiCall(updateAppointment, appt.id, { status: "approved" }, token);
+      toast.success("Appointment approved");
+
+      setAppointments((prev) => prev.map((a) => (a.id === appt.id ? { ...a, status: "approved" } : a)));
+      if (selected?.id === appt.id) setSelected((s: any) => ({ ...s, status: "approved" }));
+
+      // refresh list
+      await loadAppointments();
+    } catch (e: any) {
+      console.error("handleApprove", e);
+      toast.error(e?.response?.data?.message ?? "Failed to approve appointment");
+    } finally {
+      setActionLoading((prev) => {
+        const newState = { ...prev };
+        delete newState[appt.id];
+        return newState;
+      });
+    }
+  };
+
+  // Decline modal flow
+  const openDeclineModal = (appt: any) => {
+    if (!appt || !canTakeAction(appt)) {
+      if (appt?.status !== "scheduled") {
+        toast.error("Only scheduled appointments can be declined");
+      }
+      return;
+    }
+    setDeclineTarget(appt);
+    setDeclineReason("");
+    setShowDeclineModal(true);
+  };
+
+  const confirmDecline = async () => {
+    if (!declineTarget) return;
+    if (!declineReason.trim()) {
+      toast.error("Please enter a reason");
+      return;
+    }
+
+    setActionLoading((prev) => ({ ...prev, [declineTarget.id]: "declining" }));
+    try {
+      await safeApiCall(
+        updateAppointment,
+        declineTarget.id,
+        {
+          status: "declined",
+          decline_reason: declineReason,
+        },
+        token
+      );
+
+      toast.success("Appointment declined");
+      setAppointments((prev) => prev.map((a) => (a.id === declineTarget.id ? { ...a, status: "declined" } : a)));
+      if (selected?.id === declineTarget.id) setSelected((s: any) => ({ ...s, status: "declined", decline_reason: declineReason }));
+
+      setShowDeclineModal(false);
+      setDeclineTarget(null);
+      await loadAppointments();
+    } catch (e: any) {
+      console.error("confirmDecline", e);
+      toast.error(e?.response?.data?.message ?? "Failed to decline appointment");
+    } finally {
+      setActionLoading((prev) => {
+        const newState = { ...prev };
+        if (declineTarget) delete newState[declineTarget.id];
+        return newState;
+      });
     }
   };
 
@@ -363,19 +498,19 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
     <AdminLayout>
       <div className=" bg-gray-50/30">
         <div className="mx-auto py-6">
-          {/* Header Section */}
+          {/* Header Section - New Appointment button removed */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Appointments</h1>
               <p className="text-sm text-gray-600 mt-1">Manage and schedule customer appointments</p>
             </div>
-            <button
-              onClick={handleOpenCreate}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              <Plus size={20} />
-              New Appointment
-            </button>
+
+            <div>
+              <Button onClick={handleOpenCreate} disabled={false} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-medium">
+                Create Appointment
+              </Button>
+            </div>
+            {/* intentionally removed "New Appointment" CTA per request */}
           </div>
 
           {/* Stats Cards */}
@@ -464,12 +599,14 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                       >
                         <option value="all">All Status (hide cancelled)</option>
                         <option value="scheduled">Scheduled</option>
+                        <option value="approved">Approved</option>
                         <option value="completed">Completed</option>
                         <option value="cancelled">Cancelled</option>
+                        <option value="declined">Declined</option>
                       </select>
                     </div>
                     <div className="flex items-center gap-2 w-full sm:w-auto">
-                      <button className="p-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 w-full sm:w-auto justify-center flex">
+                      <button onClick={() => loadAppointments()} className="p-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 w-full sm:w-auto justify-center flex">
                         <Filter className="w-4 h-4 text-gray-600" />
                       </button>
                     </div>
@@ -487,13 +624,15 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                       <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                       <p className="text-gray-500 text-lg font-medium">No appointments found</p>
                       <p className="text-gray-400 text-sm mt-1">
-                        {searchTerm || statusFilter !== "all" ? "Try adjusting your filters" : "Get started by creating your first appointment"}
+                        {searchTerm || statusFilter !== "all" ? "Try adjusting your filters" : "No appointments available"}
                       </p>
                     </div>
                   ) : (
                     <div className="space-y-4">
                       {filteredAppointments.map((appointment) => {
-                        const isScheduled = appointment.status === "scheduled";
+                        const canAction = canTakeAction(appointment);
+                        const isActionLoading = actionLoading[appointment.id];
+
                         return (
                           <div
                             key={appointment.id}
@@ -518,31 +657,47 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                                     <span className="text-sm text-gray-600">
                                       {appointment.customer?.name || "Unknown Customer"}
                                     </span>
-                                    <div className="flex items-center gap-1">
+
+                                    <div className="flex items-center gap-2 ml-3">
                                       <button
                                         onClick={() => openDetails(appointment.id)}
                                         className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                        title="View details"
                                       >
                                         <Eye className="w-4 h-4 text-gray-400" />
                                       </button>
+
                                       <button
                                         onClick={() => handleOpenEdit(appointment)}
                                         className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                        title="Edit appointment"
                                       >
                                         <Edit className="w-4 h-4 text-gray-400" />
                                       </button>
 
-                                      {/* Cancel button: only allowed when scheduled */}
+                                      {/* Approve / Decline (agent actions) */}
                                       <button
-                                        onClick={() => handleOpenCancel(appointment)}
-                                        disabled={!isScheduled}
-                                        aria-disabled={!isScheduled}
-                                        className={`p-2 rounded-lg transition-colors ${
-                                          !isScheduled ? "text-gray-300 cursor-not-allowed bg-gray-50" : "hover:bg-gray-100 text-gray-600"
-                                        }`}
-                                        title={!isScheduled ? "Only scheduled appointments can be cancelled" : "Cancel appointment"}
+                                        onClick={() => handleApprove(appointment)}
+                                        disabled={!canAction}
+                                        title={!canAction ? "Only scheduled appointments can be approved" : "Approve appointment"}
+                                        className={`ml-2 inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${!canAction ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}`}
                                       >
-                                        <Trash2 className={`w-4 h-4 ${!isScheduled ? "text-gray-300" : "text-gray-400"}`} />
+                                        {isActionLoading === "approving" ? (
+                                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-emerald-600"></div>
+                                        ) : (
+                                          <Check className="w-4 h-4" />
+                                        )}
+                                        {isActionLoading === "approving" ? "Approving..." : "Approve"}
+                                      </button>
+
+                                      <button
+                                        onClick={() => openDeclineModal(appointment)}
+                                        disabled={!canAction}
+                                        title={!canAction ? "Only scheduled appointments can be declined" : "Decline appointment"}
+                                        className={`ml-2 inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${!canAction ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-rose-50 text-rose-700 hover:bg-rose-100"}`}
+                                      >
+                                        <Slash className="w-4 h-4" />
+                                        Decline
                                       </button>
                                     </div>
                                   </div>
@@ -553,13 +708,13 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                                 <div className="flex items-center gap-1.5">
                                   <Calendar className="w-4 h-4 text-gray-400" />
                                   <span className="text-sm text-gray-600">
-                                    {moment.utc(appointment.scheduled_at).format("MMM D, YYYY")}
+                                    {moment.utc(appointment.scheduled_at).tz("Asia/Kolkata").format("MMM D, YYYY")}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                   <Clock className="w-4 h-4 text-gray-400" />
                                   <span className="text-sm text-gray-600">
-                                    {moment.utc(appointment.scheduled_at).format("h:mm A")}
+                                    {moment.utc(appointment.scheduled_at).tz("Asia/Kolkata").format("h:mm A")}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -583,23 +738,10 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
 
             {/* Sidebar */}
             <div className="space-y-6">
-              {/* Quick Actions */}
+              {/* Quick Actions - removed create button per request */}
               <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                 <h3 className="font-semibold text-gray-900 mb-4">Quick Actions</h3>
                 <div className="space-y-3">
-                  <button
-                    onClick={handleOpenCreate}
-                    className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-dashed border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200"
-                  >
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <Plus className="w-4 h-4 text-blue-600" />
-                    </div>
-                    <div className="text-left">
-                      <div className="font-medium text-gray-900">Create Appointment</div>
-                      <div className="text-sm text-gray-500">Schedule new customer meeting</div>
-                    </div>
-                  </button>
-
                   <button className="w-full flex items-center gap-3 p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
                     <div className="p-2 bg-green-100 rounded-lg">
                       <Calendar className="w-4 h-4 text-green-600" />
@@ -607,6 +749,19 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                     <div className="text-left">
                       <div className="font-medium text-gray-900">View Calendar</div>
                       <div className="text-sm text-gray-500">See all scheduled events</div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => loadAppointments()}
+                    className="w-full flex items-center gap-3 p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="p-2 bg-gray-100 rounded-lg">
+                      <Filter className="w-4 h-4 text-gray-600" />
+                    </div>
+                    <div className="text-left">
+                      <div className="font-medium text-gray-900">Refresh List</div>
+                      <div className="text-sm text-gray-500">Fetch latest appointments</div>
                     </div>
                   </button>
                 </div>
@@ -640,7 +795,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                     <div>
                       <label className="text-sm font-medium text-gray-600">Date & Time</label>
                       <p className="text-gray-900 font-medium mt-1">
-                        {moment(selected.scheduled_at).format("MMMM D, YYYY [at] h:mm A")}
+                        {moment(selected.scheduled_at).tz("Asia/Kolkata").format("MMMM D, YYYY [at] h:mm A")}
                       </p>
                     </div>
 
@@ -660,22 +815,41 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                       </div>
                     )}
 
+                    {selected.decline_reason && selected.status === "declined" && (
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">Decline Reason</label>
+                        <p className="text-gray-700 mt-1 text-sm">{selected.decline_reason}</p>
+                      </div>
+                    )}
+
                     <div className="flex gap-2 pt-2">
+                      <button
+                        onClick={() => handleApprove(selected)}
+                        disabled={!canTakeAction(selected)}
+                        className={`px-4 py-2.5 rounded-xl ${!canTakeAction(selected) ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"} font-medium transition-colors`}
+                      >
+                        {actionLoading[selected.id] === "approving" ? "Approving..." : "Approve"}
+                      </button>
+
+                      <button
+                        onClick={() => openDeclineModal(selected)}
+                        disabled={!canTakeAction(selected)}
+                        className={`px-4 py-2.5 rounded-xl ${!canTakeAction(selected) ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-rose-50 text-rose-700 hover:bg-rose-100"} font-medium transition-colors`}
+                      >
+                        Decline
+                      </button>
+
                       <button
                         onClick={() => handleOpenCancel(selected)}
                         disabled={selected.status !== "scheduled"}
-                        aria-disabled={selected.status !== "scheduled"}
-                        className={`flex-1 px-4 py-2.5 rounded-xl ${
-                          selected.status !== "scheduled"
-                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                            : "bg-red-50 text-red-600 hover:bg-red-100"
-                        } font-medium transition-colors`}
+                        className={`px-4 py-2.5 rounded-xl ${selected.status !== "scheduled" ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-red-50 text-red-600 hover:bg-red-100"} font-medium transition-colors`}
                       >
                         Cancel
                       </button>
+
                       <button
                         onClick={() => setSelected(null)}
-                        className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 font-medium hover:bg-gray-50 transition-colors"
+                        className="px-4 py-2.5 rounded-xl border border-gray-200 font-medium hover:bg-gray-50 transition-colors"
                       >
                         Close
                       </button>
@@ -685,134 +859,165 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
               )}
             </div>
           </div>
+
+          {/* Create / Edit Modal (unchanged) */}
+          {showCreate && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div className="absolute inset-0 bg-black/40" onClick={() => setShowCreate(false)} />
+              <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-xl p-6 z-10 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-gray-900">{showEdit ? "Edit Appointment" : "Create New Appointment"}</h3>
+                  <button onClick={() => setShowCreate(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                    <X className="w-5 h-5 text-gray-400" />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Left Column */}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Property</label>
+                      <select value={form.property_id} onChange={(e) => setForm((s: any) => ({ ...s, property_id: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Select property</option>
+                        {properties.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Customer</label>
+                      <select value={form.customer_id} onChange={(e) => setForm((s: any) => ({ ...s, customer_id: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Select customer</option>
+                        {customers.map((c) => <option key={c.id} value={c.id}>{c.name} {c.email ? `(${c.email})` : ""}</option>)}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Appointment Type</label>
+                      <select value={form.type} onChange={(e) => setForm((s: any) => ({ ...s, type: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="visit">Property Visit</option>
+                        <option value="call">Phone Call</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                      <input type="date" value={form.date} onChange={(e) => setForm((s: any) => ({ ...s, date: e.target.value, slot: "" }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Duration (minutes)</label>
+                      <input type="number" min={15} max={480} value={form.duration_minutes} onChange={(e) => setForm((s: any) => ({ ...s, duration_minutes: Number(e.target.value) }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                    </div>
+                  </div>
+
+                  {/* Right Column */}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{form.type === "call" ? "Phone Number" : "Meeting Location"}</label>
+                      <input maxLength={form.type === "call" ? 15 : 50} value={form.type === "call" ? form.phone_number : form.location} onChange={(e) => form.type === "call" ? setForm((s: any) => ({ ...s, phone_number: e.target.value })) : setForm((s: any) => ({ ...s, location: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder={form.type === "call" ? "Enter phone number" : "Enter address or meeting spot"} />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Inquiry ID (optional)</label>
+                      <input value={form.inquiry_id} onChange={(e) => setForm((s: any) => ({ ...s, inquiry_id: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Link an inquiry ID" />
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-3 mb-3">
+                        <button onClick={() => handleCheckAvailability(form.date)} disabled={!form.date} className="px-4 py-2.5 rounded-xl bg-blue-600 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors">Check Availability</button>
+                        <span className="text-sm text-gray-500">Find available time slots</span>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        {checkingSlots ? <div className="text-sm text-gray-500">Checking available slots...</div> : slots.length === 0 ? <div className="text-sm text-gray-400">Select a date to see available slots</div> : slots.map((slot: any) => {
+                          const isAvailable = slot.is_available !== false;
+                          const hhmm = moment(slot.datetime).tz("Asia/Kolkata").format("HH:mm");
+                          return (
+                            <button key={slot.datetime} onClick={() => isAvailable && setForm((f: any) => ({ ...f, slot: hhmm }))} disabled={!isAvailable} className={`px-4 py-2 rounded-xl border-2 transition-all ${form.slot === hhmm ? "border-blue-600 bg-blue-600 text-white" : isAvailable ? "border-gray-200 hover:border-blue-300 hover:bg-blue-50 text-gray-700" : "border-gray-100 bg-gray-50 text-gray-400 line-through cursor-not-allowed"}`}>
+                              {moment(slot.datetime).tz("Asia/Kolkata").format("h:mm A")}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                      <textarea value={form.notes} onChange={(e) => setForm((s: any) => ({ ...s, notes: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-24" placeholder="Additional notes about the appointment..." />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
+                  <button onClick={() => setShowCreate(false)} className="px-6 py-3 rounded-xl border border-gray-200 font-medium hover:bg-gray-50 transition-colors">Cancel</button>
+                  <button onClick={handleSubmit} disabled={creating || !canCreate()} className={`px-6 py-3 rounded-xl font-medium transition-colors ${creating || !canCreate() ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-green-600 text-white hover:bg-green-700"}`}>
+                    {creating ? <div className="flex items-center gap-2"><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>{showEdit ? "Updating..." : "Creating..."}</div> : showEdit ? "Save Changes" : "Create Appointment"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Cancel Modal */}
+          {showCancelModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div className="absolute inset-0 bg-black/40" onClick={() => setShowCancelModal(false)} />
+              <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl p-6 z-10">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-red-100 rounded-lg">
+                    <X className="w-5 h-5 text-red-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Cancel Appointment</h3>
+                    <p className="text-sm text-gray-600">This action cannot be undone</p>
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Cancellation Reason <span className="text-red-500">*</span></label>
+                  <textarea value={cancelReason} onChange={(e) => setCancelReason(e.target.value)} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-red-500 focus:border-transparent h-28" placeholder="Please provide a reason for cancellation..." />
+                </div>
+
+                <div className="flex justify-end gap-3">
+                  <button onClick={() => setShowCancelModal(false)} className="px-6 py-3 rounded-xl border border-gray-200 font-medium hover:bg-gray-50 transition-colors">Keep Appointment</button>
+                  <button onClick={handleConfirmCancel} disabled={!cancelReason.trim()} className={`px-6 py-3 rounded-xl font-medium transition-colors ${!cancelReason.trim() ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-red-600 text-white hover:bg-red-700"}`}>
+                    Confirm Cancellation
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Decline Modal (replaces prompt) */}
+          {showDeclineModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div className="absolute inset-0 bg-black/40" onClick={() => setShowDeclineModal(false)} />
+              <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl p-6 z-10">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-rose-100 rounded-lg">
+                    <Slash className="w-5 h-5 text-rose-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Decline Appointment</h3>
+                    <p className="text-sm text-gray-600">Provide a reason for declining this appointment</p>
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Decline Reason <span className="text-red-500">*</span></label>
+                  <textarea value={declineReason} onChange={(e) => setDeclineReason(e.target.value)} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-rose-500 focus:border-transparent h-28" placeholder="Please provide a reason for declining..." />
+                </div>
+
+                <div className="flex justify-end gap-3">
+                  <button onClick={() => setShowDeclineModal(false)} className="px-6 py-3 rounded-xl border border-gray-200 font-medium hover:bg-gray-50 transition-colors">Cancel</button>
+                  <button onClick={confirmDecline} disabled={!declineReason.trim()} className={`px-6 py-3 rounded-xl font-medium transition-colors ${!declineReason.trim() ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-rose-600 text-white hover:bg-rose-700"}`}>
+                    Confirm Decline
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-
-        {/* Create / Edit Modal */}
-        {showCreate && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/40" onClick={() => setShowCreate(false)} />
-            <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-xl p-6 z-10 max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-900">{showEdit ? "Edit Appointment" : "Create New Appointment"}</h3>
-                <button onClick={() => setShowCreate(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
-                  <X className="w-5 h-5 text-gray-400" />
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Left Column */}
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Property</label>
-                    <select value={form.property_id} onChange={(e) => setForm((s: any) => ({ ...s, property_id: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                      <option value="">Select property</option>
-                      {properties.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Customer</label>
-                    <select value={form.customer_id} onChange={(e) => setForm((s: any) => ({ ...s, customer_id: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                      <option value="">Select customer</option>
-                      {customers.map((c) => <option key={c.id} value={c.id}>{c.name} {c.email ? `(${c.email})` : ""}</option>)}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Appointment Type</label>
-                    <select value={form.type} onChange={(e) => setForm((s: any) => ({ ...s, type: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                      <option value="visit">Property Visit</option>
-                      <option value="call">Phone Call</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
-                    <input type="date" value={form.date} onChange={(e) => setForm((s: any) => ({ ...s, date: e.target.value, slot: "" }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Duration (minutes)</label>
-                    <input type="number" min={15} max={480} value={form.duration_minutes} onChange={(e) => setForm((s: any) => ({ ...s, duration_minutes: Number(e.target.value) }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-                  </div>
-                </div>
-
-                {/* Right Column */}
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{form.type === "call" ? "Phone Number" : "Meeting Location"}</label>
-                    <input maxLength={form.type === "call" ? 15 : 50} value={form.type === "call" ? form.phone_number : form.location} onChange={(e) => form.type === "call" ? setForm((s: any) => ({ ...s, phone_number: e.target.value })) : setForm((s: any) => ({ ...s, location: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder={form.type === "call" ? "Enter phone number" : "Enter address or meeting spot"} />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Inquiry ID (optional)</label>
-                    <input value={form.inquiry_id} onChange={(e) => setForm((s: any) => ({ ...s, inquiry_id: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Link an inquiry ID" />
-                  </div>
-
-                  <div>
-                    <div className="flex items-center gap-3 mb-3">
-                      <button onClick={() => handleCheckAvailability(form.date)} disabled={!form.date} className="px-4 py-2.5 rounded-xl bg-blue-600 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors">Check Availability</button>
-                      <span className="text-sm text-gray-500">Find available time slots</span>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      {checkingSlots ? <div className="text-sm text-gray-500">Checking available slots...</div> : slots.length === 0 ? <div className="text-sm text-gray-400">Select a date to see available slots</div> : slots.map((slot) => {
-                        const isAvailable = slot.is_available !== false;
-                        return (
-                          <button key={slot.datetime} onClick={() => isAvailable && setForm((f: any) => ({ ...f, slot: moment(slot.datetime).format("HH:mm") }))} disabled={!isAvailable} className={`px-4 py-2 rounded-xl border-2 transition-all ${form.slot === moment(slot.datetime).format("HH:mm") ? "border-blue-600 bg-blue-600 text-white" : isAvailable ? "border-gray-200 hover:border-blue-300 hover:bg-blue-50 text-gray-700" : "border-gray-100 bg-gray-50 text-gray-400 line-through cursor-not-allowed"}`}>
-                            {moment(slot.datetime).format("h:mm A")}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-                    <textarea value={form.notes} onChange={(e) => setForm((s: any) => ({ ...s, notes: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-24" placeholder="Additional notes about the appointment..." />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
-                <button onClick={() => setShowCreate(false)} className="px-6 py-3 rounded-xl border border-gray-200 font-medium hover:bg-gray-50 transition-colors">Cancel</button>
-                <button onClick={handleSubmit} disabled={creating || !canCreate()} className={`px-6 py-3 rounded-xl font-medium transition-colors ${creating || !canCreate() ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-green-600 text-white hover:bg-green-700"}`}>
-                  {creating ? <div className="flex items-center gap-2"><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>{showEdit ? "Updating..." : "Creating..."}</div> : showEdit ? "Save Changes" : "Create Appointment"}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Cancel Modal */}
-        {showCancelModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/40" onClick={() => setShowCancelModal(false)} />
-            <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl p-6 z-10">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-red-100 rounded-lg">
-                  <Trash2 className="w-5 h-5 text-red-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Cancel Appointment</h3>
-                  <p className="text-sm text-gray-600">This action cannot be undone</p>
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Cancellation Reason <span className="text-red-500">*</span></label>
-                <textarea value={cancelReason} onChange={(e) => setCancelReason(e.target.value)} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-red-500 focus:border-transparent h-28" placeholder="Please provide a reason for cancellation..." />
-              </div>
-
-              <div className="flex justify-end gap-3">
-                <button onClick={() => setShowCancelModal(false)} className="px-6 py-3 rounded-xl border border-gray-200 font-medium hover:bg-gray-50 transition-colors">Keep Appointment</button>
-                <button onClick={handleConfirmCancel} disabled={!cancelReason.trim()} className={`px-6 py-3 rounded-xl font-medium transition-colors ${!cancelReason.trim() ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-red-600 text-white hover:bg-red-700"}`}>
-                  Confirm Cancellation
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </AdminLayout>
   );

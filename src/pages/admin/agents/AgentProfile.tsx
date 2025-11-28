@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import AgentDetailsTab from "@/pages/admin/agents/components/AgentDetailsTab";
 import AgentActivityLogsTab from "@/pages/admin/agents/components/AgentActivityLogsTab";
 import AgentPerformanceTab from "@/pages/admin/agents/components/AgentPerformanceTab";
-import { Phone, MapPin, Mail, Shield, Calendar, XCircle } from "lucide-react";
+import { Phone, MapPin, Mail, Calendar, XCircle } from "lucide-react";
 
 const AgentProfilePage = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,7 +19,8 @@ const AgentProfilePage = () => {
       try {
         setLoading(true);
         const data = await fetchAgentProfile(id!);
-        if (data.success) setAgent(data.data);
+
+        if (data.success) setAgent(data.data.agent ?? null);
         else setError("Failed to load agent profile");
       } catch (err) {
         console.error(err);
@@ -64,7 +65,7 @@ const AgentProfilePage = () => {
           <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-48 translate-x-48"></div>
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full translate-y-32 -translate-x-32"></div>
           <img
-            src={agent?.image || `https://i.pravatar.cc/800?u=${agent?.id}`}
+            src={agent?.avatar || undefined}
             alt="cover"
             className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-overlay"
           />
@@ -77,11 +78,11 @@ const AgentProfilePage = () => {
             <div className="relative flex-shrink-0 self-center sm:self-start">
               <div className="relative group">
                 <img
-                  src={agent?.image || `https://i.pravatar.cc/200?u=${agent?.id}`}
+                  src={agent?.avatar || "/assets/user.jpg"}
                   alt={agent?.name || "Agent"}
                   className="w-32 h-32 sm:w-40 sm:h-40 rounded-3xl border-4 border-white dark:border-gray-900 shadow-2xl object-cover ring-4 ring-blue-500/20"
                 />
-                {agent?.is_active && (
+                {agent?.status && (
                   <div className="absolute -bottom-2 -right-2 bg-green-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-lg flex items-center gap-1">
                     <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
                     Online
@@ -102,19 +103,22 @@ const AgentProfilePage = () => {
                     <div className="flex gap-2">
                       <span
                         className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
-                          agent?.is_active
+                          agent?.status
                             ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
                             : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
                         }`}
                       >
-                        {agent?.is_active ? "Active" : "Inactive"}
+                        {agent?.status ? "Active" : "Inactive"}
                       </span>
-                      {agent?.two_factor_enabled && (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
-                          <Shield size={12} />
-                          2FA
-                        </span>
-                      )}
+                      <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                          agent?.two_factor_enabled
+                            ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
+                            : "bg-red-100 dark:bg-gray-700 text-red-700 dark:text-gray-400"
+                        }`}
+                      >
+                        {agent?.two_factor_enabled ? "2FA On" : "2FA Off"}
+                      </span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-3">
@@ -127,24 +131,24 @@ const AgentProfilePage = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 lg:gap-3 gap-4 text-sm">
                   <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 px-3 py-2 rounded-lg">
                     <Phone size={16} className="text-blue-500" />
-                    <span>{agent?.phone || "N/A"}</span>
+                    <span>{agent?.phone || undefined}</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 px-3 py-2 rounded-lg">
                     <MapPin size={16} className="text-red-500" />
-                    <span>{agent?.location || "Unknown"}</span>
+                    <span>{agent?.city || "Unknown"}</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 px-3 py-2 rounded-lg col-span-2 sm:col-span-1">
                     <Calendar size={16} className="text-green-500" />
                     <span>
-                      {agent?.created_at
-                        ? new Date(agent.created_at).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric'
+                      {agent?.joined
+                        ? new Date(agent.joined).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
                           })
                         : "N/A"}
                     </span>
-                  </div>
+                  </div>  
                 </div>
               </div>
             </div>

@@ -5,17 +5,21 @@ export interface CustomerProfile {
   name: string;
   email: string;
   phone?: string;
-  location?: string;
-  image?: string;
-  is_active?: boolean;
-  created_at?: string;
+  city?: string;
+  avatar?: string;
+  status?: boolean;
+  joined?: string;
+  bio?: string;
+  total_inquiries?: number;
+  total_favorites?: number;
+  two_factor_enabled?: boolean | null;
 }
 
 interface CustomerProfileResponse {
   success: boolean;
   message: string;
   data: {
-    customer: CustomerProfile;
+    customer: CustomerProfile
   };
 }
 

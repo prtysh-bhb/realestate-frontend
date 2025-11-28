@@ -5,6 +5,7 @@
 
 import type { PropertyStatus, PropertyType, PropertyCategory } from "@/constants";
 import type { Agent } from "./user";
+import { Customer } from "./appointment";
 
 export interface DocumentFile {
   name: string;
@@ -118,6 +119,7 @@ export interface Inquiry {
   created_at: string;
   updated_at: string;
   property?: Property;
+  customer: Customer;
 }
 
 export interface Documents {

@@ -1,11 +1,22 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * PropertyView Component
  * Professional property details page with premium UI
+ *
+ * Screenshot (dev): /mnt/data/1ab1f4d7-eed7-4bb1-820b-277b5460a353.png
  */
 
-import { Attributes, getProperty, InquiryFormData, propertyAttributes, propertyInquiry } from '@/api/customer/properties';
-import Loader from '@/components/ui/Loader';
-import { DocumentFile, Property } from '@/types/property';
+import {
+  Attributes,
+  getProperty,
+  InquiryFormData,
+  propertyAttributes,
+  propertyInquiry,
+} from "@/api/customer/properties";
+import Loader from "@/components/ui/Loader";
+import { DocumentFile, Property } from "@/types/property";
+import { createCustomerAppointment } from "@/api/customer/appointments";
 import {
   Bed,
   Bath,
@@ -29,16 +40,21 @@ import {
   Building2,
   Sparkles,
   Video,
-  Image
-} from 'lucide-react';
-import { JSX, useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import CustomerInquiryModal from './CustomerInquiryModal';
-import { toast } from 'sonner';
-import { formatAmount, getDocumentTypeFromUrl, getFileSizeInMB } from '@/helpers/customer_helper';
-import ImageModal from './ImageModal';
-import { motion } from 'framer-motion';
-import ReactPlayer from 'react-player';
+  Image,
+  Calendar,
+  Clock,
+  X,
+} from "lucide-react";
+import { JSX, useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import CustomerInquiryModal from "./CustomerInquiryModal";
+import { toast } from "sonner";
+import { formatAmount, getDocumentTypeFromUrl, getFileSizeInMB } from "@/helpers/customer_helper";
+import ImageModal from "./ImageModal";
+import { motion } from "framer-motion";
+import ReactPlayer from "react-player";
+import moment from "moment-timezone";
+import { removeFavProperties, setFavProperties } from "@/api/customer/properties";
 
 const PropertyView = () => {
   const { id } = useParams<{ id: string }>();
@@ -52,8 +68,20 @@ const PropertyView = () => {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [images, setImages] = useState<string[]>([]);
   const [documents, setDocuments] = useState<DocumentFile[]>([]);
-  const [activeTab, setActiveTab] = useState<'photos' | 'videos'>('photos');
+  const [activeTab, setActiveTab] = useState<"photos" | "videos">("photos");
   const isLogin = localStorage.getItem("token") ? true : false;
+
+  // Appointment modal state
+  const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
+  const [appointmentDate, setAppointmentDate] = useState<string>("");
+  const [appointmentTime, setAppointmentTime] = useState<string>("");
+  const [appointmentType, setAppointmentType] = useState<"visit" | "call">("visit");
+  const [customerNotes, setCustomerNotes] = useState<string>("");
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const [locationInput, setLocationInput] = useState<string>("");
+  const [durationMinutes, setDurationMinutes] = useState<number>(30);
+  const [creatingAppointment, setCreatingAppointment] = useState(false);
+  const [isFav, setIsFav] = useState<boolean>(property?.is_favorite ?? false);
 
   const fetchPropertyAttributes = async () => {
     const response = await propertyAttributes();
@@ -73,9 +101,80 @@ const PropertyView = () => {
     setIsModalOpen(false);
   };
 
-  const getDocumentIcon = (
-    type: "pdf" | "image" | "word" | "excel" | "other"
-  ): JSX.Element => {
+  const handleCreateAppointment = async () => {
+    // validations
+    if (!appointmentDate || !appointmentTime) {
+      toast.error("Please select date and time");
+      return;
+    }
+    if (appointmentType === "call" && !phoneNumber.trim()) {
+      toast.error("Please enter phone number for call");
+      return;
+    }
+    if (appointmentType === "visit" && !locationInput.trim()) {
+      toast.error("Please enter meeting location for visit");
+      return;
+    }
+    if (!property) {
+      toast.error("Property data not loaded");
+      return;
+    }
+
+    try {
+      setCreatingAppointment(true);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Not authenticated — please log in");
+        setIsAppointmentModalOpen(false);
+        navigate("/login");
+        return;
+      }
+
+      // convert date + time to timezone-aware ISO (Asia/Kolkata used as example)
+      const scheduledAt = moment
+        .tz(`${appointmentDate} ${appointmentTime}`, "YYYY-MM-DD HH:mm", "Asia/Kolkata")
+        .toISOString();
+
+      // Build payload exactly matching backend fields
+      // API signature: createCustomerAppointment(propertyId, agentId, scheduledAt, type, durationMinutes, customerNotes, phoneNumber, location, status, token)
+      await createCustomerAppointment(
+        Number(property.id),
+        property.agent?.id ?? null,
+        scheduledAt,
+        appointmentType,
+        Number(durationMinutes) || 30,
+        customerNotes?.trim() || null,
+        phoneNumber?.trim() || null,
+        (appointmentType === "visit"
+          ? locationInput?.trim() || property.address
+          : property.address) || null,
+        "scheduled",
+        token
+      );
+
+      toast.success("Appointment created successfully!");
+      setIsAppointmentModalOpen(false);
+
+      // Reset form
+      setAppointmentDate("");
+      setAppointmentTime("");
+      setAppointmentType("visit");
+      setCustomerNotes("");
+      setPhoneNumber("");
+      setLocationInput("");
+      setDurationMinutes(30);
+
+      // optional: navigate to user's appointments
+    } catch (err: any) {
+      console.error("create appointment", err?.response?.data ?? err);
+      const msg = err?.response?.data?.message ?? err?.message ?? "Failed to create appointment";
+      toast.error(msg);
+    } finally {
+      setCreatingAppointment(false);
+    }
+  };
+
+  const getDocumentIcon = (type: "pdf" | "image" | "word" | "excel" | "other"): JSX.Element => {
     switch (type) {
       case "pdf":
         return <FileText className="text-red-500" />;
@@ -90,32 +189,78 @@ const PropertyView = () => {
     }
   };
 
+  const handleToggleFavorite = async () => {
+    if (!isLogin) {
+      navigate("/login");
+      return;
+    }
+
+    // SAFETY: ensure property and property.id exist before calling API
+    if (!property || typeof property.id !== "number") {
+      toast.error("Property not loaded yet");
+      return;
+    }
+
+    try {
+      if (isFav) {
+        await removeFavProperties(property.id); // now property.id is number
+        setIsFav(false);
+        toast.success("Removed from favorites");
+      } else {
+        await setFavProperties(property.id);
+        setIsFav(true);
+        toast.success("Added to favorites");
+      }
+    } catch (err) {
+      console.error("toggle favorite error", err);
+      toast.error("Failed to update favorites");
+    }
+  };
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const shareUrl = property
+      ? `${window.location.origin}/properties/view/${property.id}`
+      : window.location.href;
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success("Link copied to clipboard!");
+    } catch (err) {
+      toast.error("Failed to copy link");
+    }
+  };
   const handleCloseImageModal = () => {
     setIsImageModalOpen(false);
   };
 
   const nextImage = () => {
-    setSelectedImageIndex((prev) => (prev + 1) % images.length);
+    setSelectedImageIndex((prev) => (images.length ? (prev + 1) % images.length : 0));
   };
 
   const prevImage = () => {
-    setSelectedImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    setSelectedImageIndex((prev) =>
+      images.length ? (prev - 1 + images.length) % images.length : 0
+    );
   };
 
   useEffect(() => {
     const fetchProperty = async () => {
       try {
         const data = await getProperty(Number(id));
-        if (data.success) {          
-          initDocuments(data.data.property?.document_urls);
+        if (data.success) {
+          initDocuments(data.data.property?.document_urls ?? []);
           setProperty(data.data.property);
-          setImages(data.data.property.image_urls);
-          setDocuments(data.data.property.document_urls);
+          setImages(data.data.property?.image_urls ?? []);
+          setDocuments(data.data.property?.document_urls ?? []);
         } else {
           console.error("Error fetching property:" + data.message);
         }
-      } catch {
-        console.error("Failed to load property details");
+      } catch (err) {
+        console.error("Failed to load property details", err);
+        toast.error("Failed to load property details");
       } finally {
         setLoading(false);
       }
@@ -128,15 +273,15 @@ const PropertyView = () => {
   const initDocuments = (documents: DocumentFile[] = []): void => {
     const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"];
     const videoExtensions = [".mp4", ".mov", ".avi", ".mkv", ".webm"];
-    
+
     const imageDocs = documents.filter((doc) =>
-      imageExtensions.some((ext) => doc.url.toLowerCase().endsWith(ext))
+      imageExtensions.some((ext) => (doc.url ?? "").toLowerCase().endsWith(ext))
     );
 
     const nonImageDocs = documents.filter(
       (doc) =>
-        !imageExtensions.some((ext) => doc.url.toLowerCase().endsWith(ext)) &&
-        !videoExtensions.some((ext) => doc.url.toLowerCase().endsWith(ext))
+        !imageExtensions.some((ext) => (doc.url ?? "").toLowerCase().endsWith(ext)) &&
+        !videoExtensions.some((ext) => (doc.url ?? "").toLowerCase().endsWith(ext))
     );
 
     setImages(imageDocs.map((doc) => doc.url));
@@ -165,29 +310,21 @@ const PropertyView = () => {
               to={`/properties/${property?.type}`}
               className="text-gray-600 hover:text-blue-600 transition-colors"
             >
-              {property?.type === 'sale' ? 'For Sale' : 'For Rent'}
+              {property?.type === "sale" ? "For Sale" : "For Rent"}
             </Link>
             <ChevronRight size={16} className="text-gray-400" />
-            <span className="text-gray-900 font-semibold truncate max-w-xs">
-              {property?.title}
-            </span>
+            <span className="text-gray-900 font-semibold truncate max-w-xs">{property?.title}</span>
           </nav>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 md:px-8 py-8">
         {/* Property Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
-                <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
-                  {property?.title}
-                </h1>
+                <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">{property?.title}</h1>
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-bold ${
                     property?.approval_status === "approved"
@@ -204,8 +341,7 @@ const PropertyView = () => {
               <div className="flex items-center gap-2 text-gray-600 mb-4 max-w-auto">
                 <MapPin size={18} className="text-blue-600 flex-shrink-0" />
                 <span className="text-base">
-                  {property?.address}, {property?.city}, {property?.state}{" "}
-                  {property?.zipcode}
+                  {property?.address}, {property?.city}, {property?.state} {property?.zipcode}
                 </span>
               </div>
             </div>
@@ -223,11 +359,19 @@ const PropertyView = () => {
 
               {/* Action Buttons */}
               <div className="flex gap-2">
-                <button className="p-3 bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 hover:border-blue-300 transition-all shadow-sm cursor-pointer">
+                <button
+                  onClick={handleShare}
+                  className="p-3 bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 hover:border-blue-300 transition-all shadow-sm cursor-pointer"
+                >
                   <Share2 size={20} className="text-gray-600 cursor-pointer" />
                 </button>
-                <button className="p-3 bg-white border-2 border-gray-200 rounded-xl hover:bg-red-50 hover:border-red-300 transition-all shadow-sm cursor-pointer">
-                  <Heart size={20} className="text-gray-600 cursor-pointer" />
+                <button
+                  onClick={handleToggleFavorite}
+                  className="p-3 bg-white border-2 border-gray-200 rounded-xl hover:bg-red-50 hover:border-red-300 transition-all shadow-sm cursor-pointer"
+                >
+                  <Heart
+                    className={`w-5 h-5 ${isFav ? "fill-red-500 text-red-500" : "text-slate-700"}`}
+                  />
                 </button>
               </div>
             </div>
@@ -236,9 +380,24 @@ const PropertyView = () => {
           {/* Quick Stats */}
           <div className="grid grid-cols-3 gap-4">
             {[
-              { icon: Bed, label: "Bedrooms", value: property?.bedrooms, color: "from-blue-500 to-blue-600" },
-              { icon: Bath, label: "Bathrooms", value: property?.bathrooms, color: "from-emerald-500 to-emerald-600" },
-              { icon: Maximize, label: "Area", value: `${property?.area?.toLocaleString()} ft²`, color: "from-purple-500 to-purple-600" },
+              {
+                icon: Bed,
+                label: "Bedrooms",
+                value: property?.bedrooms ?? "-",
+                color: "from-blue-500 to-blue-600",
+              },
+              {
+                icon: Bath,
+                label: "Bathrooms",
+                value: property?.bathrooms ?? "-",
+                color: "from-emerald-500 to-emerald-600",
+              },
+              {
+                icon: Maximize,
+                label: "Area",
+                value: property?.area ? `${property.area.toLocaleString()} ft²` : "-",
+                color: "from-purple-500 to-purple-600",
+              },
             ].map((stat, index) => (
               <motion.div
                 key={index}
@@ -270,22 +429,22 @@ const PropertyView = () => {
             {/* Tabs */}
             <div className="flex border-b border-gray-200">
               <button
-                onClick={() => setActiveTab('photos')}
+                onClick={() => setActiveTab("photos")}
                 className={`flex items-center gap-2 px-6 py-4 font-semibold transition-all ${
-                  activeTab === 'photos'
-                    ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-                    : 'text-gray-500 hover:text-gray-700'
+                  activeTab === "photos"
+                    ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
+                    : "text-gray-500 hover:text-gray-700"
                 }`}
               >
                 <Image size={20} />
                 Photos ({images.length})
               </button>
               <button
-                onClick={() => setActiveTab('videos')}
+                onClick={() => setActiveTab("videos")}
                 className={`flex items-center gap-2 px-6 py-4 font-semibold transition-all ${
-                  activeTab === 'videos'
-                    ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-                    : 'text-gray-500 hover:text-gray-700'
+                  activeTab === "videos"
+                    ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
+                    : "text-gray-500 hover:text-gray-700"
                 }`}
               >
                 <Video size={20} />
@@ -295,7 +454,7 @@ const PropertyView = () => {
 
             {/* Content */}
             <div className="p-4">
-              {activeTab === 'photos' ? (
+              {activeTab === "photos" ? (
                 <>
                   {images.length > 0 ? (
                     <div className="relative">
@@ -371,7 +530,6 @@ const PropertyView = () => {
                 </>
               ) : (
                 <>
-                {console.log(property?.video_url)}
                   {property?.video_url ? (
                     <div className="space-y-4">
                       {/* Main Video Player */}
@@ -381,7 +539,7 @@ const PropertyView = () => {
                           width="100%"
                           height="100%"
                           controls
-                          style={{ borderRadius: '12px' }}
+                          style={{ borderRadius: "12px" }}
                         />
                       </div>
                     </div>
@@ -389,7 +547,9 @@ const PropertyView = () => {
                     <div className="w-full h-96 flex flex-col items-center justify-center bg-gray-100">
                       <Video className="w-16 h-16 text-gray-300 mb-4" />
                       <p className="text-gray-500 text-lg">No video available</p>
-                      <p className="text-gray-400 text-sm mt-2">Check back later for property video</p>
+                      <p className="text-gray-400 text-sm mt-2">
+                        Check back later for property video
+                      </p>
                     </div>
                   )}
                 </>
@@ -416,9 +576,7 @@ const PropertyView = () => {
                 </div>
                 Property Description
               </h2>
-              <p className="text-gray-700 leading-relaxed text-lg">
-                {property?.description}
-              </p>
+              <p className="text-gray-700 leading-relaxed text-lg">{property?.description}</p>
             </motion.div>
 
             {/* Property Details */}
@@ -436,14 +594,24 @@ const PropertyView = () => {
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
                 {[
-                  { label: "Property Type", value: propertyTypes?.find(a => a.key === property?.property_type)?.label ?? '-' },
+                  {
+                    label: "Property Type",
+                    value:
+                      propertyTypes?.find((a) => a.key === property?.property_type)?.label ?? "-",
+                  },
                   { label: "City", value: property?.city },
                   { label: "State", value: property?.state },
                   { label: "Zip Code", value: property?.zipcode },
-                  { label: "Listed On", value: new Date(property?.created_at ?? '').toLocaleDateString() },
+                  {
+                    label: "Listed On",
+                    value: new Date(property?.created_at ?? "").toLocaleDateString(),
+                  },
                   { label: "Property ID", value: `#${property?.id}` },
                 ].map((detail, index) => (
-                  <div key={index} className="flex justify-between items-center py-3 border-b border-gray-100 last:border-0">
+                  <div
+                    key={index}
+                    className="flex justify-between items-center py-3 border-b border-gray-100 last:border-0"
+                  >
                     <span className="text-gray-600 font-medium">{detail.label}</span>
                     <span className="font-bold text-gray-900 capitalize w-50">{detail.value}</span>
                   </div>
@@ -467,7 +635,7 @@ const PropertyView = () => {
               {property?.amenities && property?.amenities?.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {property?.amenities?.map((amenityKey: string, index: number) => {
-                    const amenity = amenities?.find(a => a.key === amenityKey);
+                    const amenity = amenities?.find((a) => a.key === amenityKey);
 
                     return (
                       <div
@@ -512,7 +680,8 @@ const PropertyView = () => {
                       Address
                     </h3>
                     <p className="text-gray-700 leading-relaxed">
-                      {property?.address}<br />
+                      {property?.address}
+                      <br />
                       {property?.city}, {property?.state} {property?.zipcode}
                     </p>
                   </div>
@@ -553,7 +722,7 @@ const PropertyView = () => {
               <h2 className="text-2xl font-bold text-white mb-6">Listing Agent</h2>
               <div className="flex items-center gap-4 mb-6">
                 <img
-                  src={property?.agent?.avatar_url ?? ' '}
+                  src={property?.agent?.avatar_url ?? " "}
                   alt="Agent"
                   className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg"
                   onError={(e) => {
@@ -585,19 +754,37 @@ const PropertyView = () => {
                 )}
               </div>
 
-              <button
-                onClick={() => {
-                  if (isLogin) {
-                    setIsModalOpen(true);
-                  } else {
-                    navigate('/login');
-                  }
-                }}
-                className="w-full cursor-pointer bg-white text-blue-700 py-4 rounded-2xl hover:bg-gray-50 transition-all font-bold shadow-lg flex items-center justify-center gap-2 transform hover:scale-105"
-              >
-                <Mail size={20} />
-                Request Information
-              </button>
+              <div className="space-y-3">
+                <button
+                  onClick={() => {
+                    if (isLogin) {
+                      setIsModalOpen(true);
+                    } else {
+                      navigate("/login");
+                    }
+                  }}
+                  className="w-full cursor-pointer bg-white text-blue-700 py-4 rounded-2xl hover:bg-gray-50 transition-all font-bold shadow-lg flex items-center justify-center gap-2 transform hover:scale-105"
+                >
+                  <Mail size={20} />
+                  Request Information
+                </button>
+
+                <button
+                  onClick={() => {
+                    if (isLogin) {
+                      // prefill location with property address
+                      setLocationInput(property?.address ?? "");
+                      setIsAppointmentModalOpen(true);
+                    } else {
+                      navigate("/login");
+                    }
+                  }}
+                  className="w-full cursor-pointer bg-emerald-500 text-white py-4 rounded-2xl hover:bg-emerald-600 transition-all font-bold shadow-lg flex items-center justify-center gap-2 transform hover:scale-105"
+                >
+                  <Calendar size={20} />
+                  Create Appointment
+                </button>
+              </div>
             </motion.div>
 
             {/* Property Status */}
@@ -611,26 +798,31 @@ const PropertyView = () => {
               <div className="space-y-3">
                 <div className="flex justify-between items-center py-3 border-b border-gray-100">
                   <span className="text-gray-600 font-medium">Listing Status</span>
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    property?.status === 'published'
-                      ? 'bg-emerald-100 text-emerald-700'
-                      : property?.status === 'sold' || property?.status === 'rented'
-                      ? 'bg-red-100 text-red-700'
-                      : 'bg-amber-100 text-amber-700'
-                  }`}>
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      property?.status === "published"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : property?.status === "sold" || property?.status === "rented"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-amber-100 text-amber-700"
+                    }`}
+                  >
                     {(property?.status?.charAt(0).toUpperCase() ?? "") + property?.status?.slice(1)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center py-3">
                   <span className="text-gray-600 font-medium">Approval Status</span>
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    property?.approval_status === 'approved'
-                      ? 'bg-emerald-100 text-emerald-700'
-                      : property?.approval_status === 'rejected'
-                      ? 'bg-red-100 text-red-700'
-                      : 'bg-amber-100 text-amber-700'
-                  }`}>
-                    {(property?.approval_status?.charAt(0).toUpperCase() ?? '') + property?.approval_status?.slice(1)}
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      property?.approval_status === "approved"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : property?.approval_status === "rejected"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-amber-100 text-amber-700"
+                    }`}
+                  >
+                    {(property?.approval_status?.charAt(0).toUpperCase() ?? "") +
+                      property?.approval_status?.slice(1)}
                   </span>
                 </div>
               </div>
@@ -705,8 +897,188 @@ const PropertyView = () => {
         onClose={handleCloseImageModal}
         title="Property Images"
       />
+
+      {/* Appointment Modal */}
+      {isAppointmentModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setIsAppointmentModalOpen(false)}
+          />
+          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-blue-600" />
+                  Create Appointment
+                </h3>
+                <button
+                  onClick={() => setIsAppointmentModalOpen(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {/* Property Info */}
+              <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                <h4 className="font-semibold text-gray-900">{property?.title}</h4>
+                <p className="text-sm text-gray-600 mt-1">{property?.address}</p>
+                <p className="text-sm font-medium text-blue-600 mt-1">
+                  Agent: {property?.agent?.name}
+                </p>
+              </div>
+
+              {/* Date */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Date *</label>
+                <input
+                  type="date"
+                  value={appointmentDate}
+                  onChange={(e) => setAppointmentDate(e.target.value)}
+                  min={new Date().toISOString().split("T")[0]}
+                  className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Time */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Time *</label>
+                <input
+                  type="time"
+                  value={appointmentTime}
+                  onChange={(e) => setAppointmentTime(e.target.value)}
+                  className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Appointment Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Appointment Type *
+                </label>
+                <select
+                  value={appointmentType}
+                  onChange={(e) => setAppointmentType(e.target.value as "visit" | "call")}
+                  className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="visit">Property Visit</option>
+                  <option value="call">Phone Call</option>
+                </select>
+              </div>
+
+              {/* Phone Number (for calls) */}
+              {appointmentType === "call" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    placeholder="Enter your phone number"
+                    className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              )}
+
+              {/* Location (for visits) */}
+              {appointmentType === "visit" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Meeting Location *
+                  </label>
+                  <input
+                    type="text"
+                    value={locationInput}
+                    onChange={(e) => setLocationInput(e.target.value)}
+                    placeholder="Enter meeting address or spot (defaults to property address)"
+                    className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              )}
+
+              {/* Duration */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Duration (minutes)
+                </label>
+                <input
+                  type="number"
+                  min={15}
+                  max={480}
+                  value={durationMinutes}
+                  onChange={(e) => setDurationMinutes(Number(e.target.value))}
+                  className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Customer Notes */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Additional Notes
+                </label>
+                <textarea
+                  value={customerNotes}
+                  onChange={(e) => setCustomerNotes(e.target.value)}
+                  rows={3}
+                  placeholder="Any special requirements or questions..."
+                  className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                />
+              </div>
+
+              {/* Location Info */}
+              <div className="p-3 bg-gray-50 rounded-xl">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <MapPin className="w-4 h-4" />
+                  <span>Location: {property?.address}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                  <Clock className="w-4 h-4" />
+                  <span>Default Duration: 30 minutes (you can change)</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 p-6 border-t border-gray-200">
+              <button
+                onClick={() => setIsAppointmentModalOpen(false)}
+                className="px-6 py-3 rounded-xl border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-all"
+                disabled={creatingAppointment}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateAppointment}
+                disabled={
+                  creatingAppointment ||
+                  !appointmentDate ||
+                  !appointmentTime ||
+                  (appointmentType === "call" && !phoneNumber.trim()) ||
+                  (appointmentType === "visit" && !locationInput.trim())
+                }
+                className="px-6 py-3 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+              >
+                {creatingAppointment ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Calendar className="w-4 h-4" />
+                    Create Appointment
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
-
 export default PropertyView;

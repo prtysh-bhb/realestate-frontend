@@ -7,8 +7,9 @@ export interface Customer {
   id: number;
   name: string;
   email: string;
-  is_active: boolean;
-  created_at: string;
+  status: boolean;
+  joined: string;
+  avatar?: string | null;
 }
 
 export interface CustomerResponse {
@@ -28,9 +29,9 @@ export interface CustomerResponse {
 /**
  * Fetch customers (with pagination + search)
  */
-export const getCustomers = async (page = 1, search = "") => {
+export const getCustomers = async (page = 1, search = "", status: string) => {
   const response = await api.get<CustomerResponse>("/admin/customers", {
-    params: { page, search },
+    params: { page, search, status },
   });
   return response.data;
 };

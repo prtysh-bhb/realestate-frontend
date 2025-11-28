@@ -21,6 +21,7 @@ import {
   X,
   ClipboardList,
   CreditCard,
+  Bell,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
@@ -126,7 +127,7 @@ const menuItems =
               exact: true,
             },
             {
-              name: "Add Subscription*",
+              name: "Add Subscription",
               icon: PlusCircle,
               path: "/admin/subscriptions/new",
               exact: true,
@@ -153,7 +154,7 @@ const menuItems =
         },
         { name: "Orders*", icon: HousePlus, path: "/admin/orders", exact: true },
         { name: "Inbox*", icon: MailOpen, path: "/admin/inbox", exact: true },
-        { name: "Chat*", icon: MessageCircle, path: "/admin/chat", exact: true },
+        // { name: "Chat*", icon: MessageCircle, path: "/admin/chat", exact: true },
         {
           name: "Reviews*",
           icon: MessageSquare,
@@ -193,31 +194,32 @@ const menuItems =
             },
           ],
         },
-        {
-          name: "Customers*",
-          icon: Contact,
-          children: [
-            {
-              name: "Customer List*",
-              icon: List,
-              path: "/agent/customers",
-              exact: true,
-            },
-            {
-              name: "Add Customer*",
-              icon: PlusCircle,
-              path: "/agent/customers/new",
-              exact: true,
-            },
-          ],
-        },
+        // {
+        //   name: "Customers*",
+        //   icon: Contact,
+        //   children: [
+        //     {
+        //       name: "Customer List*",
+        //       icon: List,
+        //       path: "/agent/customers",
+        //       exact: true,
+        //     },
+        //     {
+        //       name: "Add Customer*",
+        //       icon: PlusCircle,
+        //       path: "/agent/customers/new",
+        //       exact: true,
+        //     },
+        //   ],
+        // },
         {
           name: "Leads",
           icon: ClipboardList,
           path: "/agent/leads",
           exact: false,
         },
-        { name: "Appointment*", icon: HousePlus, path: "/agent/appointments", exact: true },
+        { name: "Appointment", icon: HousePlus, path: "/agent/appointments", exact: true },
+        { name: "Reminders", icon: Bell, path: "/agent/reminders", exact: true },
         { name: "Inbox*", icon: MailOpen, path: "/admin/inbox", exact: true },
         { name: "Chat*", icon: MessageCircle, path: "/agent/chat", exact: true },
         {

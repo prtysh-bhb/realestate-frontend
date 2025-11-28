@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Eye, Edit, Trash2, Filter, UserPlus, Grid3x3, List, Users } from "lucide-react";
+import { Search, Eye, Edit, Trash2, UserPlus, Grid3x3, List, Users, Shield } from "lucide-react";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
 import { getAgents, Agent } from "@/api/agent/agentList";
 
@@ -115,14 +115,6 @@ const AgentList = () => {
               </div>
 
               <button
-                className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-950/20 hover:border-blue-400 dark:hover:border-emerald-600 text-gray-700 dark:text-gray-300 transition-all text-sm shadow-sm w-full sm:w-auto"
-                title="Filters"
-              >
-                <Filter size={16} />
-                <span className="hidden sm:inline">Filter</span>
-              </button>
-
-              <button
                 onClick={() => navigate("/admin/agents/new")}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white transition-all text-sm shadow-md hover:shadow-lg font-medium w-full sm:w-auto"
               >
@@ -202,7 +194,9 @@ const AgentList = () => {
                             <td className="py-4 px-4 sm:px-6">
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-emerald-500 flex items-center justify-center text-white font-bold text-sm shadow-md flex-shrink-0">
-                                  {agent.name.charAt(0).toUpperCase()}
+                                  <img src={agent?.avatar ?? ""} alt={agent.name} className="w-full h-full object-cover rounded-full" onError={(e) => {
+                                    e.currentTarget.src = "/assets/user.jpg";
+                                  }} />
                                 </div>
                                 <div className="min-w-0">
                                   <p className="font-semibold text-gray-900 dark:text-white truncate">
@@ -226,15 +220,16 @@ const AgentList = () => {
                                 className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${
                                   agent.two_factor_enabled
                                     ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
-                                    : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+                                    : "bg-red-100 dark:bg-gray-800 text-red-700 dark:text-gray-400"
                                 }`}
                               >
+                                <Shield className="mr-1" size={14} />
                                 {agent.two_factor_enabled ? "2FA Enabled" : "2FA Disabled"}
                               </span>
                             </td>
 
                             <td className="py-4 px-4 sm:px-6 text-gray-600 dark:text-gray-400 hidden lg:table-cell">
-                              {new Date(agent.created_at).toLocaleDateString("en-US", {
+                              {new Date(agent.joined).toLocaleDateString("en-US", {
                                 month: "short",
                                 day: "numeric",
                                 year: "numeric",
@@ -244,17 +239,17 @@ const AgentList = () => {
                             <td className="py-4 px-4 sm:px-6">
                               <span
                                 className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${badge(
-                                  agent.is_active
+                                  agent.status
                                 )}`}
                               >
                                 <span
                                   className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-                                    agent.is_active
+                                    agent.status
                                       ? "bg-emerald-600 dark:bg-emerald-400"
                                       : "bg-red-600 dark:bg-red-400"
                                   }`}
                                 ></span>
-                                {agent.is_active ? "Active" : "Inactive"}
+                                {agent.status ? "Active" : "Inactive"}
                               </span>
                             </td>
 
@@ -315,7 +310,7 @@ const AgentList = () => {
                         <div className="flex justify-between items-start mb-4">
                           <div className="flex items-center gap-3">
                             <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-emerald-500 flex items-center justify-center text-white font-bold text-lg shadow-md flex-shrink-0">
-                              {agent.name.charAt(0).toUpperCase()}
+                              <img src={agent.avatar ?? "/assets/user.jpg"} alt={agent.name} className="w-full h-full object-cover rounded-xl" />
                             </div>
                             <div className="min-w-0">
                               <h3 className="text-sm font-bold text-gray-900 dark:text-white truncate">
@@ -325,28 +320,29 @@ const AgentList = () => {
                                 {agent.email}
                               </p>
                               <span
-                                className={`inline-flex items-center mt-1 px-2 py-0.5 rounded-md text-xs font-semibold ${
+                                className={`inline-flex items-center mt-1 px-3 py-0.5 rounded-full text-xs font-semibold ${
                                   agent.two_factor_enabled
                                     ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
-                                    : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                                    : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
                                 }`}
                               >
+                                  <Shield className="mr-1" size={14} />
                                 {agent.two_factor_enabled ? "2FA On" : "2FA Off"}
                               </span>
                             </div>
                           </div>
                           <span
                             className={`px-2.5 py-1 text-xs font-bold rounded-full ${badge(
-                              agent.is_active
+                              agent.status
                             )}`}
                           >
-                            {agent.is_active ? "Active" : "Inactive"}
+                            {agent.status ? "Active" : "Inactive"}
                           </span>
                         </div>
 
                         <div className="text-xs text-gray-500 dark:text-gray-400 mb-4">
                           Joined:{" "}
-                          {new Date(agent.created_at).toLocaleDateString("en-US", {
+                          {new Date(agent.joined).toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
                             year: "numeric",
