@@ -127,7 +127,7 @@ const menuItems =
               exact: true,
             },
             {
-              name: "Add Subscription*",
+              name: "Add Subscription",
               icon: PlusCircle,
               path: "/admin/subscriptions/new",
               exact: true,

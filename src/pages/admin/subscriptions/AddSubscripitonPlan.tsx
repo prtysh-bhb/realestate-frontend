@@ -186,14 +186,28 @@ const AddSubscriptionPlan = () => {
     setErrors({});
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value, type } = e.target;
+
+    // generate slug if name field changes
+    const slugValue =
+      name === "name"
+        ? value
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "")
+        : undefined;
+
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      ...(name === "name" && { slug: slugValue }) // update slug only when name changes
     }));
 
-    // Clear error when user starts typing
+    // Clear errors
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: "" }));
     }
@@ -305,6 +319,7 @@ const AddSubscriptionPlan = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
+                    maxLength={100}
                     required
                     className={`w-full px-4 py-2 border ${
                       errors.name 
@@ -328,6 +343,7 @@ const AddSubscriptionPlan = () => {
                     name="slug"
                     value={formData.slug}
                     onChange={handleSlugChange}
+                    maxLength={100}
                     required
                     className={`w-full px-4 py-2 border ${
                       errors.slug 
@@ -356,6 +372,7 @@ const AddSubscriptionPlan = () => {
                     onChange={handleChange}
                     required
                     rows={3}
+                    maxLength={500}
                     className={`w-full px-4 py-2 border ${
                       errors.description 
                         ? 'border-red-500 focus:ring-red-500 dark:focus:ring-red-500' 
@@ -394,6 +411,7 @@ const AddSubscriptionPlan = () => {
                       required
                       min="0"
                       step="0.01"
+                      max={10000}
                       className={`w-full pl-10 pr-4 py-2 border ${
                         errors.price 
                           ? 'border-red-500 focus:ring-red-500 dark:focus:ring-red-500' 
