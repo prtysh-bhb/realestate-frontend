@@ -71,12 +71,19 @@ const PropertyCard: FC<PropertyCardProps> = ({
     }
   };
 
-  const handleShare = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    // Share functionality
+  const handleShare = async (e: React.MouseEvent) => {
+  e.preventDefault();
+  e.stopPropagation();
+
+  const shareUrl = `${window.location.origin}/properties/view/${property.id}`;
+
+  try {
+    await navigator.clipboard.writeText(shareUrl);
     toast.success("Link copied to clipboard!");
-  };
+  } catch (err) {
+    toast.error("Failed to copy link");
+  }
+};
 
   return (
     <Link to={`/properties/view/${property.id}`}>
