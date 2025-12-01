@@ -8,7 +8,13 @@ import { getProperties } from "@/api/public/recomandedproperty";
 import PropertyCard from "./PropertyCard";
 import { Property } from "@/types/property";
 import { motion } from "framer-motion";
-import { Sparkles, Castle, ArrowRight, House, Building2 } from "lucide-react";
+import {
+  Sparkles,
+  Castle,
+  ArrowRight,
+  House,
+  Building2,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 
 const RecommendedProperties = () => {
@@ -19,6 +25,7 @@ const RecommendedProperties = () => {
 
   const categories = [
     { id: "all", label: "All Properties", icon: Sparkles },
+    { id: "featured", label: "Featured", icon: Sparkles },
     { id: "apartment", label: "Apartments", icon: Building2 },
     { id: "villa", label: "Villas", icon: Castle },
     { id: "house", label: "Houses", icon: House },
@@ -40,22 +47,35 @@ const RecommendedProperties = () => {
     } catch (err: unknown) {
       console.error("Error fetching properties:", err);
       const message =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        "Failed to load properties. Please try again later.";
+        (err as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message || "Failed to load properties. Please try again later.";
       setError(message);
     } finally {
       setLoading(false);
     }
   };
 
+  // filter by category, support a "featured" category
   const filteredProperties =
     selectedCategory === "all"
       ? properties
+      : selectedCategory === "featured"
+      ? properties.filter((p) => !!p.is_featured)
       : properties.filter(
-          (p) => p.property_type.toLowerCase() === selectedCategory
+          (p) => (p.property_type ?? "").toLowerCase() === selectedCategory
         );
 
-  const displayedProperties = filteredProperties.slice(0, 6);
+  // sort so featured items appear first
+  const sortedProperties = filteredProperties
+    .slice()
+    .sort((a, b) => {
+      const fa = a.is_featured ? 1 : 0;
+      const fb = b.is_featured ? 1 : 0;
+      return fb - fa; // featured first
+    });
+
+  // display up to 6 on this component
+  const displayedProperties = sortedProperties.slice(0, 6);
 
   if (error) {
     return (
@@ -196,12 +216,8 @@ const RecommendedProperties = () => {
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <Sparkles className="w-10 h-10 text-gray-400" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">
-              No Properties Found
-            </h3>
-            <p className="text-gray-600 mb-8">
-              Try selecting a different category
-            </p>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">No Properties Found</h3>
+            <p className="text-gray-600 mb-8">Try selecting a different category</p>
           </motion.div>
         )}
 
