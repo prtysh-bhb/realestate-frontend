@@ -192,6 +192,32 @@ function App() {
             }
           />
 
+          {/* ---------------- AGENT SUBSCRIPTION ---------------- */}
+          <Route
+            path="/agent/subscription-plans"
+            element={
+              <ProtectedRoute allowedRoles={["agent"]}>
+                <SubscriptionPlans />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/agent/subscription-plan/checkout/:planId"
+            element={
+              <ProtectedRoute allowedRoles={["agent"]}>
+                <SubscriptionCheckout />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/agent/my-subscriptions"
+            element={
+              <ProtectedRoute allowedRoles={["agent"]}>
+                <MySubscriptions />
+              </ProtectedRoute>
+            }
+          />
+
           {/* ---------------- ADMIN PROFILE ROUTES ---------------- */}
           <Route
             path="/admin/profile"

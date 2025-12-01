@@ -1,5 +1,5 @@
 import { NotificationItem } from "@/api/public/notifications";
-import { Bell, Eye, CheckCheck, X, MessageSquare, Calendar, CreditCard, Home, AlertCircle, Download } from "lucide-react";
+import { Bell, CheckCheck, X, MessageSquare, Calendar, CreditCard, Home, AlertCircle } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 
@@ -104,7 +104,7 @@ const Notifications: React.FC<NotificationsComponentProps> = ({
       case 'appointment_scheduled':
         return (
           <div className="space-y-1">
-            <p className="text-sm font-medium text-gray-900 dark:text-white">
+            <p className="text-sm capitalize font-medium text-gray-900 dark:text-white">
               {data.appointment_type} Scheduled
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -255,34 +255,13 @@ const Notifications: React.FC<NotificationsComponentProps> = ({
                         <span className="text-xs text-gray-400">
                           {formatTimeAgo(notification.created_at)}
                         </span>
-                        
-                        {notification.type === 'payment_success' && notification.data.invoice_url && (
-                          <a
-                            href={notification.data.invoice_url}
-                            onClick={(e) => e.stopPropagation()}
-                            className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1"
-                          >
-                            <Download size={10} />
-                            Invoice
-                          </a>
-                        )}
                       </div>
                     </div>
 
                     {/* Action Buttons */}
+                    {notification.read_at && <CheckCheck className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400" />}
+
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {!notification.read_at && onMarkAsRead && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onMarkAsRead(Number(notification.id));
-                          }}
-                          className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-                          title="Mark as read"
-                        >
-                          <Eye size={14} />
-                        </button>
-                      )}
                       
                       {onDelete && (
                         <button
@@ -305,13 +284,6 @@ const Notifications: React.FC<NotificationsComponentProps> = ({
 
           {/* Footer */}
           <div className="px-4 py-2.5 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-between items-center">
-            <Link
-              to="/notifications"
-              onClick={() => setIsOpen(false)}
-              className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
-            >
-              View all notifications
-            </Link>
             
             <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
               <span>Total: {notifications.length}</span>

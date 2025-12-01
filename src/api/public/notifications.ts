@@ -62,3 +62,9 @@ export const markAllAsReadNotification = async () => {
   
   return response.data;
 };
+
+export const deleteNotification = async (id: number) => {
+  const response = await api.delete<ApiResponse>(`/notifications/${id}`);
+  
+  return response.data;
+};

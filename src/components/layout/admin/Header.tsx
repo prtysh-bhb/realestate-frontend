@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { Moon, Sun, Search, Menu, User, Pencil, LogOut, Settings, ArrowLeft } from "lucide-react";
+import { Moon, Sun, Search, Menu, User, Pencil, LogOut, Settings, ArrowLeft, CreditCard } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { logout } from "@/api/auth";
 import Notifications from "./Notifications";
-import { getNotifications, getUnreadNotificationsCount, markAllAsReadNotification, markAsReadNotification, NotificationItem } from "@/api/public/notifications";
+import { deleteNotification, getNotifications, getUnreadNotificationsCount, markAllAsReadNotification, markAsReadNotification, NotificationItem } from "@/api/public/notifications";
+import echo from "@/lib/echo";
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -46,12 +47,12 @@ const Header = ({ onMenuClick }: HeaderProps) => {
     navigate("/");
   };
 
-  // Mock notifications
-  // const notifications = [
-  //   { id: 1, title: "New property listed", message: "3 properties added today", time: "5m ago", unread: true },
-  //   { id: 2, title: "Agent request", message: "New agent signup pending", time: "1h ago", unread: true },
-  //   { id: 3, title: "System update", message: "Platform maintenance scheduled", time: "2h ago", unread: false },
-  // ];
+  useEffect(() => {
+    echo.private(`notified.${user?.id}`)
+    .listen(".notified", () => {
+      fetchNotifications();
+    });
+  }, [user?.id]);
 
   const fetchNotifications = async() => {
     try {
@@ -85,7 +86,8 @@ const Header = ({ onMenuClick }: HeaderProps) => {
 
   const handleDelete = async (id: number) => {
     try {
-      await fetch(`/api/notifications/${id}`, { method: 'DELETE' });
+      await deleteNotification(id);
+      fetchNotifications();
     } catch (error) {
       console.error('Error deleting notification:', error);
     }
@@ -178,6 +180,14 @@ const Header = ({ onMenuClick }: HeaderProps) => {
 
           {/* Right side */}
           <div className="flex items-center gap-2 relative min-w-0">
+            {user?.role == 'agent' && (
+              <Link to={'/agent/subscription-plans'}
+              className="p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/20 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            >
+              <CreditCard size={18}/>
+            </Link>
+            )}
+
             {/* Dark Mode Toggle */}
             <button
               onClick={() => setDarkMode(!darkMode)}
@@ -246,6 +256,18 @@ const Header = ({ onMenuClick }: HeaderProps) => {
                         <span>Edit Profile</span>
                       </Link>
                     </li>
+                    {user?.role == 'agent' && (
+                    <li>
+                      <Link
+                        to={`/agent/my-subscriptions`}
+                        className="flex items-center gap-2.5 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300"
+                        onClick={() => setDropdownOpen(false)}
+                      >
+                        <CreditCard size={16} />
+                        <span>My Subscription</span>
+                      </Link>
+                    </li>
+                    )}
                     <li>
                       <Link
                         to="/admin/settings"
