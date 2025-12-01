@@ -44,6 +44,7 @@ import {
   Calendar,
   Clock,
   X,
+  Star,
 } from "lucide-react";
 import { JSX, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -325,6 +326,13 @@ const PropertyView = () => {
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
                 <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">{property?.title}</h1>
+                
+                {property?.is_featured && (
+                  <span className="flex justify-center items-center text-xs font-semibold px-3 py-1 rounded-full capitalize bg-yellow-100 text-yellow-700">
+                    <Star size={16} />
+                  </span>
+                )}
+
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-bold ${
                     property?.approval_status === "approved"

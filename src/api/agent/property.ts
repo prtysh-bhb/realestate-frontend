@@ -160,3 +160,24 @@ export const deletePropertyVideo = async (id: number): Promise<ApiResponse<null>
     throw handleApiError(error);
   }
 };
+
+export const markAsFeatured = async (id: number) => {
+  try {
+    const response = await api.post(`/agent/properties/${id}/mark-featured`);
+    return response.data; // expecting { success, message, data: { property, featured_remaining } }
+  } catch (error) {
+    throw handleApiError(error);
+  }
+};
+
+/**
+ * Remove featured status (agent)
+ */
+export const removeFeatured = async (id: number) => {
+  try {
+    const response = await api.post(`/agent/properties/${id}/remove-featured`);
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+};

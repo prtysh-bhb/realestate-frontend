@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Property Types
  * Property-related type definitions
@@ -14,6 +15,7 @@ export interface DocumentFile {
 }
 
 export interface Property {
+  is_featured: any;
   id: number;
   agent_id: number;
   title: string;

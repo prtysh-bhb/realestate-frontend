@@ -15,6 +15,7 @@ import {
   Share2,
   TrendingUp,
   Home,
+  Star,
 } from "lucide-react";
 import { Property } from "@/types/property";
 import {
@@ -116,10 +117,15 @@ const PropertyCard: FC<PropertyCardProps> = ({
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
           {/* Status Badge */}
-          <div className="absolute top-4 left-4">
-            <span className="px-4 py-2 bg-white/95 backdrop-blur-sm text-slate-900 text-sm font-semibold rounded-full shadow-lg">
+          <div className="absolute flex top-4 left-4">
+            <span className="flex px-4 py-2 bg-white/95 backdrop-blur-sm text-slate-900 text-sm font-semibold rounded-full shadow-lg">
               {property.type === "sale" ? "For Sale" : "For Rent"}
             </span>
+            {property.is_featured && (
+              <span className="flex justify-center items-center text-xs font-semibold px-3 py-1 rounded-full capitalize bg-yellow-100 text-yellow-700">
+                <Star size={16} />
+              </span>
+            )}
           </div>
 
           {/* Action Buttons */}
