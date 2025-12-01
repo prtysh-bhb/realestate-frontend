@@ -25,7 +25,7 @@ import {
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { formatAmount } from "@/utils";
+import { formatAmount } from "@/helpers/customer_helper";
 
 interface PropertyCardProps {
   property: Property;
@@ -117,12 +117,12 @@ const PropertyCard: FC<PropertyCardProps> = ({
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
           {/* Status Badge */}
-          <div className="absolute flex top-4 left-4">
+          <div className="absolute flex justify-center items-center gap-1 top-4 left-4">
             <span className="flex px-4 py-2 bg-white/95 backdrop-blur-sm text-slate-900 text-sm font-semibold rounded-full shadow-lg">
               {property.type === "sale" ? "For Sale" : "For Rent"}
             </span>
             {property.is_featured && (
-              <span className="flex justify-center items-center text-xs font-semibold px-3 py-1 rounded-full capitalize bg-yellow-100 text-yellow-700">
+              <span className="flex justify-center items-center text-xs font-semibold px-1 py-1 rounded-full capitalize bg-yellow-300 text-yellow-800">
                 <Star size={16} />
               </span>
             )}

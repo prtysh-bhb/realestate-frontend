@@ -176,7 +176,7 @@ const ViewProperty = () => {
               <button
                 onClick={handleRemoveFeatured}
                 disabled={togglingFeatured}
-                className="inline-flex items-center gap-2 bg-gray-100 text-gray-800 px-3 py-2 rounded hover:bg-gray-200 transition text-sm"
+                className="inline-flex items-center gap-2 bg-gray-200 text-gray-800 px-3 py-2 rounded hover:bg-gray-200 transition text-sm"
                 title="Remove featured"
               >
                 <StarOff size={16} />
@@ -188,7 +188,7 @@ const ViewProperty = () => {
               <button
                 onClick={handleMarkAsFeatured}
                 disabled={togglingFeatured}
-                className="inline-flex items-center gap-2 bg-yellow-500 text-white px-3 py-2 rounded hover:bg-yellow-600 transition text-sm"
+                className="inline-flex items-center gap-2 bg-yellow-300 text-yellow-800 px-3 py-2 rounded hover:bg-yellow-600 transition text-sm"
                 title="Mark as featured"
               >
                 <Star size={16} />
@@ -215,7 +215,7 @@ const ViewProperty = () => {
           <h1 className="text-3xl font-bold mb-2 text-gray-900">
             {property.title}{" "}
             {property.is_featured && (
-              <span className="ml-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-sm font-semibold">
+              <span className="ml-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-300 text-yellow-800 text-sm font-semibold">
                 <Star className="w-4 h-4" /> Featured
               </span>
             )}

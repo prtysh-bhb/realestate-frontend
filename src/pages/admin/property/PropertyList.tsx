@@ -1,10 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
-import {
-  getAdminProperties,
-  approveProperty,
-  rejectProperty,
-} from "@/api/admin/property";
+import { getAdminProperties, approveProperty, rejectProperty } from "@/api/admin/property";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -21,6 +17,7 @@ import {
   Bath,
   Maximize2,
   DollarSign,
+  Star,
 } from "lucide-react";
 import { toast } from "sonner";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
@@ -31,9 +28,7 @@ const PropertyList = () => {
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [showRejectPopup, setShowRejectPopup] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
-  const [rejectingPropertyId, setRejectingPropertyId] = useState<number | null>(
-    null
-  );
+  const [rejectingPropertyId, setRejectingPropertyId] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -111,13 +106,11 @@ const PropertyList = () => {
   };
 
   // Filter properties by search query
-  const filteredProperties = properties.filter((p) =>
-    (p.title || "")
-      .toString()
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase()) ||
-    (p.city || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (p.agent?.name || "").toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredProperties = properties.filter(
+    (p) =>
+      (p.title || "").toString().toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.city || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.agent?.name || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -199,9 +192,7 @@ const PropertyList = () => {
           <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-gray-900 border border-dashed border-gray-300 dark:border-gray-700 rounded-xl">
             <Home className="w-16 h-16 text-gray-400 mb-3" />
             <p className="text-gray-600 dark:text-gray-300 font-medium">No properties found.</p>
-            <p className="text-gray-400 text-sm mt-1">
-              Try changing the filter or search query.
-            </p>
+            <p className="text-gray-400 text-sm mt-1">Try changing the filter or search query.</p>
           </div>
         ) : (
           <>
@@ -234,7 +225,7 @@ const PropertyList = () => {
                         )}
 
                         {/* Status Badge */}
-                        <div className="absolute top-3 left-3">
+                        <div className="absolute flex gap-1 top-3 left-3">
                           <Badge
                             className={`px-3 py-1 border font-semibold text-xs ${getStatusColor(
                               p.approval_status
@@ -242,6 +233,11 @@ const PropertyList = () => {
                           >
                             {p.approval_status}
                           </Badge>
+                          {p?.is_featured && (
+                            <span className="flex justify-center items-center text-xs font-semibold px-1 py-1 rounded-full capitalize bg-yellow-300 text-yellow-800">
+                              <Star size={16} />
+                            </span>
+                          )}
                         </div>
 
                         {/* Price Tag */}
@@ -262,7 +258,9 @@ const PropertyList = () => {
 
                         <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-4">
                           <MapPin className="w-4 h-4 flex-shrink-0" />
-                          <p className="text-sm line-clamp-1">{p.city}, {p.state}</p>
+                          <p className="text-sm line-clamp-1">
+                            {p.city}, {p.state}
+                          </p>
                         </div>
 
                         {/* Features */}
@@ -271,25 +269,34 @@ const PropertyList = () => {
                             <div className="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mb-1">
                               <Bed className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                             </div>
-                            <span className="text-xs text-gray-600 dark:text-gray-400">{p.bedrooms} Beds</span>
+                            <span className="text-xs text-gray-600 dark:text-gray-400">
+                              {p.bedrooms} Beds
+                            </span>
                           </div>
                           <div className="flex flex-col items-center">
                             <div className="w-8 h-8 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg flex items-center justify-center mb-1">
                               <Bath className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                             </div>
-                            <span className="text-xs text-gray-600 dark:text-gray-400">{p.bathrooms} Baths</span>
+                            <span className="text-xs text-gray-600 dark:text-gray-400">
+                              {p.bathrooms} Baths
+                            </span>
                           </div>
                           <div className="flex flex-col items-center">
                             <div className="w-8 h-8 bg-amber-50 dark:bg-amber-900/20 rounded-lg flex items-center justify-center mb-1">
                               <Maximize2 className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                             </div>
-                            <span className="text-xs text-gray-600 dark:text-gray-400">{p.area} sqft</span>
+                            <span className="text-xs text-gray-600 dark:text-gray-400">
+                              {p.area} sqft
+                            </span>
                           </div>
                         </div>
 
                         {/* Agent Info */}
                         <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                          Agent: <span className="font-medium text-gray-700 dark:text-gray-300">{p.agent?.name || "N/A"}</span>
+                          Agent:{" "}
+                          <span className="font-medium text-gray-700 dark:text-gray-300">
+                            {p.agent?.name || "N/A"}
+                          </span>
                         </p>
 
                         {/* Actions - logic:
@@ -395,7 +402,10 @@ const PropertyList = () => {
                             </td>
                             <td className="px-6 py-4">
                               <div className="flex items-center gap-1 text-gray-900 dark:text-white font-semibold">
-                                <DollarSign size={16} className="text-emerald-600 dark:text-emerald-400" />
+                                <DollarSign
+                                  size={16}
+                                  className="text-emerald-600 dark:text-emerald-400"
+                                />
                                 {p.price?.toLocaleString()}
                               </div>
                             </td>

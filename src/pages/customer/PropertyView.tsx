@@ -328,7 +328,7 @@ const PropertyView = () => {
                 <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">{property?.title}</h1>
                 
                 {property?.is_featured && (
-                  <span className="flex justify-center items-center text-xs font-semibold px-3 py-1 rounded-full capitalize bg-yellow-100 text-yellow-700">
+                  <span className="flex justify-center items-center text-xs font-semibold px-1 py-1 rounded-full capitalize bg-yellow-300 text-yellow-800">
                     <Star size={16} />
                   </span>
                 )}

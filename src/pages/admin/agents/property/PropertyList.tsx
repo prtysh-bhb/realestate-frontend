@@ -135,12 +135,12 @@ const PropertyList = () => {
                 {/* ---------- Property Info ---------- */}
                 <div>
                   <div className="flex justify-between items-start mb-3">
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center">
                       <h2 className="text-lg font-semibold text-gray-800 group-hover:text-blue-600 transition">
                         {property.title}
                       </h2>
                       {property.is_featured && (
-                        <span className="text-xs font-semibold px-3 py-1 rounded-full capitalize bg-yellow-100 text-yellow-700">
+                        <span className="text-xs font-semibold px-1 py-1 rounded-full capitalize bg-yellow-300 text-yellow-800">
                           <Star size={16} />
                         </span>
                       )}
