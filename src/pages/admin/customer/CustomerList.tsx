@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Search,
   Eye,
-  Trash2,
+  //Trash2,
   X,
   AlertTriangle,
   Filter,
@@ -21,7 +21,7 @@ import { getCustomers, Customer } from "@/api/customer/customerList";
 import {
   activateCustomer,
   deactivateCustomer,
-  deleteCustomer,
+  // deleteCustomer,
 } from "@/api/customer/customerActions";
 import { toast } from "sonner";
 
@@ -106,15 +106,15 @@ const CustomerList = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    try {
-      await deleteCustomer(id);
-      toast.success("Customer deleted successfully");
-      refresh();
-    } catch {
-      toast.error("Failed to delete customer");
-    }
-  };
+  // const handleDelete = async (id: number) => {
+  //   try {
+  //     await deleteCustomer(id);
+  //     toast.success("Customer deleted successfully");
+  //     refresh();
+  //   } catch {
+  //     toast.error("Failed to delete customer");
+  //   }
+  // };
 
   const badge = (isActive: boolean) =>
     isActive
@@ -357,13 +357,13 @@ const CustomerList = () => {
                                     Activate
                                   </button>
                                 )}
-                                <button
+                                {/* <button
                                   onClick={() => handleDelete(c.id)}
                                   className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-all hover:scale-110"
                                   title="Delete Customer"
                                 >
                                   <Trash2 size={18} />
-                                </button>
+                                </button> */}
                               </div>
                             </td>
                           </tr>
@@ -457,12 +457,12 @@ const CustomerList = () => {
                             Activate
                           </button>
                         )}
-                        <button
+                        {/* <button
                           onClick={() => handleDelete(c.id)}
                           className="p-2.5 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-all cursor-pointer"
                         >
                           <Trash2 size={16} />
-                        </button>
+                        </button> */}
                       </div>
                     </div>
                   ))

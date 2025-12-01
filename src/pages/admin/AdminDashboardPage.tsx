@@ -412,26 +412,22 @@ const AdminDashboardPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-3 mb-3">
-                  <h1 className="text-4xl font-bold">Welcome back, {userName}!</h1>
+                  <h1 className="text-3xl font-bold">Welcome back, {userName}!</h1>
                 </div>
                 <p className="text-blue-100 text-xl">
                   System overview and performance analytics for your {profile.role} dashboard
                 </p>
               </div>
-              <div className="hidden md:flex items-center gap-3 px-5 py-4 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/30">
-                <Calendar className="text-white" size={24} />
-                <div className="text-right">
-                  <span className="font-bold text-lg block">
-                    {new Date().toLocaleDateString('en-US', { 
-                      month: 'short', 
-                      day: 'numeric', 
-                      year: 'numeric' 
-                    })}
-                  </span>
-                  <span className="text-blue-100 text-sm">
-                    {new Date().toLocaleDateString('en-US', { weekday: 'long' })}
-                  </span>
-                </div>
+              <div className="hidden md:flex items-center gap-3 px-4 py-3 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30">
+                <Calendar className="text-white" size={20} />
+                <span className="font-semibold">
+                  {new Date().toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    month: 'short', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                  })}
+                </span>
               </div>
             </div>
           </div>

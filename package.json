@@ -24,6 +24,7 @@
     "lucide-react": "^0.545.0",
     "moment": "^2.30.1",
     "moment-timezone": "^0.6.0",
+    "node": "^20.19.6",
     "pusher-js": "^8.4.0",
     "qrcode.react": "^4.2.0",
     "qs": "^6.14.0",

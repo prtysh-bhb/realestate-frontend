@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Eye, Edit, Trash2, UserPlus, Grid3x3, List, Users, Shield } from "lucide-react";
+import { Search, Eye, UserPlus, Grid3x3, List, Users, Shield } from "lucide-react";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
 import { getAgents, Agent } from "@/api/agent/agentList";
 
@@ -262,18 +262,18 @@ const AgentList = () => {
                                 >
                                   <Eye size={18} />
                                 </button>
-                                <button
+                                {/* <button
                                   className="p-2 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 transition-all hover:scale-110"
                                   title="Edit Agent"
                                 >
                                   <Edit size={18} />
-                                </button>
-                                <button
+                                </button> */}
+                                {/* <button
                                   className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-all hover:scale-110"
                                   title="Delete Agent"
                                 >
                                   <Trash2 size={18} />
-                                </button>
+                                </button> */}
                               </div>
                             </td>
                           </tr>
@@ -358,13 +358,13 @@ const AgentList = () => {
                             <Eye size={16} />
                             <span>View</span>
                           </button>
-                          <button className="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 transition-all font-medium text-sm cursor-pointer">
+                          {/* <button className="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 transition-all font-medium text-sm cursor-pointer">
                             <Edit size={16} />
                             <span>Edit</span>
-                          </button>
-                          <button className="p-2.5 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-all cursor-pointer">
+                          </button> */}
+                          {/* <button className="p-2.5 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-all cursor-pointer">
                             <Trash2 size={16} />
-                          </button>
+                          </button> */}
                         </div>
                       </div>
                     ))

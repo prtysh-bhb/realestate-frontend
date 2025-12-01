@@ -1,9 +1,11 @@
 import { getProfile, updateAvatar, updateProfile } from '@/api/auth';
 import Loader from '@/components/ui/Loader';
 import { useAuth } from '@/context/AuthContext';
+import { handleKeyPress } from '@/helpers/customer_helper';
 import { Camera } from 'lucide-react';
 import { useState, useRef, ChangeEvent, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import { toast } from 'sonner';
 
 interface ProfileFormData {
@@ -21,6 +23,7 @@ const ProfileEditForm = () => {
   const {setUser} = useAuth();
   const [avatar, setAvatar] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<ProfileFormData>({
     name: '',
     email: '',
@@ -91,6 +94,7 @@ const ProfileEditForm = () => {
     if(response.success){      
       setUser(response.data.user);
       toast.success(response.message);
+      navigate("/profile");
     }else{
       toast.error(response.message);
     }
@@ -171,6 +175,7 @@ const ProfileEditForm = () => {
                   id="name"
                   value={formData.name}
                   onChange={handleInputChange}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => handleKeyPress(e, /[a-zA-Z ]/, false)}
                   maxLength={50}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 />
@@ -187,6 +192,7 @@ const ProfileEditForm = () => {
                   disabled
                   maxLength={50}
                   value={formData.email}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => handleKeyPress(e, /[a-z0-9@._-]/, false)}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 />
@@ -203,6 +209,7 @@ const ProfileEditForm = () => {
                 id="phone"
                 maxLength={15}
                 value={formData.phone}
+                onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => handleKeyPress(e, /[0-9+()-]/, false)}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               />
@@ -233,6 +240,7 @@ const ProfileEditForm = () => {
                 id="address"
                 maxLength={255}
                 value={formData.address}
+                onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => handleKeyPress(e, /[a-z0-9@._-\s]/, false)}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               />
@@ -250,6 +258,7 @@ const ProfileEditForm = () => {
                   maxLength={50}
                   value={formData.city}
                   onChange={handleInputChange}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => handleKeyPress(e, /[a-zA-Z ]/, false)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 />
               </div>
@@ -264,6 +273,7 @@ const ProfileEditForm = () => {
                   id="state"
                   maxLength={50}
                   value={formData.state}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => handleKeyPress(e, /[a-zA-Z ]/, false)}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 />
@@ -279,16 +289,14 @@ const ProfileEditForm = () => {
                   id="zipcode"
                   maxLength={10}
                   value={formData.zipcode}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => handleKeyPress(e, /[0-9]/, false)}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 />
               </div>
             </div>
-          </form>
-        </div>
-
         {/* Footer Actions */}
-        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-between">
+        <div className="bg-gray-50 px-6 py-4 border-t rounded-md border-gray-200 flex justify-between">
           <Link to={"/profile"}
             type="button"
             className="px-3 py-2 border cursor-pointer border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition"
@@ -297,13 +305,15 @@ const ProfileEditForm = () => {
           </Link>
           <button
             type="submit"
-            onClick={handleSubmit}
             className="px-3 py-2 cursor-pointer bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition flex items-center"
           >
             <i className="fas fa-save mr-2"></i>
             Save Changes
           </button>
         </div>
+          </form>
+        </div>
+
       </div>
     </div>
     </>

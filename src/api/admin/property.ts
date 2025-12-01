@@ -35,7 +35,7 @@ export const approveProperty = async (id: number) => {
 
 // Reject property
 export const rejectProperty = async (propertyId: number, reason?: string) => {
-  const response = await api.post(`/agent/properties/${propertyId}/reject`, {
+  const response = await api.post(`/admin/properties/${propertyId}/reject`, {
     reason: reason ?? null,
   });
   return response.data;

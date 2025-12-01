@@ -524,7 +524,7 @@ const CustomerProfile = () => {
               <div className="flex flex-col items-center">
                 <div className="relative mb-4">
                   <img
-                    src={user?.avatar_url}
+                    src={user?.avatar_url || `/assets/user.jpg`}
                     alt="Customer"
                     className="w-32 h-32 rounded-full object-cover border-4 border-white shadow"
                     onError={(e) => {
@@ -549,14 +549,14 @@ const CustomerProfile = () => {
                 <div className="flex items-center">
                   <Phone size={20} className="flex-shrink-0" />
                   <span className="ml-3 truncate max-w-[200px] sm:overflow-visible sm:whitespace-normal sm:text-clip sm:max-w-none">
-                    {user?.phone}
+                    {user?.phone || "N/A"}
                   </span>
                 </div>
 
                 <div className="flex items-center">
                   <MapPin size={20} className="flex-shrink-0" />
                   <span className="ml-3 truncate max-w-[200px] sm:overflow-visible sm:whitespace-normal sm:text-clip sm:max-w-none">
-                    {user?.city ? `${user?.city}, ${user?.state ?? ""}` : ""}
+                    {user?.city ? `${user?.city}, ${user?.state ?? ""}` : "N/A"} 
                   </span>
                 </div>
 
