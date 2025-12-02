@@ -9,6 +9,7 @@ interface NotificationsComponentProps {
   onMarkAllAsRead?: () => void;
   onDelete?: (id: number) => void;
   unreadCount: number;
+  customClass?: string;
 }
 
 const Notifications: React.FC<NotificationsComponentProps> = ({
@@ -16,7 +17,8 @@ const Notifications: React.FC<NotificationsComponentProps> = ({
   onMarkAsRead,
   onMarkAllAsRead,
   onDelete,
-  unreadCount
+  unreadCount,
+  customClass
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);
@@ -177,7 +179,7 @@ const Notifications: React.FC<NotificationsComponentProps> = ({
       {/* Notification Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/20 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+        className={`relative p-2 cursor-pointer rounded-lg dark:hover:bg-blue-950/20 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 ${customClass} transition-colors`}
         aria-expanded={isOpen}
         aria-label={`Open notifications ${unreadCount > 0 ? `(${unreadCount} unread)` : ''}`}
       >
