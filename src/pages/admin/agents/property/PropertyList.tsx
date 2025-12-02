@@ -140,7 +140,7 @@ const PropertyList = () => {
                         {property.title}
                       </h2>
                       {property.is_featured && (
-                        <span className="text-xs font-semibold px-1 py-1 rounded-full capitalize bg-yellow-300 text-yellow-800">
+                        <span className="text-xs font-semibold p-[5px] rounded-full capitalize bg-purple-600 text-white">
                           <Star size={16} />
                         </span>
                       )}

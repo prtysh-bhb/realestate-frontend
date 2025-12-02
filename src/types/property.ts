@@ -15,6 +15,7 @@ export interface DocumentFile {
 }
 
 export interface Property {
+  rating_stat: any;
   is_featured: any;
   id: number;
   agent_id: number;
@@ -44,6 +45,18 @@ export interface Property {
   is_favorite?: boolean;
   created_at?: string;
   updated_at?: string;
+}
+
+export interface rating_stat{
+  overall_rating: number;
+  avg_construction: number;
+  avg_amenities: number;
+  avg_management: number;
+  avg_connectivity: number;
+  avg_green_area: number;
+  avg_locality: number;
+  id: number;
+  property_id: number;
 }
 
 export interface PropertyFormData {
