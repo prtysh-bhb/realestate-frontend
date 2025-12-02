@@ -73,7 +73,7 @@ import {
   submitPropertyReview,
   Review as ReviewType,
   CreateReviewPayload,
-  submitAgentReview 
+  submitAgentReview,
 } from "@/api/customer/propertyreview";
 
 // Swiper imports
@@ -82,6 +82,7 @@ import { Navigation, Pagination, A11y } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
+import { TruncatedText } from "@/components/ui/TruncatedText";
 
 /**
  * Local RatingSummary type for frontend display (backend doesn't return this directly)
@@ -169,32 +170,32 @@ const PropertyView = () => {
   };
 
   const handleSubmitAgentReview = async () => {
-  if (!property?.agent?.id || agentRating === 0) return;
+    if (!property?.agent?.id || agentRating === 0) return;
 
-  setIsSubmittingReview(true);
-  try {
-    const response = await submitAgentReview(property.agent.id, {
-      rating: agentRating,
-      comment: agentComment.trim() || undefined,
-    });
+    setIsSubmittingReview(true);
+    try {
+      const response = await submitAgentReview(property.agent.id, {
+        rating: agentRating,
+        comment: agentComment.trim() || undefined,
+      });
 
-    if (response.success) {
-      toast.success("Review submitted successfully!");
-      setIsAgentReviewModalOpen(false);
-      setAgentRating(0);
-      setAgentComment("");
-      
-      // Optionally, you can fetch updated agent reviews here
-      // await fetchAgentReviews();
-    } else {
-      toast.error(response.message || "Failed to submit review");
+      if (response.success) {
+        toast.success("Review submitted successfully!");
+        setIsAgentReviewModalOpen(false);
+        setAgentRating(0);
+        setAgentComment("");
+
+        // Optionally, you can fetch updated agent reviews here
+        // await fetchAgentReviews();
+      } else {
+        toast.error(response.message || "Failed to submit review");
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to submit review");
+    } finally {
+      setIsSubmittingReview(false);
     }
-  } catch (error: any) {
-    toast.error(error.response?.data?.message || "Failed to submit review");
-  } finally {
-    setIsSubmittingReview(false);
-  }
-};
+  };
 
   const handleSubmitInquiry = async (inquiryData: InquiryFormData) => {
     const response = await propertyInquiry(Number(id), inquiryData);
@@ -1382,7 +1383,6 @@ const PropertyView = () => {
                     spaceBetween={20}
                     slidesPerView={1}
                     navigation
-                    pagination={{ clickable: true }}
                     breakpoints={{
                       640: { slidesPerView: 1 },
                       768: { slidesPerView: 2 },
@@ -1521,7 +1521,10 @@ const PropertyView = () => {
                                   <span className="font-semibold text-gray-900">Positives</span>
                                 </div>
                                 <p className="text-gray-700 bg-emerald-50 p-4 rounded-xl">
-                                  {review.positive_comment ?? ""}
+                                  <TruncatedText
+                                    text={review.positive_comment ?? ""}
+                                    maxLength={300}
+                                  />
                                 </p>
                               </div>
                               <div>
@@ -1530,7 +1533,10 @@ const PropertyView = () => {
                                   <span className="font-semibold text-gray-900">Negatives</span>
                                 </div>
                                 <p className="text-gray-700 bg-red-50 p-4 rounded-xl">
-                                  {review.negative_comment ?? ""}
+                                  <TruncatedText
+                                    text={review.negative_comment ?? ""}
+                                    maxLength={300}
+                                  />
                                 </p>
                               </div>
                             </div>

@@ -278,3 +278,8 @@ input:focus, textarea:focus, select:focus {
 }
 
 
+.swiper-button-next,.swiper-button-prev {
+  width:13px;
+}
+
+
