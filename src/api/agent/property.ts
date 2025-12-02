@@ -70,7 +70,6 @@ export const getPropertyById = async (id: number): Promise<Property> => {
 export const createProperty = async (
   data: FormData | PropertyFormData
 ): Promise<ApiResponse<CreatePropertyResponse>> => {
-  try {
     let payload: FormData;
 
     if (data instanceof FormData) {
@@ -95,9 +94,6 @@ export const createProperty = async (
     );
 
     return response.data;
-  } catch (error) {
-    throw handleApiError(error);
-  }
 };
 
 /**

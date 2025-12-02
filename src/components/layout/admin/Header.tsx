@@ -1,8 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { Bell, Moon, Sun, Search, Menu, User, Pencil, LogOut, Settings, ArrowLeft } from "lucide-react";
+import { Moon, Sun, Search, Menu, User, Pencil, LogOut, Settings, ArrowLeft, CreditCard } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { logout } from "@/api/auth";
+import Notifications from "./Notifications";
+import { deleteNotification, getNotifications, getUnreadNotificationsCount, markAllAsReadNotification, markAsReadNotification, NotificationItem } from "@/api/public/notifications";
+import echo from "@/lib/echo";
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -11,12 +14,13 @@ interface HeaderProps {
 const Header = ({ onMenuClick }: HeaderProps) => {
   const { user } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
   const [darkMode, setDarkMode] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const notificationRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
 
   const avatarUrl = user?.avatar_url || "/default-avatar.png";
@@ -43,21 +47,61 @@ const Header = ({ onMenuClick }: HeaderProps) => {
     navigate("/");
   };
 
-  // Mock notifications
-  const notifications = [
-    { id: 1, title: "New property listed", message: "3 properties added today", time: "5m ago", unread: true },
-    { id: 2, title: "Agent request", message: "New agent signup pending", time: "1h ago", unread: true },
-    { id: 3, title: "System update", message: "Platform maintenance scheduled", time: "2h ago", unread: false },
-  ];
+  useEffect(() => {
+    echo.private(`notified.${user?.id}`)
+    .listen(".notified", () => {
+      fetchNotifications();
+    });
+  }, [user?.id]);
+
+  const fetchNotifications = async() => {
+    try {
+      const notification_response = await getNotifications();
+      const unread_response = await getUnreadNotificationsCount();
+      setNotifications(notification_response.notifications);
+      setUnreadCount(unread_response.count);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  }
+
+  const handleMarkAsRead = async (id: number) => {
+    try {
+      await markAsReadNotification(id);
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Error in set to read notifications:', error);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await markAllAsReadNotification();
+      setNotifications(prev => prev.map(n => ({ ...n, read_at: new Date().toISOString() })));
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Error marking all as read:', error);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteNotification(id);
+      fetchNotifications();
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
   // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setDropdownOpen(false);
-      }
-      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
-        setNotificationOpen(false);
       }
       // clicking outside search overlay should close it too
       if ((event.target as HTMLElement).closest?.(".mobile-search-toggle") === null) {
@@ -136,6 +180,14 @@ const Header = ({ onMenuClick }: HeaderProps) => {
 
           {/* Right side */}
           <div className="flex items-center gap-2 relative min-w-0">
+            {user?.role == 'agent' && (
+              <Link to={'/agent/subscription-plans'}
+              className="p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/20 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            >
+              <CreditCard size={18}/>
+            </Link>
+            )}
+
             {/* Dark Mode Toggle */}
             <button
               onClick={() => setDarkMode(!darkMode)}
@@ -147,54 +199,13 @@ const Header = ({ onMenuClick }: HeaderProps) => {
             </button>
 
             {/* Notifications */}
-            <div className="relative" ref={notificationRef}>
-              <button
-                onClick={() => setNotificationOpen((s) => !s)}
-                className="relative p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/20 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                aria-expanded={notificationOpen}
-                aria-label="Open notifications"
-              >
-                <Bell size={18} />
-                <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full border-2 border-white dark:border-gray-900 shadow-sm" />
-              </button>
-
-              {/* Notification Dropdown */}
-              {notificationOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 shadow-xl rounded-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
-                  <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-emerald-50 dark:from-blue-950/30 dark:to-emerald-950/30">
-                    <h3 className="font-semibold text-gray-900 dark:text-white text-sm">Notifications</h3>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                      {notifications.filter((n) => n.unread).length} unread messages
-                    </p>
-                  </div>
-
-                  <div className="max-h-80 overflow-y-auto">
-                    {notifications.map((notif) => (
-                      <div
-                        key={notif.id}
-                        className={`px-4 py-3 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer ${
-                          notif.unread ? "bg-gray-50 dark:bg-gray-800/30" : ""
-                        }`}
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">{notif.title}</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{notif.message}</p>
-                          </div>
-                          <span className="text-xs text-gray-400 whitespace-nowrap">{notif.time}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="px-4 py-2.5 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                    <button className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
-                      View all
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+            <Notifications
+                notifications={notifications}
+                unreadCount={unreadCount}
+                onMarkAsRead={handleMarkAsRead}
+                onMarkAllAsRead={handleMarkAllAsRead}
+                onDelete={handleDelete}
+            />
 
             {/* Avatar + Dropdown */}
             <div className="relative" ref={dropdownRef}>
@@ -245,6 +256,18 @@ const Header = ({ onMenuClick }: HeaderProps) => {
                         <span>Edit Profile</span>
                       </Link>
                     </li>
+                    {user?.role == 'agent' && (
+                    <li>
+                      <Link
+                        to={`/agent/my-subscriptions`}
+                        className="flex items-center gap-2.5 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300"
+                        onClick={() => setDropdownOpen(false)}
+                      >
+                        <CreditCard size={16} />
+                        <span>My Subscription</span>
+                      </Link>
+                    </li>
+                    )}
                     <li>
                       <Link
                         to="/admin/settings"
