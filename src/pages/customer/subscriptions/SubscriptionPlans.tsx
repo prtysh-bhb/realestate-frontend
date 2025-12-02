@@ -140,56 +140,58 @@ const SubscriptionPlans = () => {
     <Layout>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30">
         {/* Header Section */}
-        <div className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600"></div>
-          <div className="absolute inset-0 bg-black/10"></div>
-          
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-            <div className="text-center">
-              <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/30 px-4 py-2 text-sm font-semibold mb-6">
-                <Sparkles className="w-4 h-4 mr-2" />
-                CHOOSE YOUR PLAN
-              </Badge>
-              
-              <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-                Simple, Transparent
-                <span className="block bg-gradient-to-r from-amber-300 to-yellow-300 bg-clip-text text-transparent">
-                  Pricing
-                </span>
-              </h1>
-              
-              <p className="text-xl text-blue-100 max-w-3xl mx-auto mb-8">
-                Choose the perfect plan for your real estate business. All plans include core features 
-                with flexible options to scale as you grow.
-              </p>
+        {!isAgent && (
+          <div className="relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600"></div>
+            <div className="absolute inset-0 bg-black/10"></div>
+            
+            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+              <div className="text-center">
+                <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/30 px-4 py-2 text-sm font-semibold mb-6">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  CHOOSE YOUR PLAN
+                </Badge>
+                
+                <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+                  Simple, Transparent
+                  <span className="block bg-gradient-to-r from-amber-300 to-yellow-300 bg-clip-text text-transparent">
+                    Pricing
+                  </span>
+                </h1>
+                
+                <p className="text-xl text-blue-100 max-w-3xl mx-auto mb-8">
+                  Choose the perfect plan for your real estate business. All plans include core features 
+                  with flexible options to scale as you grow.
+                </p>
 
-              {/* Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-2xl mx-auto mt-12">
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <Users className="w-6 h-6 text-white" />
+                {/* Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-2xl mx-auto mt-12">
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                      <Users className="w-6 h-6 text-white" />
+                    </div>
+                    <p className="text-2xl font-bold text-white">500+</p>
+                    <p className="text-blue-100">Active Agents</p>
                   </div>
-                  <p className="text-2xl font-bold text-white">500+</p>
-                  <p className="text-blue-100">Active Agents</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <Building2 className="w-6 h-6 text-white" />
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                      <Building2 className="w-6 h-6 text-white" />
+                    </div>
+                    <p className="text-2xl font-bold text-white">10K+</p>
+                    <p className="text-blue-100">Properties Listed</p>
                   </div>
-                  <p className="text-2xl font-bold text-white">10K+</p>
-                  <p className="text-blue-100">Properties Listed</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <Award className="w-6 h-6 text-white" />
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                      <Award className="w-6 h-6 text-white" />
+                    </div>
+                    <p className="text-2xl font-bold text-white">99%</p>
+                    <p className="text-blue-100">Satisfaction Rate</p>
                   </div>
-                  <p className="text-2xl font-bold text-white">99%</p>
-                  <p className="text-blue-100">Satisfaction Rate</p>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Pricing Plans */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
@@ -317,68 +319,72 @@ const SubscriptionPlans = () => {
           </div>
 
           {/* FAQ Section */}
-          <div className="max-w-4xl mx-auto mt-24">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                Frequently Asked Questions
-              </h2>
-              <p className="text-xl text-gray-600">
-                Everything you need to know about our subscription plans
-              </p>
-            </div>
+          {!isAgent && (
+            <div className="max-w-4xl mx-auto mt-24">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                  Frequently Asked Questions
+                </h2>
+                <p className="text-xl text-gray-600">
+                  Everything you need to know about our subscription plans
+                </p>
+              </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {[
-                {
-                  question: "Can I change plans later?",
-                  answer: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately."
-                },
-                {
-                  question: "Is there a free trial?",
-                  answer: "We offer a 14-day free trial on all paid plans. No credit card required to start."
-                },
-                {
-                  question: "What payment methods do you accept?",
-                  answer: "We accept all major credit cards, PayPal, and bank transfers for annual plans."
-                },
-                {
-                  question: "Can I cancel anytime?",
-                  answer: "Yes, you can cancel your subscription at any time. No long-term contracts required."
-                }
-              ].map((faq, index) => (
-                <Card key={index} className="bg-white border-2 border-gray-200 rounded-2xl shadow-lg">
-                  <CardContent className="p-6">
-                    <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                      <Shield className="w-5 h-5 text-blue-600" />
-                      {faq.question}
-                    </h3>
-                    <p className="text-gray-600 text-sm leading-relaxed">{faq.answer}</p>
-                  </CardContent>
-                </Card>
-              ))}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {[
+                  {
+                    question: "Can I change plans later?",
+                    answer: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately."
+                  },
+                  {
+                    question: "Is there a free trial?",
+                    answer: "We offer a 14-day free trial on all paid plans. No credit card required to start."
+                  },
+                  {
+                    question: "What payment methods do you accept?",
+                    answer: "We accept all major credit cards, PayPal, and bank transfers for annual plans."
+                  },
+                  {
+                    question: "Can I cancel anytime?",
+                    answer: "Yes, you can cancel your subscription at any time. No long-term contracts required."
+                  }
+                ].map((faq, index) => (
+                  <Card key={index} className="bg-white border-2 border-gray-200 rounded-2xl shadow-lg">
+                    <CardContent className="p-6">
+                      <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <Shield className="w-5 h-5 text-blue-600" />
+                        {faq.question}
+                      </h3>
+                      <p className="text-gray-600 text-sm leading-relaxed">{faq.answer}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Bottom CTA */}
-          <div className="text-center mt-16">
-            <Card className="bg-gradient-to-r from-blue-600 to-emerald-600 border-0 shadow-2xl">
-              <CardContent className="p-8 text-white">
-                <h3 className="text-2xl lg:text-3xl font-bold mb-4">
-                  Ready to Grow Your Real Estate Business?
-                </h3>
-                <p className="text-blue-100 text-lg mb-6 max-w-2xl mx-auto">
-                  Join thousands of successful agents who trust our platform to showcase their properties and connect with buyers.
-                </p>
-                <Button
-                  // onClick={() => navigate(isAuthenticated ? '/dashboard' : '/register')}
-                  className="bg-white text-blue-600 hover:bg-gray-100 font-bold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                >
-                  {/* {isAuthenticated ? 'Go to Dashboard' : 'Start Free Trial'} */}
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+          {!isAgent && (
+            <div className="text-center mt-16">
+              <Card className="bg-gradient-to-r from-blue-600 to-emerald-600 border-0 shadow-2xl">
+                <CardContent className="p-8 text-white">
+                  <h3 className="text-2xl lg:text-3xl font-bold mb-4">
+                    Ready to Grow Your Real Estate Business?
+                  </h3>
+                  <p className="text-blue-100 text-lg mb-6 max-w-2xl mx-auto">
+                    Join thousands of successful agents who trust our platform to showcase their properties and connect with buyers.
+                  </p>
+                  <Button
+                    // onClick={() => navigate(isAuthenticated ? '/dashboard' : '/register')}
+                    className="bg-white text-blue-600 hover:bg-gray-100 font-bold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  >
+                    {/* {isAuthenticated ? 'Go to Dashboard' : 'Start Free Trial'} */}
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </div>
     </Layout>
