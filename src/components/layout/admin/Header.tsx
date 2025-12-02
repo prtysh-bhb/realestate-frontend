@@ -205,6 +205,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
                 onMarkAsRead={handleMarkAsRead}
                 onMarkAllAsRead={handleMarkAllAsRead}
                 onDelete={handleDelete}
+                customClass={'hover:bg-blue-50'}
             />
 
             {/* Avatar + Dropdown */}
