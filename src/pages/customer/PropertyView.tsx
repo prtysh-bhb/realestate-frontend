@@ -83,6 +83,8 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { TruncatedText } from "@/components/ui/TruncatedText";
+import LoanCalculator from "@/components/property/LoanCalculator";
+import PropertyValuation from "@/components/property/PropertyValuation";
 
 /**
  * Local RatingSummary type for frontend display (backend doesn't return this directly)
@@ -1011,6 +1013,385 @@ const PropertyView = () => {
                 </div>
               </div>
             </motion.div>
+
+            {/* Reviews & Ratings Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+              className="mt-12"
+            >
+              <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+                <div className="p-8 border-b border-gray-200">
+                  <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3 mb-2">
+                    <div className="p-2 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl">
+                      <Star size={24} className="text-white" />
+                    </div>
+                    Reviews & Ratings
+                  </h2>
+                  <p className="text-gray-600">See what residents say about this property</p>
+                </div>
+
+                {/* Rating Summary */}
+                <div className="p-8 border-b border-gray-200">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-25">
+                    {/* Average Rating */}
+                    <div className="text-center">
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <span className="text-5xl font-bold text-gray-900">
+                          {(ratingSummary?.average_rating ?? 0).toFixed(1)}
+                        </span>
+                        <div className="text-left">
+                          <div className="flex">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                size={20}
+                                className={`${
+                                  i < Math.floor(ratingSummary?.average_rating ?? 0)
+                                    ? "fill-amber-400 text-amber-400"
+                                    : "text-gray-300"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <p className="text-gray-600 text-sm mt-1">
+                            {ratingSummary?.total_reviews ?? 0} Total Reviews
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Rating Distribution */}
+                      <div className="mt-6 space-y-2">
+                        {[5, 4, 3, 2, 1].map((stars) => (
+                          <div key={stars} className="flex items-center gap-2">
+                            <span className="text-sm text-gray-600 w-4">{stars}★</span>
+                            <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-amber-500 rounded-full"
+                                style={{
+                                  width: `${
+                                    ((ratingSummary?.rating_distribution?.[
+                                      stars as keyof typeof ratingSummary.rating_distribution
+                                    ] || 0) /
+                                      (ratingSummary?.total_reviews || 1)) *
+                                    100
+                                  }%`,
+                                }}
+                              ></div>
+                            </div>
+                            <span className="text-sm text-gray-600 w-8 text-right">
+                              {ratingSummary?.rating_distribution?.[
+                                stars as keyof typeof ratingSummary.rating_distribution
+                              ] || 0}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Feature Ratings */}
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                        Ratings by Features
+                      </h3>
+                      <div className="space-y-4">
+                        {[
+                          {
+                            label: "Construction",
+                            value: ratingSummary?.feature_ratings.construction ?? 0,
+                          },
+                          {
+                            label: "Amenities",
+                            value: ratingSummary?.feature_ratings.amenities ?? 0,
+                          },
+                          {
+                            label: "Management",
+                            value: ratingSummary?.feature_ratings.management ?? 0,
+                          },
+                          {
+                            label: "Connectivity",
+                            value: ratingSummary?.feature_ratings.connectivity ?? 0,
+                          },
+                          {
+                            label: "Green Area",
+                            value: ratingSummary?.feature_ratings.green_area ?? 0,
+                          },
+                          {
+                            label: "Locality",
+                            value: ratingSummary?.feature_ratings.locality ?? 0,
+                          },
+                        ].map((feature, index) => (
+                          <div key={index} className="flex items-center justify-between">
+                            <span className="text-gray-700">{feature.label}</span>
+                            <div className="flex items-center gap-2">
+                              <div className="flex">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    size={16}
+                                    className={`${
+                                      i < Math.floor(feature.value)
+                                        ? "fill-amber-400 text-amber-400"
+                                        : "text-gray-300"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                              <span className="text-gray-900 font-semibold w-8">
+                                {(feature.value ?? 0).toFixed(1)}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Review Filter Tabs */}
+                <div className="px-8 pt-6 border-b border-gray-200">
+                  <div className="flex space-x-4">
+                    <button
+                      onClick={() => setReviewFilter("all")}
+                      className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                        reviewFilter === "all"
+                          ? "bg-blue-100 text-blue-700"
+                          : "text-gray-600 hover:text-gray-900"
+                      }`}
+                    >
+                      All ({reviews.length})
+                    </button>
+                    <button
+                      onClick={() => setReviewFilter("negative")}
+                      className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                        reviewFilter === "negative"
+                          ? "bg-red-100 text-red-700"
+                          : "text-gray-600 hover:text-gray-900"
+                      }`}
+                    >
+                      Negative First (
+                      {
+                        reviews.filter(
+                          (r) =>
+                            (r.construction +
+                              r.amenities +
+                              r.management +
+                              r.connectivity +
+                              r.green_area +
+                              r.locality) /
+                              6 <=
+                            3
+                        ).length
+                      }
+                      )
+                    </button>
+                    <button
+                      onClick={() => setReviewFilter("recent")}
+                      className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                        reviewFilter === "recent"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "text-gray-600 hover:text-gray-900"
+                      }`}
+                    >
+                      Recent First
+                    </button>
+                  </div>
+                </div>
+
+                {/* Reviews List (Swiper slider) */}
+                <div className="p-8">
+                  {filteredReviews().length > 0 ? (
+                    <div>
+                      <Swiper
+                        modules={[Navigation, Pagination, A11y]}
+                        spaceBetween={20}
+                        slidesPerView={1}
+                        navigation
+                        breakpoints={{
+                          640: { slidesPerView: 1 },
+                          768: { slidesPerView: 2 },
+                          1024: { slidesPerView: 2 },
+                          1280: { slidesPerView: 2 },
+                        }}
+                        a11y={{ enabled: true }}
+                      >
+                        {filteredReviews().map((review) => (
+                          <SwiperSlide key={review.id}>
+                            <div className="border border-gray-200 rounded-2xl p-6 hover:border-blue-300 transition-all h-full flex flex-col justify-between">
+                              {/* Review Header */}
+                              <div>
+                                <div className="flex items-start justify-between mb-4">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 bg-gradient-to-br overflow-hidden from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                                      <img
+                                        src={review.user?.avatar_url ?? ""}
+                                        alt={review.user?.name ?? "Anonymous"}
+                                      />
+                                    </div>
+                                    <div>
+                                      <h4 className="font-bold text-gray-900">
+                                        {review.user?.name ?? "Anonymous"}
+                                      </h4>
+                                      <div className="flex items-center gap-2 mt-1">
+                                        <div className="flex">
+                                          {(() => {
+                                            const avgRating = Math.round(
+                                              (review.construction +
+                                                review.amenities +
+                                                review.management +
+                                                review.connectivity +
+                                                review.green_area +
+                                                review.locality) /
+                                                6
+                                            );
+                                            return [...Array(5)].map((_, i) => (
+                                              <Star
+                                                key={i}
+                                                size={16}
+                                                className={`${
+                                                  i < avgRating
+                                                    ? "fill-amber-400 text-amber-400"
+                                                    : "text-gray-300"
+                                                }`}
+                                              />
+                                            ));
+                                          })()}
+                                        </div>
+                                        <span className="text-sm text-gray-500">
+                                          {new Date(review.created_at).toLocaleDateString()}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Feature Ratings */}
+                                <div className="grid grid-cols-3 sm:grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-xl">
+                                  {[
+                                    {
+                                      key: "construction",
+                                      label: "Construction",
+                                      value: review.construction,
+                                      Icon: Wrench,
+                                    },
+                                    {
+                                      key: "amenities",
+                                      label: "Amenities",
+                                      value: review.amenities,
+                                      Icon: Goal,
+                                    },
+                                    {
+                                      key: "management",
+                                      label: "Management",
+                                      value: review.management,
+                                      Icon: Users,
+                                    },
+                                    {
+                                      key: "connectivity",
+                                      label: "Connectivity",
+                                      value: review.connectivity,
+                                      Icon: CarFront,
+                                    },
+                                    {
+                                      key: "green_area",
+                                      label: "Green Area",
+                                      value: review.green_area,
+                                      Icon: Leaf,
+                                    },
+                                    {
+                                      key: "locality",
+                                      label: "Locality",
+                                      value: review.locality,
+                                      Icon: MapPin,
+                                    },
+                                  ].map(({ key, label, value, Icon }) => (
+                                    <div
+                                      key={key}
+                                      className="flex flex-col-1 gap-2 items-center justify-center"
+                                    >
+                                      {/* Icon Wrapper with Tooltip */}
+                                      <div
+                                        className="relative group cursor-default"
+                                        tabIndex={0}
+                                        title={label}
+                                      >
+                                        {/* Icon Bubble */}
+                                        <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm group-hover:scale-110 transition-all">
+                                          <div className="w-10 h-10 rounded-full bg-gray flex items-center justify-center">
+                                            <Icon className="w-5 h-5 text-yellow-400" />
+                                          </div>
+                                        </div>
+
+                                        {/* Tooltip */}
+                                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity whitespace-nowrap">
+                                          {label}
+                                          <span className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-t-4 border-t-gray-900 border-x-4 border-x-transparent"></span>
+                                        </div>
+                                      </div>
+
+                                      {/* Rating Count */}
+                                      <p className="text-xs text-gray-700 mt-1 font-semibold">
+                                        {Number(value).toFixed(1)}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+
+                                {/* Review Content */}
+                                <div className="space-y-4">
+                                  <div>
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <ThumbsUp size={18} className="text-emerald-600" />
+                                      <span className="font-semibold text-gray-900">Positives</span>
+                                    </div>
+                                    <p className="text-gray-700 bg-emerald-50 p-4 rounded-xl">
+                                      <TruncatedText
+                                        text={review.positive_comment ?? ""}
+                                        maxLength={300}
+                                      />
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <ThumbsDown size={18} className="text-red-600" />
+                                      <span className="font-semibold text-gray-900">Negatives</span>
+                                    </div>
+                                    <p className="text-gray-700 bg-red-50 p-4 rounded-xl">
+                                      <TruncatedText
+                                        text={review.negative_comment ?? ""}
+                                        maxLength={300}
+                                      />
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </SwiperSlide>
+                        ))}
+                      </Swiper>
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <MessageCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">No Reviews Yet</h3>
+                      <p className="text-gray-600">Be the first to share your experience!</p>
+                    </div>
+                  )}
+
+                  {/* Add Review Button - show to all, redirect to login if not logged in */}
+                  <div className="mt-8 text-center">
+                    <button
+                      onClick={handleOpenReview}
+                      className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl font-bold"
+                    >
+                      <MessageCircle size={20} />
+                      Write a Review
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </div>
 
           {/* Right Column - Agent & Actions */}
@@ -1194,379 +1575,18 @@ const PropertyView = () => {
                 </div>
               </motion.div>
             )}
+
+            {/* Loan Calculator */}
+            <motion.div className="my-10">
+              <LoanCalculator />
+            </motion.div>
+
+            {/* Property Valuation */}
+            <motion.div className="my-10">
+              <PropertyValuation />
+            </motion.div>
           </div>
         </div>
-
-        {/* Reviews & Ratings Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="mt-12"
-        >
-          <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-            <div className="p-8 border-b border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3 mb-2">
-                <div className="p-2 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl">
-                  <Star size={24} className="text-white" />
-                </div>
-                Reviews & Ratings
-              </h2>
-              <p className="text-gray-600">See what residents say about this property</p>
-            </div>
-
-            {/* Rating Summary */}
-            <div className="p-8 border-b border-gray-200">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-25">
-                {/* Average Rating */}
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <span className="text-5xl font-bold text-gray-900">
-                      {(ratingSummary?.average_rating ?? 0).toFixed(1)}
-                    </span>
-                    <div className="text-left">
-                      <div className="flex">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            size={20}
-                            className={`${
-                              i < Math.floor(ratingSummary?.average_rating ?? 0)
-                                ? "fill-amber-400 text-amber-400"
-                                : "text-gray-300"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <p className="text-gray-600 text-sm mt-1">
-                        {ratingSummary?.total_reviews ?? 0} Total Reviews
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Rating Distribution */}
-                  <div className="mt-6 space-y-2">
-                    {[5, 4, 3, 2, 1].map((stars) => (
-                      <div key={stars} className="flex items-center gap-2">
-                        <span className="text-sm text-gray-600 w-4">{stars}★</span>
-                        <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-amber-500 rounded-full"
-                            style={{
-                              width: `${
-                                ((ratingSummary?.rating_distribution?.[
-                                  stars as keyof typeof ratingSummary.rating_distribution
-                                ] || 0) /
-                                  (ratingSummary?.total_reviews || 1)) *
-                                100
-                              }%`,
-                            }}
-                          ></div>
-                        </div>
-                        <span className="text-sm text-gray-600 w-8 text-right">
-                          {ratingSummary?.rating_distribution?.[
-                            stars as keyof typeof ratingSummary.rating_distribution
-                          ] || 0}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Feature Ratings */}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Ratings by Features</h3>
-                  <div className="space-y-4">
-                    {[
-                      {
-                        label: "Construction",
-                        value: ratingSummary?.feature_ratings.construction ?? 0,
-                      },
-                      { label: "Amenities", value: ratingSummary?.feature_ratings.amenities ?? 0 },
-                      {
-                        label: "Management",
-                        value: ratingSummary?.feature_ratings.management ?? 0,
-                      },
-                      {
-                        label: "Connectivity",
-                        value: ratingSummary?.feature_ratings.connectivity ?? 0,
-                      },
-                      {
-                        label: "Green Area",
-                        value: ratingSummary?.feature_ratings.green_area ?? 0,
-                      },
-                      { label: "Locality", value: ratingSummary?.feature_ratings.locality ?? 0 },
-                    ].map((feature, index) => (
-                      <div key={index} className="flex items-center justify-between">
-                        <span className="text-gray-700">{feature.label}</span>
-                        <div className="flex items-center gap-2">
-                          <div className="flex">
-                            {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                size={16}
-                                className={`${
-                                  i < Math.floor(feature.value)
-                                    ? "fill-amber-400 text-amber-400"
-                                    : "text-gray-300"
-                                }`}
-                              />
-                            ))}
-                          </div>
-                          <span className="text-gray-900 font-semibold w-8">
-                            {(feature.value ?? 0).toFixed(1)}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Review Filter Tabs */}
-            <div className="px-8 pt-6 border-b border-gray-200">
-              <div className="flex space-x-4">
-                <button
-                  onClick={() => setReviewFilter("all")}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                    reviewFilter === "all"
-                      ? "bg-blue-100 text-blue-700"
-                      : "text-gray-600 hover:text-gray-900"
-                  }`}
-                >
-                  All ({reviews.length})
-                </button>
-                <button
-                  onClick={() => setReviewFilter("negative")}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                    reviewFilter === "negative"
-                      ? "bg-red-100 text-red-700"
-                      : "text-gray-600 hover:text-gray-900"
-                  }`}
-                >
-                  Negative First (
-                  {
-                    reviews.filter(
-                      (r) =>
-                        (r.construction +
-                          r.amenities +
-                          r.management +
-                          r.connectivity +
-                          r.green_area +
-                          r.locality) /
-                          6 <=
-                        3
-                    ).length
-                  }
-                  )
-                </button>
-                <button
-                  onClick={() => setReviewFilter("recent")}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                    reviewFilter === "recent"
-                      ? "bg-emerald-100 text-emerald-700"
-                      : "text-gray-600 hover:text-gray-900"
-                  }`}
-                >
-                  Recent First
-                </button>
-              </div>
-            </div>
-
-            {/* Reviews List (Swiper slider) */}
-            <div className="p-8">
-              {filteredReviews().length > 0 ? (
-                <div>
-                  <Swiper
-                    modules={[Navigation, Pagination, A11y]}
-                    spaceBetween={20}
-                    slidesPerView={1}
-                    navigation
-                    breakpoints={{
-                      640: { slidesPerView: 1 },
-                      768: { slidesPerView: 2 },
-                      1024: { slidesPerView: 2 },
-                      1280: { slidesPerView: 3 },
-                    }}
-                    a11y={{ enabled: true }}
-                  >
-                    {filteredReviews().map((review) => (
-                      <SwiperSlide key={review.id}>
-                        <div className="border border-gray-200 rounded-2xl p-6 hover:border-blue-300 transition-all h-full flex flex-col justify-between">
-                          {/* Review Header */}
-                          <div>
-                            <div className="flex items-start justify-between mb-4">
-                              <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 bg-gradient-to-br overflow-hidden from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
-                                  <img
-                                    src={review.user?.avatar_url ?? ""}
-                                    alt={review.user?.name ?? "Anonymous"}
-                                  />
-                                </div>
-                                <div>
-                                  <h4 className="font-bold text-gray-900">
-                                    {review.user?.name ?? "Anonymous"}
-                                  </h4>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <div className="flex">
-                                      {(() => {
-                                        const avgRating = Math.round(
-                                          (review.construction +
-                                            review.amenities +
-                                            review.management +
-                                            review.connectivity +
-                                            review.green_area +
-                                            review.locality) /
-                                            6
-                                        );
-                                        return [...Array(5)].map((_, i) => (
-                                          <Star
-                                            key={i}
-                                            size={16}
-                                            className={`${
-                                              i < avgRating
-                                                ? "fill-amber-400 text-amber-400"
-                                                : "text-gray-300"
-                                            }`}
-                                          />
-                                        ));
-                                      })()}
-                                    </div>
-                                    <span className="text-sm text-gray-500">
-                                      {new Date(review.created_at).toLocaleDateString()}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Feature Ratings */}
-                            <div className="grid grid-cols-3 sm:grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-xl">
-                              {[
-                                {
-                                  key: "construction",
-                                  label: "Construction",
-                                  value: review.construction,
-                                  Icon: Wrench,
-                                },
-                                {
-                                  key: "amenities",
-                                  label: "Amenities",
-                                  value: review.amenities,
-                                  Icon: Goal,
-                                },
-                                {
-                                  key: "management",
-                                  label: "Management",
-                                  value: review.management,
-                                  Icon: Users,
-                                },
-                                {
-                                  key: "connectivity",
-                                  label: "Connectivity",
-                                  value: review.connectivity,
-                                  Icon: CarFront,
-                                },
-                                {
-                                  key: "green_area",
-                                  label: "Green Area",
-                                  value: review.green_area,
-                                  Icon: Leaf,
-                                },
-                                {
-                                  key: "locality",
-                                  label: "Locality",
-                                  value: review.locality,
-                                  Icon: MapPin,
-                                },
-                              ].map(({ key, label, value, Icon }) => (
-                                <div
-                                  key={key}
-                                  className="flex flex-col-1 gap-2 items-center justify-center"
-                                >
-                                  {/* Icon Wrapper with Tooltip */}
-                                  <div
-                                    className="relative group cursor-default"
-                                    tabIndex={0}
-                                    title={label}
-                                  >
-                                    {/* Icon Bubble */}
-                                    <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm group-hover:scale-110 transition-all">
-                                      <div className="w-10 h-10 rounded-full bg-gray flex items-center justify-center">
-                                        <Icon className="w-5 h-5 text-yellow-400" />
-                                      </div>
-                                    </div>
-
-                                    {/* Tooltip */}
-                                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity whitespace-nowrap">
-                                      {label}
-                                      <span className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-t-4 border-t-gray-900 border-x-4 border-x-transparent"></span>
-                                    </div>
-                                  </div>
-
-                                  {/* Rating Count */}
-                                  <p className="text-xs text-gray-700 mt-1 font-semibold">
-                                    {Number(value).toFixed(1)}
-                                  </p>
-                                </div>
-                              ))}
-                            </div>
-
-                            {/* Review Content */}
-                            <div className="space-y-4">
-                              <div>
-                                <div className="flex items-center gap-2 mb-2">
-                                  <ThumbsUp size={18} className="text-emerald-600" />
-                                  <span className="font-semibold text-gray-900">Positives</span>
-                                </div>
-                                <p className="text-gray-700 bg-emerald-50 p-4 rounded-xl">
-                                  <TruncatedText
-                                    text={review.positive_comment ?? ""}
-                                    maxLength={300}
-                                  />
-                                </p>
-                              </div>
-                              <div>
-                                <div className="flex items-center gap-2 mb-2">
-                                  <ThumbsDown size={18} className="text-red-600" />
-                                  <span className="font-semibold text-gray-900">Negatives</span>
-                                </div>
-                                <p className="text-gray-700 bg-red-50 p-4 rounded-xl">
-                                  <TruncatedText
-                                    text={review.negative_comment ?? ""}
-                                    maxLength={300}
-                                  />
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </SwiperSlide>
-                    ))}
-                  </Swiper>
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <MessageCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No Reviews Yet</h3>
-                  <p className="text-gray-600">Be the first to share your experience!</p>
-                </div>
-              )}
-
-              {/* Add Review Button - show to all, redirect to login if not logged in */}
-              <div className="mt-8 text-center">
-                <button
-                  onClick={handleOpenReview}
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl font-bold"
-                >
-                  <MessageCircle size={20} />
-                  Write a Review
-                </button>
-              </div>
-            </div>
-          </div>
-        </motion.div>
       </div>
 
       {/* Inquiry Modal */}

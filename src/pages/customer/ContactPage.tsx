@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * Contact Page Component
+ * Contact Page Component (connected to backend)
  * Professional contact page with form and information
  */
 
@@ -20,9 +21,13 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useState } from "react";
+import { submitContactForm, ContactFormPayload } from "@/api/customer/contactform";
+import { toast } from "sonner";
+
+type FormErrors = Partial<Record<keyof ContactFormPayload, string>>;
 
 const ContactPage = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ContactFormPayload>({
     name: "",
     email: "",
     phone: "",
@@ -30,19 +35,8 @@ const ContactPage = () => {
     message: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Backend integration will be added later
-    console.log("Form submitted:", formData);
-    alert("Thank you for your message! We'll get back to you soon.");
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      subject: "",
-      message: "",
-    });
-  };
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -51,6 +45,78 @@ const ContactPage = () => {
       ...formData,
       [e.target.name]: e.target.value,
     });
+
+    // clear field error on change
+    setErrors((prev) => ({ ...prev, [e.target.name as keyof ContactFormPayload]: undefined }));
+  };
+
+  const validate = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    if (!formData.name.trim()) newErrors.name = "Name is required";
+    if (!formData.email.trim()) newErrors.email = "Email is required";
+    // basic email regex
+    else if (!/^\S+@\S+\.\S+$/.test(formData.email)) newErrors.email = "Enter a valid email";
+    if (!formData.subject.trim()) newErrors.subject = "Please select a subject";
+    if (!formData.message.trim()) newErrors.message = "Message cannot be empty";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+
+    if (!validate()) {
+      toast.error("Please fix the errors in the form");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const payload: ContactFormPayload = {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone?.trim() || undefined,
+        subject: formData.subject,
+        message: formData.message.trim(),
+      };
+
+      const res = await submitContactForm(payload);
+      if (res?.success) {
+        toast.success(res.message || "Message sent successfully!");
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          subject: "",
+          message: "",
+        });
+        setErrors({});
+      } else {
+        toast.error(res?.message || "Failed to send message");
+      }
+    } catch (err: any) {
+      // Handle validation errors from Laravel (422) or other errors
+      const serverMessage = err?.message;
+      // If you returned validation errors as thrown Error in client, parse them:
+      if (err?.response?.status === 422 && err?.response?.data?.errors) {
+        const fieldErrors: FormErrors = {};
+        const validation = err.response.data.errors;
+        Object.keys(validation).forEach((key) => {
+          fieldErrors[key as keyof ContactFormPayload] = validation[key][0];
+        });
+        setErrors(fieldErrors);
+        toast.error("Please fix the highlighted errors");
+      } else if (serverMessage) {
+        toast.error(serverMessage);
+      } else {
+        toast.error("Something went wrong. Please try again later.");
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -76,9 +142,7 @@ const ContactPage = () => {
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full mb-6">
               <MessageSquare className="w-4 h-4 text-emerald-400" />
-              <span className="text-sm text-white font-semibold">
-                Get In Touch
-              </span>
+              <span className="text-sm text-white font-semibold">Get In Touch</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
@@ -89,19 +153,15 @@ const ContactPage = () => {
             </h1>
 
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Have questions? We'd love to hear from you. Send us a message and
-              we'll respond as soon as possible.
+              Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as
+              possible.
             </p>
           </motion.div>
         </div>
 
         {/* Bottom Wave */}
         <div className="absolute bottom-0 left-0 right-0">
-          <svg
-            className="w-full h-12"
-            viewBox="0 0 1200 120"
-            preserveAspectRatio="none"
-          >
+          <svg className="w-full h-12" viewBox="0 0 1200 120" preserveAspectRatio="none">
             <path
               d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"
               className="fill-gray-50"
@@ -140,13 +200,9 @@ const ContactPage = () => {
                     <Phone size={20} className="text-white" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs text-gray-500 mb-1 font-medium">
-                      Phone Number
-                    </p>
+                    <p className="text-xs text-gray-500 mb-1 font-medium">Phone Number</p>
                     <p className="text-gray-900 font-bold">+91 88532 17658</p>
-                    <p className="text-xs text-gray-600 mt-1">
-                      Mon-Fri, 9AM-6PM IST
-                    </p>
+                    <p className="text-xs text-gray-600 mt-1">Mon-Fri, 9AM-6PM IST</p>
                   </div>
                 </motion.a>
 
@@ -160,15 +216,9 @@ const ContactPage = () => {
                     <Mail size={20} className="text-white" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs text-gray-500 mb-1 font-medium">
-                      Email Address
-                    </p>
-                    <p className="text-gray-900 font-bold">
-                      contact@bhub.com
-                    </p>
-                    <p className="text-xs text-gray-600 mt-1">
-                      24/7 Email Support
-                    </p>
+                    <p className="text-xs text-gray-500 mb-1 font-medium">Email Address</p>
+                    <p className="text-gray-900 font-bold">contact@bhub.com</p>
+                    <p className="text-xs text-gray-600 mt-1">24/7 Email Support</p>
                   </div>
                 </motion.a>
 
@@ -184,9 +234,7 @@ const ContactPage = () => {
                     <MapPin size={20} className="text-white" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs text-gray-500 mb-1 font-medium">
-                      Office Address
-                    </p>
+                    <p className="text-xs text-gray-500 mb-1 font-medium">Office Address</p>
                     <p className="text-gray-900 font-bold leading-relaxed">
                       D101 T-Sq Thaltej Ahmedabad, Gujarat, India
                     </p>
@@ -200,9 +248,7 @@ const ContactPage = () => {
                       <Clock size={20} className="text-blue-600" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-xs text-gray-600 mb-2 font-medium">
-                        Working Hours
-                      </p>
+                      <p className="text-xs text-gray-600 mb-2 font-medium">Working Hours</p>
                       <div className="space-y-1 text-sm">
                         <p className="flex justify-between text-gray-900 font-semibold">
                           <span>Mon - Fri:</span>
@@ -234,9 +280,7 @@ const ContactPage = () => {
                 <Sparkles className="w-5 h-5 text-emerald-600" />
                 Follow Us
               </h3>
-              <p className="text-gray-600 mb-6 text-sm">
-                Stay connected on social media for updates and news
-              </p>
+              <p className="text-gray-600 mb-6 text-sm">Stay connected on social media for updates and news</p>
               <div className="grid grid-cols-5 gap-3">
                 {[
                   { Icon: Facebook, color: "from-blue-600 to-blue-700", href: "#" },
@@ -275,12 +319,10 @@ const ContactPage = () => {
                   </div>
                   Send Us a Message
                 </h2>
-                <p className="text-gray-600">
-                  Fill out the form below and our team will get back to you within 24 hours.
-                </p>
+                <p className="text-gray-600">Fill out the form below and our team will get back to you within 24 hours.</p>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6" noValidate>
                 {/* Name and Email Row */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -294,8 +336,11 @@ const ContactPage = () => {
                       onChange={handleChange}
                       required
                       placeholder="John Doe"
-                      className="w-full px-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className={`w-full px-4 py-3.5 bg-gray-50 border-2 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
+                        errors.name ? "border-red-400 focus:ring-red-300" : "border-gray-200 focus:ring-blue-500"
+                      }`}
                     />
+                    {errors.name && <p className="text-xs text-red-600 mt-2">{errors.name}</p>}
                   </div>
 
                   <div>
@@ -309,25 +354,27 @@ const ContactPage = () => {
                       onChange={handleChange}
                       required
                       placeholder="john@example.com"
-                      className="w-full px-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className={`w-full px-4 py-3.5 bg-gray-50 border-2 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
+                        errors.email ? "border-red-400 focus:ring-red-300" : "border-gray-200 focus:ring-blue-500"
+                      }`}
                     />
+                    {errors.email && <p className="text-xs text-red-600 mt-2">{errors.email}</p>}
                   </div>
                 </div>
 
                 {/* Phone and Subject Row */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-bold text-gray-900 mb-3">
-                      Phone Number
-                    </label>
+                    <label className="block text-sm font-bold text-gray-900 mb-3">Phone Number</label>
                     <input
                       type="tel"
                       name="phone"
-                      value={formData.phone}
+                      value={formData.phone || ""}
                       onChange={handleChange}
                       placeholder="+1 (555) 000-0000"
                       className="w-full px-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     />
+                    {errors.phone && <p className="text-xs text-red-600 mt-2">{errors.phone}</p>}
                   </div>
 
                   <div>
@@ -339,7 +386,9 @@ const ContactPage = () => {
                       value={formData.subject}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer font-medium"
+                      className={`w-full px-4 py-3.5 bg-gray-50 border-2 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all cursor-pointer font-medium ${
+                        errors.subject ? "border-red-400 focus:ring-red-300" : "border-gray-200 focus:ring-blue-500"
+                      }`}
                     >
                       <option value="">Select a subject</option>
                       <option value="general">General Inquiry</option>
@@ -348,6 +397,7 @@ const ContactPage = () => {
                       <option value="partnership">Partnership Opportunity</option>
                       <option value="other">Other</option>
                     </select>
+                    {errors.subject && <p className="text-xs text-red-600 mt-2">{errors.subject}</p>}
                   </div>
                 </div>
 
@@ -363,17 +413,33 @@ const ContactPage = () => {
                     required
                     rows={6}
                     placeholder="Tell us how we can help you..."
-                    className="w-full px-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                    className={`w-full px-4 py-3.5 bg-gray-50 border-2 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all resize-none ${
+                      errors.message ? "border-red-400 focus:ring-red-300" : "border-gray-200 focus:ring-blue-500"
+                    }`}
                   />
+                  {errors.message && <p className="text-xs text-red-600 mt-2">{errors.message}</p>}
                 </div>
 
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all flex items-center justify-center gap-3 transform hover:scale-105"
+                  disabled={submitting}
+                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 transition-all flex items-center justify-center gap-3 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Send className="w-5 h-5" />
-                  Send Message
+                  {submitting ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                      </svg>
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-5 h-5" />
+                      Send Message
+                    </>
+                  )}
                 </button>
 
                 {/* Info Message */}
@@ -409,12 +475,8 @@ const ContactPage = () => {
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">
                 <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 font-semibold text-lg">
-                  D101 T-Sq Thaltej Ahmedabad, Gujarat, India
-                </p>
-                <p className="text-gray-500 text-sm mt-2">
-                  Map integration will be added soon
-                </p>
+                <p className="text-gray-600 font-semibold text-lg">D101 T-Sq Thaltej Ahmedabad, Gujarat, India</p>
+                <p className="text-gray-500 text-sm mt-2">Map integration will be added soon</p>
               </div>
             </div>
           </div>
