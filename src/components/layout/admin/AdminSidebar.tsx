@@ -22,6 +22,9 @@ import {
   ClipboardList,
   CreditCard,
   Bell,
+  GalleryVerticalEnd,
+  Newspaper,
+  MonitorCog,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
@@ -130,6 +133,30 @@ const menuItems =
               name: "Add Subscription",
               icon: PlusCircle,
               path: "/admin/subscriptions/new",
+              exact: true,
+            },
+          ],
+        },
+        {
+          name: "CMS",
+          icon: MonitorCog,
+          children: [
+            {
+              name: "FAQs",
+              icon: List,
+              path: "/admin/faqs",
+              exact: true,
+            },
+            {
+              name: "Blogs",
+              icon: GalleryVerticalEnd,
+              path: "/admin/blogs",
+              exact: true,
+            },
+            {
+              name: "News",
+              icon: Newspaper,
+              path: "/admin/news",
               exact: true,
             },
           ],
