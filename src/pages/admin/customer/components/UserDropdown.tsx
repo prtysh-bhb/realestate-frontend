@@ -33,6 +33,8 @@ const UserDropdown = ({ scrolled }: HeaderProps) => {
   }, []);
 
   useEffect(() => {
+    if(!user?.id) return;
+    
     echo.private(`notified.${user?.id}`)
     .listen(".notified", () => {
       fetchNotifications();
