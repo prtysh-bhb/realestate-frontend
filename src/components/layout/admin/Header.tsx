@@ -48,6 +48,8 @@ const Header = ({ onMenuClick }: HeaderProps) => {
   };
 
   useEffect(() => {
+    if(!user?.id) return;
+
     echo.private(`notified.${user?.id}`)
     .listen(".notified", () => {
       fetchNotifications();
