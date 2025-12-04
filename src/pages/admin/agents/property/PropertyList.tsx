@@ -17,6 +17,7 @@ import {
   Loader2,
   AlertTriangle,
   X,
+  Star,
 } from "lucide-react";
 import { formatAmount } from "@/helpers/customer_helper";
 
@@ -103,9 +104,7 @@ const PropertyList = () => {
       <div className="p-0 min-h-screen">
         {/* ---------- Header ---------- */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold text-gray-800">
-            🏠 My Properties
-          </h1>
+          <h1 className="text-2xl font-semibold text-gray-800">🏠 My Properties</h1>
           <Button
             onClick={() => navigate("/agent/properties/new")}
             className="bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
@@ -124,9 +123,7 @@ const PropertyList = () => {
           <div className="text-center py-20 bg-white rounded-xl border border-dashed border-gray-300 shadow-sm">
             <Home className="w-10 h-10 mx-auto text-gray-400 mb-3" />
             <p className="text-gray-600 text-sm">No properties found yet.</p>
-            <p className="text-gray-400 text-xs">
-              Add your first property to get started.
-            </p>
+            <p className="text-gray-400 text-xs">Add your first property to get started.</p>
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -138,9 +135,16 @@ const PropertyList = () => {
                 {/* ---------- Property Info ---------- */}
                 <div>
                   <div className="flex justify-between items-start mb-3">
-                    <h2 className="text-lg font-semibold text-gray-800 group-hover:text-blue-600 transition">
-                      {property.title}
-                    </h2>
+                    <div className="flex gap-2 items-center">
+                      <h2 className="text-lg font-semibold text-gray-800 group-hover:text-blue-600 transition">
+                        {property.title}
+                      </h2>
+                      {property.is_featured && (
+                        <span className="text-xs font-semibold p-[5px] rounded-full capitalize bg-purple-600 text-white">
+                          <Star size={16} />
+                        </span>
+                      )}
+                    </div>
                     <div className="flex flex-col items-end gap-1">
                       <span
                         className={`text-xs font-semibold px-3 py-1 rounded-full capitalize ${getStatusColor(
@@ -176,9 +180,7 @@ const PropertyList = () => {
                     variant="outline"
                     size="sm"
                     className="flex items-center gap-1 text-blue-600 border-blue-200 hover:bg-blue-50 cursor-pointer"
-                    onClick={() =>
-                      navigate(`/agent/properties/${property.id}`)
-                    }
+                    onClick={() => navigate(`/agent/properties/${property.id}`)}
                   >
                     <Eye size={16} /> View
                   </Button>
@@ -188,9 +190,7 @@ const PropertyList = () => {
                       variant="outline"
                       size="sm"
                       className="text-blue-600 border-blue-200 hover:bg-blue-50 cursor-pointer"
-                      onClick={() =>
-                        navigate(`/agent/properties/${property.id}/edit`)
-                      }
+                      onClick={() => navigate(`/agent/properties/${property.id}/edit`)}
                     >
                       <Edit size={16} />
                     </Button>
@@ -228,8 +228,7 @@ const PropertyList = () => {
               </div>
 
               <p className="text-gray-600 text-sm mb-4">
-                Are you sure you want to delete this property? This action cannot
-                be undone.
+                Are you sure you want to delete this property? This action cannot be undone.
               </p>
 
               <div className="flex justify-end gap-2">

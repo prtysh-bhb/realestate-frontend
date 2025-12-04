@@ -38,15 +38,15 @@ const SignupPage = () => {
   const getRestrictedDomains = async () => {
     const res = await getRestrictedMailDomains();
     setRestrictedDomains(res.domains);
-  }
+  };
 
   useEffect(() => {
     getRestrictedDomains();
   }, []);
 
   const isRestrictedEmail = (email: string): boolean => {
-    const domain = email.split('@')[1]?.toLowerCase();
-    return restrictedDomains.map(d => d.toLowerCase()).includes(domain);
+    const domain = email.split("@")[1]?.toLowerCase();
+    return restrictedDomains.map((d) => d.toLowerCase()).includes(domain);
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -91,7 +91,16 @@ const SignupPage = () => {
       newErrors.email = "Enter a valid email address.";
       hasError = true;
     }
-    
+
+    const [localPart] = email.split("@");
+
+    // Username rule: If 8+ characters AND contains no alphabet
+    if (!/[a-zA-Z]/.test(localPart)) {
+      newErrors.email =
+        "Email username must contain at least one alphabetical character (a–z).";
+      hasError = true;
+    }
+
     if (isRestrictedEmail(email)) {
       newErrors.email = "This email domain is not allowed!";
       hasError = true;
@@ -127,23 +136,23 @@ const SignupPage = () => {
 
       if (data.success) {
         const userObj = data.data?.user ?? null;
-      const token = data.data?.token ?? null;
-      if (token) localStorage.setItem("token", token);
-      if (userObj) localStorage.setItem("user", JSON.stringify(userObj));
+        const token = data.data?.token ?? null;
+        if (token) localStorage.setItem("token", token);
+        if (userObj) localStorage.setItem("user", JSON.stringify(userObj));
 
-      toast.success("Account created successfully! 🎉");
+        toast.success("Account created successfully! 🎉");
 
-      // prefer server-provided role, fallback to form role
-      const assignedRole = (userObj?.role ?? role ?? "").toString().toLowerCase();
+        // prefer server-provided role, fallback to form role
+        const assignedRole = (userObj?.role ?? role ?? "").toString().toLowerCase();
 
-      if (assignedRole === "admin") {
-        navigate("/admin/dashboard");
-      } else if (assignedRole === "agent") {
-        navigate("/agent/dashboard");
-      } else {
-        // default -> customer profile
-        navigate("/profile");
-      }
+        if (assignedRole === "admin") {
+          navigate("/admin/dashboard");
+        } else if (assignedRole === "agent") {
+          navigate("/agent/dashboard");
+        } else {
+          // default -> customer profile
+          navigate("/profile");
+        }
       } else {
         toast.error("Registration failed");
         setError("Registration failed");
@@ -187,9 +196,8 @@ const SignupPage = () => {
               <div
                 className="absolute inset-0"
                 style={{
-                  backgroundImage:
-                    'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
-                  backgroundSize: '40px 40px',
+                  backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
+                  backgroundSize: "40px 40px",
                 }}
               />
             </div>
@@ -229,11 +237,11 @@ const SignupPage = () => {
                 className="space-y-4 text-left max-w-md"
               >
                 {[
-                  'Free account with no hidden fees',
-                  'Access to exclusive property listings',
-                  'Personalized property recommendations',
-                  'Direct communication with agents',
-                  'Save and compare favorite properties',
+                  "Free account with no hidden fees",
+                  "Access to exclusive property listings",
+                  "Personalized property recommendations",
+                  "Direct communication with agents",
+                  "Save and compare favorite properties",
                 ].map((benefit, index) => (
                   <div key={index} className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center flex-shrink-0">
@@ -273,12 +281,8 @@ const SignupPage = () => {
 
               {/* Header */}
               <div className="mb-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                  Create Account
-                </h2>
-                <p className="text-gray-600">
-                  Fill in your details to get started
-                </p>
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h2>
+                <p className="text-gray-600">Fill in your details to get started</p>
               </div>
 
               {/* Form */}
@@ -309,7 +313,9 @@ const SignupPage = () => {
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Enter your name"
                       maxLength={50}
-                      onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => handleKeyPress(e, /[a-zA-Z ]/, false)}
+                      onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                        handleKeyPress(e, /[a-zA-Z ]/, false)
+                      }
                       required
                       className={`pl-12 h-14 bg-gray-50 border-2 ${
                         fieldErrors.name ? "border-red-300" : "border-gray-200"
@@ -317,9 +323,7 @@ const SignupPage = () => {
                     />
                   </div>
                   {fieldErrors.name && (
-                    <p className="text-xs text-red-600 mt-2 font-medium">
-                      {fieldErrors.name}
-                    </p>
+                    <p className="text-xs text-red-600 mt-2 font-medium">{fieldErrors.name}</p>
                   )}
                 </div>
 
@@ -336,7 +340,9 @@ const SignupPage = () => {
                     <Input
                       type="email"
                       value={email}
-                      onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => handleKeyPress(e, /[a-z0-9@._-]/, false)}
+                      onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                        handleKeyPress(e, /[a-z0-9@._-]/, false)
+                      }
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
                       maxLength={70}
@@ -347,9 +353,7 @@ const SignupPage = () => {
                     />
                   </div>
                   {fieldErrors.email && (
-                    <p className="text-xs text-red-600 mt-2 font-medium">
-                      {fieldErrors.email}
-                    </p>
+                    <p className="text-xs text-red-600 mt-2 font-medium">{fieldErrors.email}</p>
                   )}
                 </div>
 
@@ -379,13 +383,11 @@ const SignupPage = () => {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                     >
-                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
                     </button>
                   </div>
                   {fieldErrors.password && (
-                    <p className="text-xs text-red-600 mt-2 font-medium">
-                      {fieldErrors.password}
-                    </p>
+                    <p className="text-xs text-red-600 mt-2 font-medium">{fieldErrors.password}</p>
                   )}
                 </div>
 
@@ -412,16 +414,10 @@ const SignupPage = () => {
                     />
                     <button
                       type="button"
-                      onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                     >
-                      {showConfirmPassword ? (
-                        <EyeOff size={20} />
-                      ) : (
-                        <Eye size={20} />
-                      )}
+                      {showConfirmPassword ? <Eye size={20} /> : <EyeOff size={20} />}
                     </button>
                   </div>
                   {fieldErrors.confirmPassword && (
@@ -438,15 +434,15 @@ const SignupPage = () => {
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     {[
-                      { value: 'customer', label: 'Customer', desc: 'Looking for properties' },
-                      { value: 'agent', label: 'Agent', desc: 'Selling properties' },
+                      { value: "customer", label: "Customer", desc: "Looking for properties" },
+                      { value: "agent", label: "Agent", desc: "Selling properties" },
                     ].map((option) => (
                       <label
                         key={option.value}
                         className={`relative flex items-start p-4 border-2 rounded-2xl cursor-pointer transition-all ${
                           role === option.value
-                            ? 'border-emerald-600 bg-emerald-50'
-                            : 'border-gray-200 hover:border-emerald-300 hover:bg-gray-50'
+                            ? "border-emerald-600 bg-emerald-50"
+                            : "border-gray-200 hover:border-emerald-300 hover:bg-gray-50"
                         }`}
                       >
                         <input
@@ -459,11 +455,13 @@ const SignupPage = () => {
                         />
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                              role === option.value
-                                ? 'border-emerald-600 bg-emerald-600'
-                                : 'border-gray-300'
-                            }`}>
+                            <div
+                              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                                role === option.value
+                                  ? "border-emerald-600 bg-emerald-600"
+                                  : "border-gray-300"
+                              }`}
+                            >
                               {role === option.value && (
                                 <div className="w-2 h-2 bg-white rounded-full" />
                               )}

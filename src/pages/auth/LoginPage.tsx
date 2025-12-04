@@ -256,7 +256,7 @@ const LoginPage = () => {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                     >
-                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
                     </button>
                   </div>
                 </div>
@@ -321,8 +321,8 @@ const LoginPage = () => {
                       type="button"
                       onClick={() =>
                         (window.location.href = `${
-                          import.meta.env.VITE_BACKEND_URL
-                        }/auth/${social.provider}/redirect`)
+                          import.meta.env.VITE_API_URL
+                        }/auth/${social.provider}`)
                       }
                       className="flex cursor-pointer items-center justify-center p-4 border-2 border-gray-200 rounded-2xl hover:bg-gray-50 hover:border-gray-300 transition-all transform hover:scale-105"
                     >

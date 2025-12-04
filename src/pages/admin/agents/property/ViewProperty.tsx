@@ -1,16 +1,23 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Trash2, Home } from "lucide-react";
+import { ArrowLeft, Trash2, Home, Star, StarOff } from "lucide-react";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
-import { getPropertyById, deleteProperty, deletePropertyVideo } from "@/api/agent/property";
+import {
+  getPropertyById,
+  deleteProperty,
+  deletePropertyVideo,
+  markAsFeatured,
+  removeFeatured,
+} from "@/api/agent/property";
 import type { Property } from "@/types/property";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import PropertyDocuments from "./PropertyDocuments";
 import { Attributes, propertyAttributes } from "@/api/customer/properties";
 import { formatAmount } from "@/helpers/customer_helper";
-import ReactPlayer from 'react-player';
+import ReactPlayer from "react-player";
 import DeleteModal from "../components/DeleteModal";
 
 const ViewProperty = () => {
@@ -23,6 +30,8 @@ const ViewProperty = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showVideoDeleteModal, setShowVideoDeleteModal] = useState(false);
+  const [togglingFeatured, setTogglingFeatured] = useState(false);
+  const [featuredRemaining, setFeaturedRemaining] = useState<number | "unlimited" | null>(null);
 
   const fetchPropertyAttributes = async () => {
     const response = await propertyAttributes();
@@ -30,6 +39,54 @@ const ViewProperty = () => {
     setPropertyTypes(response.data.property_types);
   };
 
+  const updatePropertyFromResponse = (respData: any) => {
+    if (!respData) return;
+    if (respData.property) {
+      setProperty(respData.property);
+    }
+    if (respData.featured_remaining !== undefined) {
+      setFeaturedRemaining(respData.featured_remaining);
+    }
+  };
+  const handleMarkAsFeatured = async () => {
+    if (!property?.id) return;
+    setTogglingFeatured(true);
+    try {
+      const data = (await markAsFeatured(property.id)) as any;
+      if (data?.success) {
+        toast.success(data.message || "Property marked as featured");
+        // update property + remaining from backend response if provided
+        updatePropertyFromResponse(data.data ?? {});
+      } else {
+        toast.error(data?.message || "Failed to mark featured");
+      }
+    } catch (err: any) {
+      // backend may return 403 with detailed message (e.g. limit reached)
+      const msg = err?.response?.data?.message || err?.message || "Failed to mark featured";
+      toast.error(msg);
+    } finally {
+      setTogglingFeatured(false);
+    }
+  };
+
+  const handleRemoveFeatured = async () => {
+    if (!property?.id) return;
+    setTogglingFeatured(true);
+    try {
+      const data = (await removeFeatured(property.id)) as any;
+      if (data?.success) {
+        toast.success(data?.message || "Featured removed");
+        updatePropertyFromResponse(data.data ?? {});
+      } else {
+        toast.error(data?.message || "Failed to remove featured");
+      }
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || "Failed to remove featured";
+      toast.error(msg);
+    } finally {
+      setTogglingFeatured(false);
+    }
+  };
   const handleBack = () => {
     if (window.history.length > 2) {
       navigate(-1);
@@ -100,9 +157,7 @@ const ViewProperty = () => {
     );
 
   const allImages =
-    property.image_urls && property.image_urls.length > 0
-      ? property.image_urls
-      : [];
+    property.image_urls && property.image_urls.length > 0 ? property.image_urls : [];
 
   return (
     <AdminLayout>
@@ -116,21 +171,56 @@ const ViewProperty = () => {
             <ArrowLeft size={18} />
             Back
           </button>
+          <div className="flex gap-2 ">
+            {property.is_featured ? (
+              <button
+                onClick={handleRemoveFeatured}
+                disabled={togglingFeatured}
+                className="inline-flex items-center gap-2 bg-gray-200 text-gray-800 px-3 py-2 rounded hover:bg-gray-200 transition text-sm"
+                title="Remove featured"
+              >
+                <StarOff size={16} />
+                <span className="lg:block hidden">
+                {togglingFeatured ? "Removing..." : "Unfeature"}
+                </span>
+              </button>
+            ) : (
+              <button
+                onClick={handleMarkAsFeatured}
+                disabled={togglingFeatured}
+                className="inline-flex items-center gap-2 bg-yellow-300 text-yellow-800 px-3 py-2 rounded hover:bg-yellow-600 transition text-sm"
+                title="Mark as featured"
+              >
+                <Star size={16} />
+                <span className="lg:block hidden">
+                {togglingFeatured ? "Featuring..." : "Feature"}
+                </span>
+              </button>
+            )}
 
-          <button
-            onClick={() => setShowDeleteModal(true)}
-            className="flex items-center gap-2 bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 transition text-sm"
-          >
-            <Trash2 size={16} />
-            Delete Property
-          </button>
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="flex items-center gap-2 bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 transition text-sm"
+            >
+              <Trash2 size={16} />
+              <span className="lg:block hidden">
+              Delete Property
+              </span>
+            </button>
+          </div>
         </div>
 
         {/* ---------- Title ---------- */}
         <div>
           <h1 className="text-3xl font-bold mb-2 text-gray-900">
-            {property.title}
+            {property.title}{" "}
+            {property.is_featured && (
+              <span className="ml-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-300 text-yellow-800 text-sm font-semibold">
+                <Star className="w-4 h-4" /> Featured
+              </span>
+            )}
           </h1>
+
           <p className="text-sm text-gray-500">
             Property ID: {property.id} | Status:{" "}
             <span
@@ -175,14 +265,14 @@ const ViewProperty = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Info label="Price" value={`${formatAmount(property.price)}`} />
               <Info label="Type" value={property.type} />
-              <Info label="Property Type" value={propertyTypes?.find(a => a.key === property?.property_type)?.label ?? '-'} />
+              <Info
+                label="Property Type"
+                value={propertyTypes?.find((a) => a.key === property?.property_type)?.label ?? "-"}
+              />
               <Info label="Bedrooms" value={property.bedrooms} />
               <Info label="Bathrooms" value={property.bathrooms} />
               <Info label="Area" value={`${property.area} sqft`} />
-              <Info
-                label="Location"
-                value={`${property.city ?? "—"}, ${property.state ?? "—"}`}
-              />
+              <Info label="Location" value={`${property.city ?? "—"}, ${property.state ?? "—"}`} />
               <Info label="Address" value={property.address} />
               <Info label="Zip Code" value={property.zipcode} />
             </div>
@@ -192,7 +282,7 @@ const ViewProperty = () => {
                 <p className="text-gray-500 text-sm mb-2">Amenities</p>
                 <div className="flex flex-wrap gap-2">
                   {property.amenities.map((amenityKey: string, i: number) => {
-                    const amenity = amenities?.find(a => a.key === amenityKey);
+                    const amenity = amenities?.find((a) => a.key === amenityKey);
 
                     return (
                       <span
@@ -230,9 +320,7 @@ const ViewProperty = () => {
                 </p>
 
                 {property.rejection_reason && (
-                  <p className="text-sm text-red-500 mt-1">
-                    Reason: {property.rejection_reason}
-                  </p>
+                  <p className="text-sm text-red-500 mt-1">Reason: {property.rejection_reason}</p>
                 )}
               </div>
             )}
@@ -241,9 +329,7 @@ const ViewProperty = () => {
               <p>
                 Created on:{" "}
                 <span className="text-gray-800 font-medium">
-                  {property.created_at
-                    ? new Date(property.created_at).toLocaleDateString()
-                    : "—"}
+                  {property.created_at ? new Date(property.created_at).toLocaleDateString() : "—"}
                 </span>
               </p>
               {property.updated_at && (
@@ -266,23 +352,24 @@ const ViewProperty = () => {
         {property.video_url && (
           <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-6 relative">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">
-                Video
-              </h3>
+              <h3 className="text-lg font-semibold text-gray-800">Video</h3>
 
-              <label onClick={() => setShowVideoDeleteModal(true)} className="cursor-pointer inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">
-                  <>
-                    <Trash2 size={16} /> Delete Video
-                  </>
+              <label
+                onClick={() => setShowVideoDeleteModal(true)}
+                className="cursor-pointer inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+              >
+                <>
+                  <Trash2 size={16} /> Delete Video
+                </>
               </label>
             </div>
             <div className="relative h-72 sm:h-[500px] lg:h-[500px] bg-black rounded-xl overflow-hidden">
               <ReactPlayer
-                src={property?.video_url ?? ''}
+                src={property?.video_url ?? ""}
                 width="100%"
                 height="100%"
                 controls
-                style={{ borderRadius: '12px' }}
+                style={{ borderRadius: "12px" }}
               />
             </div>
           </div>

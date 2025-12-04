@@ -70,7 +70,6 @@ export const getPropertyById = async (id: number): Promise<Property> => {
 export const createProperty = async (
   data: FormData | PropertyFormData
 ): Promise<ApiResponse<CreatePropertyResponse>> => {
-  try {
     let payload: FormData;
 
     if (data instanceof FormData) {
@@ -95,9 +94,6 @@ export const createProperty = async (
     );
 
     return response.data;
-  } catch (error) {
-    throw handleApiError(error);
-  }
 };
 
 /**
@@ -155,6 +151,27 @@ export const deleteProperty = async (id: number): Promise<ApiResponse<null>> => 
 export const deletePropertyVideo = async (id: number): Promise<ApiResponse<null>> => {
   try {
     const response = await api.delete<ApiResponse<null>>(`/agent/properties/${id}/video`);
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+};
+
+export const markAsFeatured = async (id: number) => {
+  try {
+    const response = await api.post(`/agent/properties/${id}/mark-featured`);
+    return response.data; // expecting { success, message, data: { property, featured_remaining } }
+  } catch (error) {
+    throw handleApiError(error);
+  }
+};
+
+/**
+ * Remove featured status (agent)
+ */
+export const removeFeatured = async (id: number) => {
+  try {
+    const response = await api.post(`/agent/properties/${id}/remove-featured`);
     return response.data;
   } catch (error) {
     throw handleApiError(error);

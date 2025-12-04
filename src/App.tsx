@@ -77,6 +77,8 @@ import CreateReminder from "./pages/admin/agents/reminders/CreateReminder";
 import EditReminder from "./pages/admin/agents/reminders/EditReminder";
 import ShowReminder from "./pages/admin/agents/reminders/ShowReminder";
 import CustomerChatPage from "./pages/customer/CustomerChatPage";
+import FAQList from "./pages/admin/cms/faqs/FAQList";
+import BlogList from "./pages/admin/cms/faqs/BlogList";
 
 function App() {
   return (
@@ -188,6 +190,32 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["agent"]}>
                 <AgentDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ---------------- AGENT SUBSCRIPTION ---------------- */}
+          <Route
+            path="/agent/subscription-plans"
+            element={
+              <ProtectedRoute allowedRoles={["agent"]}>
+                <SubscriptionPlans />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/agent/subscription-plan/checkout/:planId"
+            element={
+              <ProtectedRoute allowedRoles={["agent"]}>
+                <SubscriptionCheckout />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/agent/my-subscriptions"
+            element={
+              <ProtectedRoute allowedRoles={["agent"]}>
+                <MySubscriptions />
               </ProtectedRoute>
             }
           />
@@ -443,6 +471,32 @@ function App() {
           />
           <Route
             path="/admin/properties/stats"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <PropertyStatsAdmin />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ---------------- CMS (ADMIN) ---------------- */}
+          <Route
+            path="/admin/faqs"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <FAQList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/blogs"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <BlogList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/news"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <PropertyStatsAdmin />

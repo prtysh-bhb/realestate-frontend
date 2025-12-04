@@ -24,11 +24,14 @@ import {
   Lock,
   AlertTriangle,
   Building2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { validateImage } from "@/helpers/image_helper";
+import { handleKeyPress } from "@/helpers/customer_helper";
 
 const AgentProfilePage = () => {
   const { user, setUser } = useAuth();
@@ -37,12 +40,18 @@ const AgentProfilePage = () => {
     new_password: "",
     new_password_confirmation: "",
   });
+  const [showPassword, setShowPassword] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
   const [loading, setLoading] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchProfile = async () => {
@@ -63,7 +72,9 @@ const AgentProfilePage = () => {
     try {
       await updateProfile(user);
       toast.success("Profile updated successfully!");
-      fetchProfile();
+      await fetchProfile();
+      // Redirect to the agent profile page after successful save
+      navigate("/agent/profile");
     } catch (err: any) {
       const msg = err?.response?.data?.message || "Failed to update profile.";
       toast.error(msg);
@@ -83,6 +94,7 @@ const AgentProfilePage = () => {
         new_password: "",
         new_password_confirmation: "",
       });
+      setShowPassword({ current: false, new: false, confirm: false });
     } catch {
       toast.error("Failed to change password");
     }
@@ -240,6 +252,9 @@ const AgentProfilePage = () => {
                 <Input
                   value={user.name || ""}
                   onChange={(e) => setUser({ ...user, name: e.target.value })}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                    handleKeyPress(e, /[a-zA-Z ]/, false)
+                  }
                   placeholder="Full Name"
                   required
                   maxLength={50}
@@ -267,6 +282,9 @@ const AgentProfilePage = () => {
                   onChange={(e) => setUser({ ...user, phone: e.target.value })}
                   placeholder="Phone Number"
                   maxLength={15}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                    handleKeyPress(e, /[0-9]/, false)
+                  }
                   inputMode="tel"
                   className="border-gray-200 dark:border-gray-700"
                 />
@@ -280,6 +298,9 @@ const AgentProfilePage = () => {
                   onChange={(e) => setUser({ ...user, zipcode: e.target.value })}
                   placeholder="Zip Code"
                   maxLength={10}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                    handleKeyPress(e, /[0-9]/, false)
+                  }
                   inputMode="numeric"
                   pattern="\d*"
                   className="border-gray-200 dark:border-gray-700"
@@ -314,6 +335,9 @@ const AgentProfilePage = () => {
                 <Input
                   value={user.city || ""}
                   onChange={(e) => setUser({ ...user, city: e.target.value })}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                    handleKeyPress(e, /[a-zA-Z ]/, false)
+                  }
                   placeholder="City"
                   maxLength={50}
                   className="border-gray-200 dark:border-gray-700"
@@ -326,6 +350,9 @@ const AgentProfilePage = () => {
                 <Input
                   value={user.state || ""}
                   onChange={(e) => setUser({ ...user, state: e.target.value })}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                    handleKeyPress(e, /[a-zA-Z ]/, false)
+                  }
                   placeholder="State"
                   maxLength={50}
                   className="border-gray-200 dark:border-gray-700"
@@ -348,6 +375,9 @@ const AgentProfilePage = () => {
                 <Input
                   value={user.company_name || ""}
                   onChange={(e) => setUser({ ...user, company_name: e.target.value })}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                    handleKeyPress(e, /[a-zA-Z ]/, false)
+                  }
                   placeholder="Company Name"
                   maxLength={100}
                   className="border-gray-200 dark:border-gray-700"
@@ -360,6 +390,9 @@ const AgentProfilePage = () => {
                 <Input
                   value={user.license_number || ""}
                   onChange={(e) => setUser({ ...user, license_number: e.target.value })}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                    handleKeyPress(e, /[a-zA-Z0-9]/, false)
+                  }
                   placeholder="License Number"
                   maxLength={50}
                   className="border-gray-200 dark:border-gray-700"
@@ -415,49 +448,76 @@ const AgentProfilePage = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Current Password
                 </label>
-                <Input
-                  type="password"
-                  placeholder="Current Password"
-                  value={password.current_password}
-                  maxLength={50}
-                  onChange={(e) =>
-                    setPassword({ ...password, current_password: e.target.value })
-                  }
-                  className="border-gray-200 dark:border-gray-700"
-                />
+                <div className="relative">
+                  <Input
+                    type={showPassword.current ? "text" : "password"}
+                    placeholder="Current Password"
+                    value={password.current_password}
+                    maxLength={50}
+                    onChange={(e) =>
+                      setPassword({ ...password, current_password: e.target.value })
+                    }
+                    className="border-gray-200 dark:border-gray-700 pr-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword({ ...showPassword, current: !showPassword.current })}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400"
+                  >
+                    {showPassword.current ? <Eye size={18} /> : <EyeOff size={18} />}
+                  </button>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   New Password
                 </label>
-                <Input
-                  type="password"
-                  placeholder="New Password"
-                  value={password.new_password}
-                  maxLength={50}
-                  onChange={(e) =>
-                    setPassword({ ...password, new_password: e.target.value })
-                  }
-                  className="border-gray-200 dark:border-gray-700"
-                />
+                <div className="relative">
+                  <Input
+                    type={showPassword.new ? "text" : "password"}
+                    placeholder="New Password"
+                    value={password.new_password}
+                    maxLength={50}
+                    onChange={(e) =>
+                      setPassword({ ...password, new_password: e.target.value })
+                    }
+                    className="border-gray-200 dark:border-gray-700 pr-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword({ ...showPassword, new: !showPassword.new })}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400"
+                  >
+                    {showPassword.new ? <Eye size={18} /> : <EyeOff size={18} />}
+                  </button>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Confirm Password
                 </label>
-                <Input
-                  type="password"
-                  placeholder="Confirm New Password"
-                  maxLength={50}
-                  value={password.new_password_confirmation}
-                  onChange={(e) =>
-                    setPassword({
-                      ...password,
-                      new_password_confirmation: e.target.value,
-                    })
-                  }
-                  className="border-gray-200 dark:border-gray-700"
-                />
+                <div className="relative">
+                  <Input
+                    type={showPassword.confirm ? "text" : "password"}
+                    placeholder="Confirm New Password"
+                    maxLength={50}
+                    value={password.new_password_confirmation}
+                    onChange={(e) =>
+                      setPassword({
+                        ...password,
+                        new_password_confirmation: e.target.value,
+                      })
+                    }
+                    className="border-gray-200 dark:border-gray-700 pr-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword({ ...showPassword, confirm: !showPassword.confirm })}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400"
+                  >
+                    {showPassword.confirm ? <Eye size={18} /> : <EyeOff size={18} />}
+                  </button>
+                </div>
               </div>
             </div>
             <Button

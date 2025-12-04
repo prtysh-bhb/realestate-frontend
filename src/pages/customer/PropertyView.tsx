@@ -4,6 +4,8 @@
  * PropertyView Component
  * Professional property details page with premium UI
  *
+ * Updated to use review API types and flow from src/api/customer/reviews.ts
+ *
  * Screenshot (dev): /mnt/data/1ab1f4d7-eed7-4bb1-820b-277b5460a353.png
  */
 
@@ -44,6 +46,15 @@ import {
   Calendar,
   Clock,
   X,
+  Star,
+  ThumbsUp,
+  ThumbsDown,
+  MessageCircle,
+  Leaf,
+  Goal,
+  Users,
+  CarFront,
+  Wrench,
 } from "lucide-react";
 import { JSX, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -51,10 +62,53 @@ import CustomerInquiryModal from "./CustomerInquiryModal";
 import { toast } from "sonner";
 import { formatAmount, getDocumentTypeFromUrl, getFileSizeInMB } from "@/helpers/customer_helper";
 import ImageModal from "./ImageModal";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import ReactPlayer from "react-player";
 import moment from "moment-timezone";
 import { removeFavProperties, setFavProperties } from "@/api/customer/properties";
+
+// Reviews API client and types
+import {
+  fetchPropertyReviews,
+  submitPropertyReview,
+  Review as ReviewType,
+  CreateReviewPayload,
+  submitAgentReview,
+} from "@/api/customer/propertyreview";
+
+// Swiper imports
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination, A11y } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import { TruncatedText } from "@/components/ui/TruncatedText";
+import LoanCalculator from "@/components/property/LoanCalculator";
+import PropertyValuation from "@/components/property/PropertyValuation";
+
+/**
+ * Local RatingSummary type for frontend display (backend doesn't return this directly)
+ */
+interface RatingSummary {
+  average_rating: number;
+  total_reviews: number;
+  recommended_percentage?: number;
+  feature_ratings: {
+    construction: number;
+    amenities: number;
+    management: number;
+    connectivity: number;
+    green_area: number;
+    locality: number;
+  };
+  rating_distribution?: {
+    5: number;
+    4: number;
+    3: number;
+    2: number;
+    1: number;
+  };
+}
 
 const PropertyView = () => {
   const { id } = useParams<{ id: string }>();
@@ -81,12 +135,68 @@ const PropertyView = () => {
   const [locationInput, setLocationInput] = useState<string>("");
   const [durationMinutes, setDurationMinutes] = useState<number>(30);
   const [creatingAppointment, setCreatingAppointment] = useState(false);
-  const [isFav, setIsFav] = useState<boolean>(property?.is_favorite ?? false);
+  const [isFav, setIsFav] = useState<boolean>(false);
+
+  // Review and Rating state
+  const [reviews, setReviews] = useState<ReviewType[]>([]);
+  const [ratingSummary, setRatingSummary] = useState<RatingSummary | null>(null);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewFilter, setReviewFilter] = useState<"all" | "negative" | "recent">("all");
+  // userReview now matches backend CreateReviewPayload
+  const [userReview, setUserReview] = useState<
+    CreateReviewPayload & { positive_comment?: string | null; negative_comment?: string | null }
+  >({
+    construction: 3,
+    amenities: 3,
+    management: 3,
+    connectivity: 3,
+    green_area: 3,
+    locality: 3,
+    positive_comment: "",
+    negative_comment: "",
+  });
+
+  const [isAgentReviewModalOpen, setIsAgentReviewModalOpen] = useState(false);
+  const [agentRating, setAgentRating] = useState(0);
+  const [agentComment, setAgentComment] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   const fetchPropertyAttributes = async () => {
-    const response = await propertyAttributes();
-    setAmenities(response.data.amenities);
-    setPropertyTypes(response.data.property_types);
+    try {
+      const response = await propertyAttributes();
+      setAmenities(response.data.amenities);
+      setPropertyTypes(response.data.property_types);
+    } catch (err) {
+      console.error("Failed to load property attributes", err);
+    }
+  };
+
+  const handleSubmitAgentReview = async () => {
+    if (!property?.agent?.id || agentRating === 0) return;
+
+    setIsSubmittingReview(true);
+    try {
+      const response = await submitAgentReview(property.agent.id, {
+        rating: agentRating,
+        comment: agentComment.trim() || undefined,
+      });
+
+      if (response.success) {
+        toast.success("Review submitted successfully!");
+        setIsAgentReviewModalOpen(false);
+        setAgentRating(0);
+        setAgentComment("");
+
+        // Optionally, you can fetch updated agent reviews here
+        // await fetchAgentReviews();
+      } else {
+        toast.error(response.message || "Failed to submit review");
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to submit review");
+    } finally {
+      setIsSubmittingReview(false);
+    }
   };
 
   const handleSubmitInquiry = async (inquiryData: InquiryFormData) => {
@@ -136,7 +246,6 @@ const PropertyView = () => {
         .toISOString();
 
       // Build payload exactly matching backend fields
-      // API signature: createCustomerAppointment(propertyId, agentId, scheduledAt, type, durationMinutes, customerNotes, phoneNumber, location, status, token)
       await createCustomerAppointment(
         Number(property.id),
         property.agent?.id ?? null,
@@ -163,8 +272,6 @@ const PropertyView = () => {
       setPhoneNumber("");
       setLocationInput("");
       setDurationMinutes(30);
-
-      // optional: navigate to user's appointments
     } catch (err: any) {
       console.error("create appointment", err?.response?.data ?? err);
       const msg = err?.response?.data?.message ?? err?.message ?? "Failed to create appointment";
@@ -195,7 +302,6 @@ const PropertyView = () => {
       return;
     }
 
-    // SAFETY: ensure property and property.id exist before calling API
     if (!property || typeof property.id !== "number") {
       toast.error("Property not loaded yet");
       return;
@@ -203,7 +309,7 @@ const PropertyView = () => {
 
     try {
       if (isFav) {
-        await removeFavProperties(property.id); // now property.id is number
+        await removeFavProperties(property.id);
         setIsFav(false);
         toast.success("Removed from favorites");
       } else {
@@ -232,6 +338,7 @@ const PropertyView = () => {
       toast.error("Failed to copy link");
     }
   };
+
   const handleCloseImageModal = () => {
     setIsImageModalOpen(false);
   };
@@ -246,6 +353,195 @@ const PropertyView = () => {
     );
   };
 
+  // Compute rating summary from reviews
+  const computeRatingSummary = (reviewsList: ReviewType[] | null): RatingSummary | null => {
+    if (!reviewsList || reviewsList.length === 0) return null;
+    const total = reviewsList.length;
+
+    const avg = (vals: number[]) => +(vals.reduce((a, b) => a + b, 0) / total).toFixed(1);
+
+    const feature_ratings = {
+      construction: avg(reviewsList.map((r) => r.construction)),
+      amenities: avg(reviewsList.map((r) => r.amenities)),
+      management: avg(reviewsList.map((r) => r.management)),
+      connectivity: avg(reviewsList.map((r) => r.connectivity)),
+      green_area: avg(reviewsList.map((r) => r.green_area)),
+      locality: avg(reviewsList.map((r) => r.locality)),
+    };
+
+    const average_rating = +(
+      reviewsList
+        .map(
+          (r) =>
+            (r.construction +
+              r.amenities +
+              r.management +
+              r.connectivity +
+              r.green_area +
+              r.locality) /
+            6
+        )
+        .reduce((a, b) => a + b, 0) / total
+    ).toFixed(1);
+
+    const rating_distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    reviewsList.forEach((r) => {
+      const key = Math.min(
+        5,
+        Math.max(
+          1,
+          Math.round(
+            (r.construction +
+              r.amenities +
+              r.management +
+              r.connectivity +
+              r.green_area +
+              r.locality) /
+              6
+          )
+        )
+      );
+      rating_distribution[key as 1 | 2 | 3 | 4 | 5] =
+        (rating_distribution[key as 1 | 2 | 3 | 4 | 5] || 0) + 1;
+    });
+
+    const recommended_percentage = undefined; // backend doesn't provide recommended flag; keep undefined
+
+    return {
+      average_rating,
+      total_reviews: total,
+      recommended_percentage,
+      feature_ratings,
+      rating_distribution,
+    };
+  };
+
+  // Fetch reviews from API
+  const fetchReviews = async () => {
+    try {
+      const res = await fetchPropertyReviews(Number(id));
+      if (!res.success) {
+        toast.error("Failed to load reviews");
+        setReviews([]);
+        setRatingSummary(null);
+        return;
+      }
+
+      // Map backend Review -> extend with convenience fields for UI (rating/user_name/user_avatar)
+      const mapped: ReviewType[] = res.data.map((r: any) => ({
+        ...r,
+      }));
+
+      setReviews(mapped);
+      setRatingSummary(computeRatingSummary(mapped));
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+      toast.error("Failed to load reviews");
+    }
+  };
+
+  const handleHelpfulClick = async (reviewId: number) => {
+    try {
+      setReviews((prev) =>
+        prev.map((review) =>
+          review.id === reviewId
+            ? {
+                ...review, // try to keep shape the same
+                // optional: increment a helpful_count if backend supports it; we don't have that in ReviewType
+              }
+            : review
+        )
+      );
+      toast.success("Marked as helpful!");
+    } catch (error) {
+      console.error("Error marking helpful:", error);
+      toast.error("Failed to mark helpful");
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    // Basic validation: positive_comment required per your UI earlier, but backend doesn't require rating field,
+    // so we validate constructive fields are numbers 1..5 and positive_comment not empty (as in original UI)
+    if (!userReview.positive_comment || !userReview.positive_comment.trim()) {
+      toast.error("Please enter positives");
+      return;
+    }
+
+    try {
+      const payload: CreateReviewPayload = {
+        construction: Number(userReview.construction),
+        amenities: Number(userReview.amenities),
+        management: Number(userReview.management),
+        connectivity: Number(userReview.connectivity),
+        green_area: Number(userReview.green_area),
+        locality: Number(userReview.locality),
+        positive_comment: userReview.positive_comment?.trim() || null,
+        negative_comment: userReview.negative_comment?.trim() || null,
+      };
+
+      const res = await submitPropertyReview(Number(id), payload);
+      if (!res.success) {
+        toast.error(res.message || "Failed to submit review");
+        return;
+      }
+
+      // After successful submit, re-fetch reviews to show user-submitted review with backend data
+      await fetchReviews();
+      setShowReviewForm(false);
+
+      setUserReview({
+        construction: 3,
+        amenities: 3,
+        management: 3,
+        connectivity: 3,
+        green_area: 3,
+        locality: 3,
+        positive_comment: "",
+        negative_comment: "",
+      });
+
+      toast.success("Review submitted successfully!");
+    } catch (error: any) {
+      console.error("Error submitting review:", error);
+      toast.error(error?.message ?? "Failed to submit review");
+    }
+  };
+
+  const filteredReviews = () => {
+    switch (reviewFilter) {
+      case "all":
+        return reviews;
+      case "negative":
+        // Since backend doesn't provide recommended boolean, treat rating <=3 as negative
+        return reviews.filter((r) => {
+          const avg =
+            (r.construction +
+              r.amenities +
+              r.management +
+              r.connectivity +
+              r.green_area +
+              r.locality) /
+            6;
+          return avg <= 3;
+        });
+      case "recent":
+        return [...reviews].sort(
+          (a, b) => (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0)
+        );
+      default:
+        return reviews;
+    }
+  };
+
+  const handleOpenReview = () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    setShowReviewForm(true);
+  };
+
   useEffect(() => {
     const fetchProperty = async () => {
       try {
@@ -255,6 +551,7 @@ const PropertyView = () => {
           setProperty(data.data.property);
           setImages(data.data.property?.image_urls ?? []);
           setDocuments(data.data.property?.document_urls ?? []);
+          setIsFav(Boolean(data.data.property?.is_favorite));
         } else {
           console.error("Error fetching property:" + data.message);
         }
@@ -268,17 +565,19 @@ const PropertyView = () => {
 
     fetchPropertyAttributes();
     fetchProperty();
+    fetchReviews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const initDocuments = (documents: DocumentFile[] = []): void => {
+  const initDocuments = (documentsList: DocumentFile[] = []): void => {
     const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"];
     const videoExtensions = [".mp4", ".mov", ".avi", ".mkv", ".webm"];
 
-    const imageDocs = documents.filter((doc) =>
+    const imageDocs = documentsList.filter((doc) =>
       imageExtensions.some((ext) => (doc.url ?? "").toLowerCase().endsWith(ext))
     );
 
-    const nonImageDocs = documents.filter(
+    const nonImageDocs = documentsList.filter(
       (doc) =>
         !imageExtensions.some((ext) => (doc.url ?? "").toLowerCase().endsWith(ext)) &&
         !videoExtensions.some((ext) => (doc.url ?? "").toLowerCase().endsWith(ext))
@@ -325,6 +624,13 @@ const PropertyView = () => {
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
                 <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">{property?.title}</h1>
+
+                {property?.is_featured && (
+                  <span className="flex justify-center items-center text-xs font-semibold p-[5px] rounded-full capitalize bg-purple-600 text-white">
+                    <Star size={16} />
+                  </span>
+                )}
+
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-bold ${
                     property?.approval_status === "approved"
@@ -558,7 +864,6 @@ const PropertyView = () => {
           </div>
         </motion.div>
 
-        {/* Rest of the component remains exactly the same */}
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Property Details */}
@@ -708,6 +1013,385 @@ const PropertyView = () => {
                 </div>
               </div>
             </motion.div>
+
+            {/* Reviews & Ratings Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+              className="mt-12"
+            >
+              <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+                <div className="p-8 border-b border-gray-200">
+                  <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3 mb-2">
+                    <div className="p-2 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl">
+                      <Star size={24} className="text-white" />
+                    </div>
+                    Reviews & Ratings
+                  </h2>
+                  <p className="text-gray-600">See what residents say about this property</p>
+                </div>
+
+                {/* Rating Summary */}
+                <div className="p-8 border-b border-gray-200">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-25">
+                    {/* Average Rating */}
+                    <div className="text-center">
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <span className="text-5xl font-bold text-gray-900">
+                          {(ratingSummary?.average_rating ?? 0).toFixed(1)}
+                        </span>
+                        <div className="text-left">
+                          <div className="flex">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                size={20}
+                                className={`${
+                                  i < Math.floor(ratingSummary?.average_rating ?? 0)
+                                    ? "fill-amber-400 text-amber-400"
+                                    : "text-gray-300"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <p className="text-gray-600 text-sm mt-1">
+                            {ratingSummary?.total_reviews ?? 0} Total Reviews
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Rating Distribution */}
+                      <div className="mt-6 space-y-2">
+                        {[5, 4, 3, 2, 1].map((stars) => (
+                          <div key={stars} className="flex items-center gap-2">
+                            <span className="text-sm text-gray-600 w-4">{stars}★</span>
+                            <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-amber-500 rounded-full"
+                                style={{
+                                  width: `${
+                                    ((ratingSummary?.rating_distribution?.[
+                                      stars as keyof typeof ratingSummary.rating_distribution
+                                    ] || 0) /
+                                      (ratingSummary?.total_reviews || 1)) *
+                                    100
+                                  }%`,
+                                }}
+                              ></div>
+                            </div>
+                            <span className="text-sm text-gray-600 w-8 text-right">
+                              {ratingSummary?.rating_distribution?.[
+                                stars as keyof typeof ratingSummary.rating_distribution
+                              ] || 0}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Feature Ratings */}
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                        Ratings by Features
+                      </h3>
+                      <div className="space-y-4">
+                        {[
+                          {
+                            label: "Construction",
+                            value: ratingSummary?.feature_ratings.construction ?? 0,
+                          },
+                          {
+                            label: "Amenities",
+                            value: ratingSummary?.feature_ratings.amenities ?? 0,
+                          },
+                          {
+                            label: "Management",
+                            value: ratingSummary?.feature_ratings.management ?? 0,
+                          },
+                          {
+                            label: "Connectivity",
+                            value: ratingSummary?.feature_ratings.connectivity ?? 0,
+                          },
+                          {
+                            label: "Green Area",
+                            value: ratingSummary?.feature_ratings.green_area ?? 0,
+                          },
+                          {
+                            label: "Locality",
+                            value: ratingSummary?.feature_ratings.locality ?? 0,
+                          },
+                        ].map((feature, index) => (
+                          <div key={index} className="flex items-center justify-between">
+                            <span className="text-gray-700">{feature.label}</span>
+                            <div className="flex items-center gap-2">
+                              <div className="flex">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    size={16}
+                                    className={`${
+                                      i < Math.floor(feature.value)
+                                        ? "fill-amber-400 text-amber-400"
+                                        : "text-gray-300"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                              <span className="text-gray-900 font-semibold w-8">
+                                {(feature.value ?? 0).toFixed(1)}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Review Filter Tabs */}
+                <div className="px-8 pt-6 border-b border-gray-200">
+                  <div className="flex space-x-4">
+                    <button
+                      onClick={() => setReviewFilter("all")}
+                      className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                        reviewFilter === "all"
+                          ? "bg-blue-100 text-blue-700"
+                          : "text-gray-600 hover:text-gray-900"
+                      }`}
+                    >
+                      All ({reviews.length})
+                    </button>
+                    <button
+                      onClick={() => setReviewFilter("negative")}
+                      className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                        reviewFilter === "negative"
+                          ? "bg-red-100 text-red-700"
+                          : "text-gray-600 hover:text-gray-900"
+                      }`}
+                    >
+                      Negative First (
+                      {
+                        reviews.filter(
+                          (r) =>
+                            (r.construction +
+                              r.amenities +
+                              r.management +
+                              r.connectivity +
+                              r.green_area +
+                              r.locality) /
+                              6 <=
+                            3
+                        ).length
+                      }
+                      )
+                    </button>
+                    <button
+                      onClick={() => setReviewFilter("recent")}
+                      className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                        reviewFilter === "recent"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "text-gray-600 hover:text-gray-900"
+                      }`}
+                    >
+                      Recent First
+                    </button>
+                  </div>
+                </div>
+
+                {/* Reviews List (Swiper slider) */}
+                <div className="p-8">
+                  {filteredReviews().length > 0 ? (
+                    <div>
+                      <Swiper
+                        modules={[Navigation, Pagination, A11y]}
+                        spaceBetween={20}
+                        slidesPerView={1}
+                        navigation
+                        breakpoints={{
+                          640: { slidesPerView: 1 },
+                          768: { slidesPerView: 2 },
+                          1024: { slidesPerView: 2 },
+                          1280: { slidesPerView: 2 },
+                        }}
+                        a11y={{ enabled: true }}
+                      >
+                        {filteredReviews().map((review) => (
+                          <SwiperSlide key={review.id}>
+                            <div className="border border-gray-200 rounded-2xl p-6 hover:border-blue-300 transition-all h-full flex flex-col justify-between">
+                              {/* Review Header */}
+                              <div>
+                                <div className="flex items-start justify-between mb-4">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 bg-gradient-to-br overflow-hidden from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                                      <img
+                                        src={review.user?.avatar_url ?? ""}
+                                        alt={review.user?.name ?? "Anonymous"}
+                                      />
+                                    </div>
+                                    <div>
+                                      <h4 className="font-bold text-gray-900">
+                                        {review.user?.name ?? "Anonymous"}
+                                      </h4>
+                                      <div className="flex items-center gap-2 mt-1">
+                                        <div className="flex">
+                                          {(() => {
+                                            const avgRating = Math.round(
+                                              (review.construction +
+                                                review.amenities +
+                                                review.management +
+                                                review.connectivity +
+                                                review.green_area +
+                                                review.locality) /
+                                                6
+                                            );
+                                            return [...Array(5)].map((_, i) => (
+                                              <Star
+                                                key={i}
+                                                size={16}
+                                                className={`${
+                                                  i < avgRating
+                                                    ? "fill-amber-400 text-amber-400"
+                                                    : "text-gray-300"
+                                                }`}
+                                              />
+                                            ));
+                                          })()}
+                                        </div>
+                                        <span className="text-sm text-gray-500">
+                                          {new Date(review.created_at).toLocaleDateString()}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Feature Ratings */}
+                                <div className="grid grid-cols-3 sm:grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-xl">
+                                  {[
+                                    {
+                                      key: "construction",
+                                      label: "Construction",
+                                      value: review.construction,
+                                      Icon: Wrench,
+                                    },
+                                    {
+                                      key: "amenities",
+                                      label: "Amenities",
+                                      value: review.amenities,
+                                      Icon: Goal,
+                                    },
+                                    {
+                                      key: "management",
+                                      label: "Management",
+                                      value: review.management,
+                                      Icon: Users,
+                                    },
+                                    {
+                                      key: "connectivity",
+                                      label: "Connectivity",
+                                      value: review.connectivity,
+                                      Icon: CarFront,
+                                    },
+                                    {
+                                      key: "green_area",
+                                      label: "Green Area",
+                                      value: review.green_area,
+                                      Icon: Leaf,
+                                    },
+                                    {
+                                      key: "locality",
+                                      label: "Locality",
+                                      value: review.locality,
+                                      Icon: MapPin,
+                                    },
+                                  ].map(({ key, label, value, Icon }) => (
+                                    <div
+                                      key={key}
+                                      className="flex flex-col-1 gap-2 items-center justify-center"
+                                    >
+                                      {/* Icon Wrapper with Tooltip */}
+                                      <div
+                                        className="relative group cursor-default"
+                                        tabIndex={0}
+                                        title={label}
+                                      >
+                                        {/* Icon Bubble */}
+                                        <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm group-hover:scale-110 transition-all">
+                                          <div className="w-10 h-10 rounded-full bg-gray flex items-center justify-center">
+                                            <Icon className="w-5 h-5 text-yellow-400" />
+                                          </div>
+                                        </div>
+
+                                        {/* Tooltip */}
+                                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity whitespace-nowrap">
+                                          {label}
+                                          <span className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-t-4 border-t-gray-900 border-x-4 border-x-transparent"></span>
+                                        </div>
+                                      </div>
+
+                                      {/* Rating Count */}
+                                      <p className="text-xs text-gray-700 mt-1 font-semibold">
+                                        {Number(value).toFixed(1)}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+
+                                {/* Review Content */}
+                                <div className="space-y-4">
+                                  <div>
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <ThumbsUp size={18} className="text-emerald-600" />
+                                      <span className="font-semibold text-gray-900">Positives</span>
+                                    </div>
+                                    <p className="text-gray-700 bg-emerald-50 p-4 rounded-xl">
+                                      <TruncatedText
+                                        text={review.positive_comment ?? ""}
+                                        maxLength={300}
+                                      />
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <ThumbsDown size={18} className="text-red-600" />
+                                      <span className="font-semibold text-gray-900">Negatives</span>
+                                    </div>
+                                    <p className="text-gray-700 bg-red-50 p-4 rounded-xl">
+                                      <TruncatedText
+                                        text={review.negative_comment ?? ""}
+                                        maxLength={300}
+                                      />
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </SwiperSlide>
+                        ))}
+                      </Swiper>
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <MessageCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">No Reviews Yet</h3>
+                      <p className="text-gray-600">Be the first to share your experience!</p>
+                    </div>
+                  )}
+
+                  {/* Add Review Button - show to all, redirect to login if not logged in */}
+                  <div className="mt-8 text-center">
+                    <button
+                      onClick={handleOpenReview}
+                      className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl font-bold"
+                    >
+                      <MessageCircle size={20} />
+                      Write a Review
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </div>
 
           {/* Right Column - Agent & Actions */}
@@ -772,7 +1456,6 @@ const PropertyView = () => {
                 <button
                   onClick={() => {
                     if (isLogin) {
-                      // prefill location with property address
                       setLocationInput(property?.address ?? "");
                       setIsAppointmentModalOpen(true);
                     } else {
@@ -783,6 +1466,20 @@ const PropertyView = () => {
                 >
                   <Calendar size={20} />
                   Create Appointment
+                </button>
+
+                <button
+                  onClick={() => {
+                    if (isLogin) {
+                      setIsAgentReviewModalOpen(true);
+                    } else {
+                      navigate("/login");
+                    }
+                  }}
+                  className="w-full cursor-pointer bg-purple-500 text-white py-4 rounded-2xl hover:bg-purple-600 transition-all font-bold shadow-lg flex items-center justify-center gap-2 transform hover:scale-105"
+                >
+                  <Star size={20} />
+                  Agent Review
                 </button>
               </div>
             </motion.div>
@@ -878,6 +1575,16 @@ const PropertyView = () => {
                 </div>
               </motion.div>
             )}
+
+            {/* Loan Calculator */}
+            <motion.div className="my-10">
+              <LoanCalculator />
+            </motion.div>
+
+            {/* Property Valuation */}
+            <motion.div className="my-10">
+              <PropertyValuation />
+            </motion.div>
           </div>
         </div>
       </div>
@@ -1078,6 +1785,247 @@ const PropertyView = () => {
           </div>
         </div>
       )}
+
+      {/* Review Form Modal */}
+      {showReviewForm && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowReviewForm(false)} />
+          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[70vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                  <MessageCircle className="w-5 h-5 text-blue-600" />
+                  Write Your Review
+                </h3>
+                <button
+                  onClick={() => setShowReviewForm(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Feature Ratings */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Rate by Features
+                </label>
+                <div className="space-y-4">
+                  {Object.entries({
+                    construction: userReview.construction,
+                    amenities: userReview.amenities,
+                    management: userReview.management,
+                    connectivity: userReview.connectivity,
+                    green_area: userReview.green_area,
+                    locality: userReview.locality,
+                  }).map(([key, value]) => (
+                    <div key={key} className="flex items-center justify-between">
+                      <span className="text-gray-700 capitalize">
+                        {(key as string).replace("_", " ")}
+                      </span>
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={() => setUserReview({ ...userReview, [key]: star } as any)}
+                            className="p-1"
+                          >
+                            <Star
+                              size={20}
+                              className={`${
+                                star <= (value as number)
+                                  ? "fill-amber-400 text-amber-400"
+                                  : "text-gray-300 hover:text-amber-300"
+                              }`}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Positives */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Positives *</label>
+                <textarea
+                  value={userReview.positive_comment ?? ""}
+                  onChange={(e) =>
+                    setUserReview({ ...userReview, positive_comment: e.target.value })
+                  }
+                  rows={3}
+                  placeholder="What do you like about this property?"
+                  className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  required
+                />
+              </div>
+
+              {/* Negatives */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Areas for Improvement
+                </label>
+                <textarea
+                  value={userReview.negative_comment ?? ""}
+                  onChange={(e) =>
+                    setUserReview({ ...userReview, negative_comment: e.target.value })
+                  }
+                  rows={3}
+                  placeholder="What could be improved?"
+                  className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 p-6 border-t border-gray-200">
+              <button
+                onClick={() => setShowReviewForm(false)}
+                className="px-6 py-3 rounded-xl border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitReview}
+                disabled={!userReview.positive_comment || !userReview.positive_comment.trim()}
+                className="px-6 py-3 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Submit Review
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Agent Review Modal */}
+      {/* Agent Review Modal */}
+      <AnimatePresence>
+        {isAgentReviewModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+            onClick={() => setIsAgentReviewModalOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900">Rate Agent</h2>
+                  <button
+                    onClick={() => setIsAgentReviewModalOpen(false)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-4 mb-6">
+                  <img
+                    src={property?.agent?.avatar_url ?? "/assets/user.jpg"}
+                    alt="Agent"
+                    className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
+                    onError={(e) => {
+                      e.currentTarget.src = "/assets/user.jpg";
+                    }}
+                  />
+                  <div>
+                    <h3 className="font-bold text-lg text-gray-900">{property?.agent?.name}</h3>
+                    <p className="text-gray-600 text-sm">Licensed Agent</p>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  {/* Rating Stars */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">Your Rating</label>
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setAgentRating(star)}
+                          className="text-3xl focus:outline-none transition-transform hover:scale-110"
+                        >
+                          {star <= agentRating ? (
+                            <Star className="text-yellow-500 fill-yellow-500" />
+                          ) : (
+                            <Star className="text-gray-300" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-sm text-gray-500">
+                      {agentRating === 0
+                        ? "Select a rating"
+                        : agentRating === 1
+                        ? "Poor"
+                        : agentRating === 2
+                        ? "Fair"
+                        : agentRating === 3
+                        ? "Good"
+                        : agentRating === 4
+                        ? "Very Good"
+                        : "Excellent"}
+                    </p>
+                  </div>
+
+                  {/* Comment */}
+                  <div className="space-y-2">
+                    <label htmlFor="comment" className="block text-sm font-medium text-gray-700">
+                      Your Review (Optional)
+                    </label>
+                    <textarea
+                      id="comment"
+                      value={agentComment}
+                      onChange={(e) => setAgentComment(e.target.value)}
+                      placeholder="Share your experience with this agent..."
+                      className="w-full h-32 px-4 py-3 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
+                      maxLength={2000}
+                    />
+                    <p className="text-xs text-gray-500 text-right">
+                      {agentComment.length}/2000 characters
+                    </p>
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    onClick={handleSubmitAgentReview}
+                    disabled={agentRating === 0 || isSubmittingReview}
+                    className={`w-full py-4 rounded-2xl font-bold transition-all duration-300 flex items-center justify-center gap-2 ${
+                      agentRating === 0 || isSubmittingReview
+                        ? "bg-gray-300 cursor-not-allowed text-gray-500"
+                        : "bg-purple-600 hover:bg-purple-700 text-white transform hover:scale-105"
+                    }`}
+                  >
+                    {isSubmittingReview ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      <>
+                        <Star className="w-5 h-5" />
+                        Submit Review
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

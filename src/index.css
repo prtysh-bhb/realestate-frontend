@@ -253,3 +253,33 @@ input:focus, textarea:focus, select:focus {
   animation: badge-pulse 2s ease-in-out infinite;
 }
 
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;             /* thin width (use 6-10px depending on preference) */
+  height: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;    /* keep track subtle */
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(15,23,42,0.12); /* subtle dark thumb */
+  border-radius: 9999px;
+  border: 2px solid transparent; /* keep thumb inset from edge */
+  background-clip: padding-box;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(15,23,42,0.18);
+}
+
+/* Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin; /* 'auto' or 'thin' */
+  scrollbar-color: rgba(15,23,42,0.12) transparent; /* thumb color and track color (track transparent) */
+}
+
+
+.swiper-button-next,.swiper-button-prev {
+  width:13px;
+}
+
+

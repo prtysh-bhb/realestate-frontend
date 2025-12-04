@@ -13,7 +13,7 @@ import type {
   PropertyAttribute,
   Inquiry,
 } from "@/types/property";
-import type { ApiResponse, PaginatedResponse } from "@/types/api";
+import type { ApiResponse, } from "@/types/api";
 import { handleApiError, getErrorMessage } from "@/services/errorHandler";
 
 // Re-export types for backward compatibility
