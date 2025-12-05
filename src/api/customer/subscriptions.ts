@@ -74,9 +74,7 @@ export interface SubscriptionResponse {
   };
 }
 
-/**
- * Fetch subscriptions (with search)
- */
+// Fetch subscriptions (with search)
 export const getSubscriptionPlans = async (search = "") => {
   const response = await api.get<SubscriptionPlanListResponse>("/subscription-plans", {
     params: { search },
@@ -84,25 +82,19 @@ export const getSubscriptionPlans = async (search = "") => {
   return response.data;
 };
 
-/**
- * Fetch subscription by ID
- */
+// Fetch subscription by ID
 export const getSubscriptionPlan = async (id: number) => {
   const response = await api.get<SubscriptionPlanResponse>(`/subscription-plans/${id}`);
   return response.data;
 };
 
-/**
- * Fetch client secret key by subscription plan ID
- */
+// Fetch client secret key by subscription plan ID
 export const createSubscriptionPlanIntent = async (id: number) => {
   const response = await api.post<PaymentIntentResponse>(`/payments/create-intent`, { plan_id: id });
   return response.data;
 };
 
-/**
- * Confirm subscription plan activation
- */
+// Confirm subscription plan activation
 export const confirmSubscriptionPlanPayment = async (id: number, payment_intent_id: string) => {
   const response = await api.post<ConfirmPaymentResponse>(`/payments/test/confirm`, { 
     plan_id: id,
@@ -112,33 +104,25 @@ export const confirmSubscriptionPlanPayment = async (id: number, payment_intent_
   return response.data;
 };
 
-/**
- * Fetch customer subscriptions
- */
+// Fetch customer subscriptions
 export const mySubscriptions = async () => {
   const response = await api.get<SubscriptionsResponse>("/subscriptions/my");
   return response.data;
 };
 
-/**
- * Cancel customer subscriptions
- */
+// Cancel customer subscriptions
 export const cancelSubscription = async (id: number) => {
   const response = await api.post<SubscriptionResponse>(`/subscriptions/${id}/cancel`);
   return response.data;
 };
 
-/**
- * View invoice (open in browser)
- */
+// View invoice (open in browser)
 export const viewInvoice = async (paymentId: number) => {
   const response = await api.get(`/payments/${paymentId}/invoice/view`);
   return response.data;
 };
 
-/**
- * Download invoice (returns PDF)
- */
+// Download invoice (returns PDF)
 export const fetchInvoicePdf = async (paymentId: number) => {
   const response = await api.get(`/payments/${paymentId}/invoice/download`, {
     responseType: "blob", // IMPORTANT
@@ -146,9 +130,7 @@ export const fetchInvoicePdf = async (paymentId: number) => {
   return response.data; // Blob
 };
 
-/**
- * Email invoice to customer
- */
+// Email invoice to customer
 export const emailInvoice = async (paymentId: number) => {
   const response = await api.post(`/payments/${paymentId}/invoice/email`);
   return response.data;

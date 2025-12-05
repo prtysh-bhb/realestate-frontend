@@ -37,9 +37,7 @@ export interface SubscriptionPlanResponse {
   };
 }
 
-/**
- * Fetch subscriptions (with search)
- */
+// Fetch subscriptions (with search)
 export const getSubscriptionPlans = async (search = "") => {
   const response = await api.get<SubscriptionPlanListResponse>("/admin/subscription-plans", {
     params: { search },
@@ -47,17 +45,13 @@ export const getSubscriptionPlans = async (search = "") => {
   return response.data;
 };
 
-/**
- * Fetch subscription by ID
- */
+// Fetch subscription by ID
 export const getSubscriptionPlan = async (id: number) => {
   const response = await api.get<SubscriptionPlanResponse>(`/admin/subscription-plans/${id}`);
   return response.data;
 };
 
-/**
- * Create subscription by Admin
- */
+// Create subscription by Admin
 export const addSubscriptionPlan = async (formData: Record<string, any>) => {
   try {
     const response = await api.post<ApiResponse>(`/admin/subscription-plans`, formData);
@@ -67,9 +61,7 @@ export const addSubscriptionPlan = async (formData: Record<string, any>) => {
   }
 };
 
-/**
- * Update subscriptions by Admin
- */
+// Update subscription by Admin
 export const updateSubscriptionPlan = async (subscriptionId: number, formData: Record<string, any>) => {
   try {
     const response = await api.put<ApiResponse>(`/admin/subscription-plans/${subscriptionId}`, formData);
@@ -79,9 +71,7 @@ export const updateSubscriptionPlan = async (subscriptionId: number, formData: R
   }
 };
 
-/**
- * Delete subscriptions by Admin
- */
+// Delete subscription by Admin
 export const deleteSubscriptionPlan = async (subscriptionId: number) => {
   try {
     const response = await api.delete<ApiResponse>(`/admin/subscription-plans/${subscriptionId}`);
@@ -91,9 +81,7 @@ export const deleteSubscriptionPlan = async (subscriptionId: number) => {
   }
 };
 
-/**
- * Toggle Status subscriptions by Admin
- */
+// Toggle Status subscription by Admin
 export const toggleStatusSubscriptionPlan = async (subscriptionId: number) => {
   try {
     const response = await api.post<ApiResponse>(`/admin/subscription-plans/${subscriptionId}/toggle-status`);

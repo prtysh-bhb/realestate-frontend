@@ -6,13 +6,10 @@ import { createProperty } from "@/api/agent/property";
 import { toast } from "sonner";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
 import { useNavigate } from "react-router-dom";
-import {
-  Attributes,
-  propertyAttributes,
-  PropertyFormData,
-} from "@/api/customer/properties";
+import { Attributes, propertyAttributes, PropertyFormData } from "@/api/customer/properties";
 import { validateImage } from "@/helpers/image_helper";
 import { HousePlus } from "lucide-react";
+import { handleKeyPress } from "@/helpers/customer_helper";
 
 const AddProperty = () => {
   const navigate = useNavigate();
@@ -52,8 +49,7 @@ const AddProperty = () => {
       newErrors.description = "Description must be at least 20 characters.";
     if (!formData.price || isNaN(Number(formData.price)) || formData.price < 0)
       newErrors.price = "Valid price is required.";
-    else if (formData.price > 999999999)
-      newErrors.price = "Price cannot exceed 999999999.";
+    else if (formData.price > 999999999) newErrors.price = "Price cannot exceed 999999999.";
     if (!formData.location?.trim()) newErrors.location = "Location is required.";
     if (!formData.address?.trim()) newErrors.address = "Address is required.";
     if (!formData.city?.trim()) newErrors.city = "City is required.";
@@ -61,23 +57,16 @@ const AddProperty = () => {
     if (!formData.zipcode?.trim()) newErrors.zipcode = "Zipcode is required.";
     if (!["sale", "rent"].includes(formData.type))
       newErrors.type = "Type must be either Sale or Rent.";
-    if (!formData.property_type?.trim())
-      newErrors.property_type = "Property type is required.";
+    if (!formData.property_type?.trim()) newErrors.property_type = "Property type is required.";
 
     if (formData.bedrooms < 0 || isNaN(Number(formData.bedrooms)))
       newErrors.bedrooms = "Valid bedrooms count is required.";
-    else if (formData.bedrooms > 20)
-      newErrors.bedrooms = "Bedrooms cannot exceed 20.";
+    else if (formData.bedrooms > 20) newErrors.bedrooms = "Bedrooms cannot exceed 20.";
     if (formData.bathrooms < 0 || isNaN(Number(formData.bathrooms)))
       newErrors.bathrooms = "Valid bathrooms count is required.";
-    else if (formData.bathrooms > 20)
-      newErrors.bathrooms = "Bathrooms cannot exceed 20.";
+    else if (formData.bathrooms > 20) newErrors.bathrooms = "Bathrooms cannot exceed 20.";
 
-    if (
-      formData.area === "" ||
-      isNaN(Number(formData.area)) ||
-      formData.area < 0
-    )
+    if (formData.area === "" || isNaN(Number(formData.area)) || formData.area < 0)
       newErrors.area = "Valid property area is required.";
 
     // ✅ Image validation
@@ -116,9 +105,7 @@ const AddProperty = () => {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -138,7 +125,7 @@ const AddProperty = () => {
     if (!files || files.length === 0) return;
 
     const validFiles = validateImage(e, 5);
-    if(!validFiles) return;
+    if (!validFiles) return;
 
     if (validFiles.length > 0) {
       setImages(validFiles as unknown as FileList);
@@ -181,8 +168,7 @@ const AddProperty = () => {
       const data = new FormData();
       Object.entries(formData).forEach(([key, value]) => {
         if (key === "amenities") {
-          const amenityList =
-            typeof value === "string" ? value.split(",") : value;
+          const amenityList = typeof value === "string" ? value.split(",") : value;
           amenityList.forEach((a: string) => data.append("amenities[]", a));
         } else {
           data.append(key, value as string);
@@ -195,14 +181,14 @@ const AddProperty = () => {
         });
       }
 
-      if(video){
+      if (video) {
         data.append("video", video);
       }
 
       await createProperty(data);
       toast.success("Property created successfully!");
       navigate("/agent/properties");
-    } catch (err:any) {
+    } catch (err: any) {
       toast.error(err.response.data.message);
     } finally {
       setLoading(false);
@@ -212,39 +198,34 @@ const AddProperty = () => {
   return (
     <AdminLayout>
       <div className="bg-white rounded-2xl p-8 mt-6">
-       <div className="flex items-center gap-3 mr-auto">
-            <div className="p-3 bg-gradient-to-br from-blue-500 to-emerald-500 rounded-xl">
-              <HousePlus className="text-white" size={24} />
-            </div>
-            <h1 className="text-2xl font-semibold text-gray-800">Add New Properties</h1>
+        <div className="flex items-center gap-3 mr-auto">
+          <div className="p-3 bg-gradient-to-br from-blue-500 to-emerald-500 rounded-xl">
+            <HousePlus className="text-white" size={24} />
           </div>
+          <h1 className="text-2xl font-semibold text-gray-800">Add New Properties</h1>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* ---------- Property Info Section ---------- */}
           <div>
-            <h3 className="text-2xl font-semibold text-gray-800 my-4">
-              Property Information
-            </h3>
+            <h3 className="text-2xl font-semibold text-gray-800 my-4">Property Information</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Title */}
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-600">
-                  Title
-                </label>
+                <label className="block text-sm font-medium mb-1 text-gray-600">Title</label>
                 <Input
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                    handleKeyPress(e, /[a-zA-Z0-9@._-\s]/s, false)
+                  }
                   maxLength={100}
                   placeholder="Beautiful Family House"
-                  className={`border-gray-300 ${
-                    errors.title ? "border-red-500" : ""
-                  }`}
+                  className={`border-gray-300 ${errors.title ? "border-red-500" : ""}`}
                 />
-                {errors.title && (
-                  <p className="text-red-500 text-xs mt-1">{errors.title}</p>
-                )}
+                {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title}</p>}
               </div>
 
               {/* Property Type */}
@@ -268,115 +249,98 @@ const AddProperty = () => {
                   ))}
                 </select>
                 {errors.property_type && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.property_type}
-                  </p>
+                  <p className="text-red-500 text-xs mt-1">{errors.property_type}</p>
                 )}
               </div>
 
               {/* Price */}
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-600">
-                  Price ($)
-                </label>
+                <label className="block text-sm font-medium mb-1 text-gray-600">Price ($)</label>
                 <Input
                   name="price"
                   type="number"
                   value={formData.price}
                   onChange={handleChange}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                    handleKeyPress(e, /[0-9]/, false)
+                  }
                   placeholder="150000"
-                  className={`border-gray-300 ${
-                    errors.price ? "border-red-500" : ""
-                  }`}
+                  className={`border-gray-300 ${errors.price ? "border-red-500" : ""}`}
                 />
-                {errors.price && (
-                  <p className="text-red-500 text-xs mt-1">{errors.price}</p>
-                )}
+                {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price}</p>}
               </div>
 
               {/* Area */}
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-600">
-                  Area (sqft)
-                </label>
+                <label className="block text-sm font-medium mb-1 text-gray-600">Area (sqft)</label>
                 <Input
                   name="area"
                   type="number"
                   value={formData.area}
                   onChange={handleChange}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                    handleKeyPress(e, /[0-9]/, false)
+                  }
                   placeholder="1200"
-                  className={`border-gray-300 ${
-                    errors.area ? "border-red-500" : ""
-                  }`}
+                  className={`border-gray-300 ${errors.area ? "border-red-500" : ""}`}
                 />
-                {errors.area && (
-                  <p className="text-red-500 text-xs mt-1">{errors.area}</p>
-                )}
+                {errors.area && <p className="text-red-500 text-xs mt-1">{errors.area}</p>}
               </div>
 
               {/* Bedrooms */}
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-600">
-                  Bedrooms
-                </label>
+                <label className="block text-sm font-medium mb-1 text-gray-600">Bedrooms</label>
                 <Input
                   name="bedrooms"
                   type="number"
                   value={formData.bedrooms}
                   onChange={handleChange}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                    handleKeyPress(e, /[0-9]/, false)
+                  }
                   placeholder="3"
-                  className={`border-gray-300 ${
-                    errors.bedrooms ? "border-red-500" : ""
-                  }`}
+                  className={`border-gray-300 ${errors.bedrooms ? "border-red-500" : ""}`}
                 />
-                {errors.bedrooms && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.bedrooms}
-                  </p>
-                )}
+                {errors.bedrooms && <p className="text-red-500 text-xs mt-1">{errors.bedrooms}</p>}
               </div>
 
               {/* Bathrooms */}
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-600">
-                  Bathrooms
-                </label>
+                <label className="block text-sm font-medium mb-1 text-gray-600">Bathrooms</label>
                 <Input
                   name="bathrooms"
                   type="number"
                   value={formData.bathrooms}
                   onChange={handleChange}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                    handleKeyPress(e, /[0-9]/, false)
+                  }
                   placeholder="2"
-                  className={`border-gray-300 ${
-                    errors.bathrooms ? "border-red-500" : ""
-                  }`}
+                  className={`border-gray-300 ${errors.bathrooms ? "border-red-500" : ""}`}
                 />
                 {errors.bathrooms && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.bathrooms}
-                  </p>
+                  <p className="text-red-500 text-xs mt-1">{errors.bathrooms}</p>
                 )}
               </div>
             </div>
 
             {/* Description */}
             <div className="mt-4">
-              <label className="block text-sm font-medium mb-1 text-gray-600">
-                Description
-              </label>
+              <label className="block text-sm font-medium mb-1 text-gray-600">Description</label>
               <textarea
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
+                onKeyPress={(e: React.KeyboardEvent<HTMLTextAreaElement>) =>
+                  handleKeyPress(e, /[a-z0-9 .,!?'"()-]/, true)
+                }
                 placeholder="Describe the property..."
                 className={`w-full border rounded-md p-3 h-28 border-gray-300 ${
                   errors.description ? "border-red-500" : ""
                 }`}
               />
               {errors.description && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.description}
-                </p>
+                <p className="text-red-500 text-xs mt-1">{errors.description}</p>
               )}
             </div>
 
@@ -410,16 +374,12 @@ const AddProperty = () => {
               <Input
                 type="file"
                 name="images"
-                className={`border-gray-300 ${
-                  errors.images ? "border-red-500" : ""
-                }`}
+                className={`border-gray-300 ${errors.images ? "border-red-500" : ""}`}
                 multiple
                 accept="image/*"
                 onChange={handleFileChange}
               />
-              {errors.images && (
-                <p className="text-red-500 text-xs mt-1">{errors.images}</p>
-              )}
+              {errors.images && <p className="text-red-500 text-xs mt-1">{errors.images}</p>}
             </div>
 
             {/* Video */}
@@ -431,15 +391,11 @@ const AddProperty = () => {
               <Input
                 type="file"
                 name="video"
-                className={`border-gray-300 ${
-                  errors.video ? "border-red-500" : ""
-                }`}
+                className={`border-gray-300 ${errors.video ? "border-red-500" : ""}`}
                 accept="video/mp4, video/quicktime, video/x-msvideo, video/x-ms-wmv"
                 onChange={handleVideoChange}
               />
-              {errors.video && (
-                <p className="text-red-500 text-xs mt-1">{errors.video}</p>
-              )}
+              {errors.video && <p className="text-red-500 text-xs mt-1">{errors.video}</p>}
             </div>
           </div>
 
@@ -447,73 +403,75 @@ const AddProperty = () => {
           <h3 className="text-2xl font-semibold text-gray-800 mb-4">Location Details</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-600">
-                Address
-              </label>
+              <label className="block text-sm font-medium mb-1 text-gray-600">Address</label>
               <Input
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
+                onKeyPress={(
+                  e:
+                    | React.KeyboardEvent<HTMLInputElement>
+                    | React.KeyboardEvent<HTMLTextAreaElement>
+                ) => handleKeyPress(e, /[a-z0-9 .,!?'"()-]/, true)}
                 className={`border-gray-300 ${errors.address ? "border-red-500" : ""}`}
                 maxLength={255}
               />
-              {errors.address && (
-                <p className="text-red-500 text-xs mt-1">{errors.address}</p>
-              )}
+              {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-600">
-                Location
-              </label>
+              <label className="block text-sm font-medium mb-1 text-gray-600">Location</label>
               <Input
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
+                onKeyPress={(
+                  e:
+                    | React.KeyboardEvent<HTMLInputElement>
+                    | React.KeyboardEvent<HTMLTextAreaElement>
+                ) => handleKeyPress(e, /[a-z0-9 .,!?'"()-]/, true)}
                 className={`border-gray-300 ${errors.location ? "border-red-500" : ""}`}
                 maxLength={50}
               />
-              {errors.location && (
-                <p className="text-red-500 text-xs mt-1">{errors.location}</p>
-              )}
+              {errors.location && <p className="text-red-500 text-xs mt-1">{errors.location}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-600">
-                City
-              </label>
+              <label className="block text-sm font-medium mb-1 text-gray-600">City</label>
               <Input
                 name="city"
                 value={formData.city}
                 onChange={handleChange}
+                onKeyPress={(
+                  e:
+                    | React.KeyboardEvent<HTMLInputElement>
+                    | React.KeyboardEvent<HTMLTextAreaElement>
+                ) => handleKeyPress(e, /[a-z]/, true)}
                 className={`border-gray-300 ${errors.city ? "border-red-500" : ""}`}
                 maxLength={50}
               />
-              {errors.city && (
-                <p className="text-red-500 text-xs mt-1">{errors.city}</p>
-              )}
+              {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-600">
-                State
-              </label>
+              <label className="block text-sm font-medium mb-1 text-gray-600">State</label>
               <Input
                 name="state"
                 value={formData.state}
                 onChange={handleChange}
+                onKeyPress={(
+                  e:
+                    | React.KeyboardEvent<HTMLInputElement>
+                    | React.KeyboardEvent<HTMLTextAreaElement>
+                ) => handleKeyPress(e, /[a-z]/, true)}
                 className={`border-gray-300 ${errors.state ? "border-red-500" : ""}`}
                 maxLength={50}
               />
-              {errors.state && (
-                <p className="text-red-500 text-xs mt-1">{errors.state}</p>
-              )}
+              {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-600">
-                Zipcode
-              </label>
+              <label className="block text-sm font-medium mb-1 text-gray-600">Zipcode</label>
               <Input
                 name="zipcode"
                 value={formData.zipcode}
@@ -521,15 +479,20 @@ const AddProperty = () => {
                 className={`border-gray-300 ${errors.zipcode ? "border-red-500" : ""}`}
                 maxLength={10}
                 onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                    const allowedKeys = ["Enter", "Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"];
-                    if (!/[0-9]/.test(e.key) && !allowedKeys.includes(e.key)) {
-                      e.preventDefault();
-                    }
-                  }}
+                  const allowedKeys = [
+                    "Enter",
+                    "Backspace",
+                    "Delete",
+                    "ArrowLeft",
+                    "ArrowRight",
+                    "Tab",
+                  ];
+                  if (!/[0-9]/.test(e.key) && !allowedKeys.includes(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
               />
-              {errors.zipcode && (
-                <p className="text-red-500 text-xs mt-1">{errors.zipcode}</p>
-              )}
+              {errors.zipcode && <p className="text-red-500 text-xs mt-1">{errors.zipcode}</p>}
             </div>
           </div>
 
@@ -538,9 +501,7 @@ const AddProperty = () => {
             <h3 className="text-lg font-semibold text-gray-700 mb-4">Status</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-600">
-                  Status
-                </label>
+                <label className="block text-sm font-medium mb-1 text-gray-600">Status</label>
                 <select
                   name="status"
                   value={formData.status}
@@ -552,9 +513,7 @@ const AddProperty = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-600">
-                  Type
-                </label>
+                <label className="block text-sm font-medium mb-1 text-gray-600">Type</label>
                 <select
                   name="type"
                   value={formData.type}
@@ -566,9 +525,7 @@ const AddProperty = () => {
                   <option value="sale">For Sale</option>
                   <option value="rent">For Rent</option>
                 </select>
-                {errors.type && (
-                  <p className="text-red-500 text-xs mt-1">{errors.type}</p>
-                )}
+                {errors.type && <p className="text-red-500 text-xs mt-1">{errors.type}</p>}
               </div>
             </div>
           </div>
