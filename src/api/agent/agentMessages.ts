@@ -55,9 +55,7 @@ export interface UnreadCountResponse{
   data: UnreadCountMap;
 }
 
-/**
- * Sent message
- */
+// Send a message
 export const sentMessage = async (data: MessageFormData | undefined) => {
   const response = await api.post<ApiResponse>(`/agent/messages/sent`, data, {
       headers: {
@@ -67,41 +65,31 @@ export const sentMessage = async (data: MessageFormData | undefined) => {
   return response.data;
 };
 
-/**
- * get messages
- */
+// Get messages
 export const getMessages = async (userId: number) => {
   const response = await api.get<MessageApiResponse>(`/agent/messages/${userId}`);
   return response.data;
 };
 
-/**
- * get agent customers
- */
+// Get agent customers
 export const getAgentCustomers = async () => {
   const response = await api.get<AgentCustomersApiResponse>(`/agent/messages/customers`);
   return response.data;
 };
 
-/**
- * Typing event call
- */
+// Typing event call
 export const isTypingCall = async (receiver_id: number) => {
   const response = await api.post(`/agent/messages/is_typing`, {receiver_id});
   return response.data;
 };
 
-/**
- * Read all messages
- */
+// Read all messages
 export const readCustomerMessages = async (partnerId: number) => {
   const response = await api.post(`/agent/messages/read/${partnerId}`);
   return response.data;
 };
 
-/**
- * Unread messages count
- */
+// Unread messages count
 export const unreadMessagesCountAgent = async () => {
   const response = await api.get<UnreadCountResponse>(`/agent/messages/unread-counts`);
   return response.data;

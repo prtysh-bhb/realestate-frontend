@@ -120,7 +120,7 @@ const PropertyList = () => {
             + Add New Property
           </Button>
         </div>
-
+      
         {/* ---------- Loading / Empty / List ---------- */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-500">
@@ -138,15 +138,8 @@ const PropertyList = () => {
             {properties.map((property) => (
               <div
                 key={property.id}
-                className="relative group bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100 p-5 flex flex-col justify-between"
+                className="group bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100 p-5 flex flex-col justify-between"
               >
-                {property.is_featured && (
-                  <div className="absolute top-0 right-0 w-32 h-32 overflow-hidden pointer-events-none z-10">
-                    <div className="absolute transform rotate-45 bg-gradient-to-br from-yellow-400 to-orange-500 text-white text-[10px] font-bold uppercase py-1 w-[130px] text-center top-6 right-[-35px] shadow-md">
-                      Recommended
-                    </div>
-                  </div>
-                )}
                 {/* ---------- Property Info ---------- */}
                 <div>
                   <div className="flex justify-between items-start mb-3">
@@ -154,6 +147,11 @@ const PropertyList = () => {
                       <h2 className="text-lg font-semibold text-gray-800 group-hover:text-blue-600 transition">
                         {property.title}
                       </h2>
+                      {property.is_featured && (
+                        <span className="text-xs font-semibold p-[5px] rounded-full capitalize bg-purple-600 text-white">
+                          <Star size={16} />
+                        </span>
+                      )}
                     </div>
                     <div className="flex flex-col items-end gap-1">
                       <span
@@ -174,7 +172,7 @@ const PropertyList = () => {
                   </div>
 
                   <div className="text-sm text-gray-500 flex items-center gap-1 mb-1">
-                    <MapPin size={14} className="text-blue-500" />
+                    <div><MapPin size={14} className="text-blue-500" /></div>
                     {property.city}, {property.state}
                   </div>
 
@@ -220,7 +218,7 @@ const PropertyList = () => {
           </div>
         )}
 
-        {/* ✅ Delete Confirmation Popup */}
+        {/* Delete Confirmation Popup */}
         {showConfirm && (
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
             <div className="bg-white rounded-xl shadow-lg p-6 w-[90%] max-w-md animate-fadeIn">

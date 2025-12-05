@@ -11,6 +11,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Attributes, propertyAttributes, PropertyFormData } from "@/api/customer/properties";
 import { validateImage } from "@/helpers/image_helper";
+import { HousePlus } from "lucide-react";
+import { handleKeyPress } from "@/helpers/customer_helper";
 
 const EditProperty = () => {
   const { id } = useParams<{ id: string }>();
@@ -283,9 +285,12 @@ const EditProperty = () => {
   return (
     <AdminLayout>
       <div className="bg-white p-8 rounded-2xl">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">
-          🏠 Edit Property
-        </h1>
+        <div className="flex items-center gap-3 mr-auto my-2">
+          <div className="p-3 bg-gradient-to-br from-blue-500 to-emerald-500 rounded-xl">
+            <HousePlus className="text-white" size={24} />
+          </div>
+          <h1 className="text-2xl font-semibold text-gray-800">Edit Property</h1>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Property Info */}
@@ -299,6 +304,9 @@ const EditProperty = () => {
                 label="Title"
                 name="title"
                 value={formData.title}
+                onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                                    handleKeyPress(e, /[a-zA-Z ]/, false)
+                                  }
                 onChange={handleChange}
                 maxLength={100}
                 error={errors.title}
@@ -333,6 +341,9 @@ const EditProperty = () => {
                 type="number"
                 value={formData.price}
                 onChange={handleChange}
+                onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                                    handleKeyPress(e, /[0-9]/, false)
+                                  }
                 error={errors.price}
               />
               <InputField
@@ -341,6 +352,9 @@ const EditProperty = () => {
                 type="number"
                 value={formData.area}
                 onChange={handleChange}
+                onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                                    handleKeyPress(e, /[0-9]/, false)
+                                  }
                 error={errors.area}
               />
               <InputField
@@ -513,6 +527,9 @@ const EditProperty = () => {
                   name="address"
                   value={formData.address}
                   onChange={handleChange}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                                    handleKeyPress(e, /[a-zA-Z0-9@._-\s]/, false)
+                                  }
                   className={`border-gray-300 ${errors.address ? "border-red-500" : ""}`}
                   maxLength={255}
                 />
@@ -529,6 +546,9 @@ const EditProperty = () => {
                   name="location"
                   value={formData.location}
                   onChange={handleChange}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                                    handleKeyPress(e, /[a-zA-Z0-9@._-\s]/, false)
+                                  }
                   className={`border-gray-300 ${errors.location ? "border-red-500" : ""}`}
                   maxLength={50}
                 />
@@ -544,6 +564,9 @@ const EditProperty = () => {
                 <Input
                   name="city"
                   value={formData.city}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                                    handleKeyPress(e, /[a-zA-Z\s]/, false)
+                                  }
                   onChange={handleChange}
                   className={`border-gray-300 ${errors.city ? "border-red-500" : ""}`}
                   maxLength={50}
@@ -561,6 +584,9 @@ const EditProperty = () => {
                   name="state"
                   value={formData.state}
                   onChange={handleChange}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                                    handleKeyPress(e, /[a-zA-Z\s]/, false)
+                                  }
                   className={`border-gray-300 ${errors.state ? "border-red-500" : ""}`}
                   maxLength={50}
                 />
