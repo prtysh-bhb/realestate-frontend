@@ -18,6 +18,8 @@ import {
   AlertTriangle,
   X,
   Star,
+  Bell,
+  House,
 } from "lucide-react";
 import { formatAmount } from "@/helpers/customer_helper";
 
@@ -103,8 +105,14 @@ const PropertyList = () => {
     <AdminLayout>
       <div className="p-0 min-h-screen">
         {/* ---------- Header ---------- */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold text-gray-800">🏠 My Properties</h1>
+        <div className="flex justify-start items-center mb-6">
+          <div className="flex items-center gap-3 mr-auto">
+            <div className="p-3 bg-gradient-to-br from-blue-500 to-emerald-500 rounded-xl">
+              <House className="text-white" size={24} />
+            </div>
+            <h1 className="text-2xl font-semibold text-gray-800">My Properties</h1>
+          </div>
+
           <Button
             onClick={() => navigate("/agent/properties/new")}
             className="bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
@@ -130,8 +138,15 @@ const PropertyList = () => {
             {properties.map((property) => (
               <div
                 key={property.id}
-                className="group bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100 p-5 flex flex-col justify-between"
+                className="relative group bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100 p-5 flex flex-col justify-between"
               >
+                {property.is_featured && (
+                  <div className="absolute top-0 right-0 w-32 h-32 overflow-hidden pointer-events-none z-10">
+                    <div className="absolute transform rotate-45 bg-gradient-to-br from-yellow-400 to-orange-500 text-white text-[10px] font-bold uppercase py-1 w-[130px] text-center top-6 right-[-35px] shadow-md">
+                      Recommended
+                    </div>
+                  </div>
+                )}
                 {/* ---------- Property Info ---------- */}
                 <div>
                   <div className="flex justify-between items-start mb-3">
@@ -139,11 +154,6 @@ const PropertyList = () => {
                       <h2 className="text-lg font-semibold text-gray-800 group-hover:text-blue-600 transition">
                         {property.title}
                       </h2>
-                      {property.is_featured && (
-                        <span className="text-xs font-semibold p-[5px] rounded-full capitalize bg-purple-600 text-white">
-                          <Star size={16} />
-                        </span>
-                      )}
                     </div>
                     <div className="flex flex-col items-end gap-1">
                       <span

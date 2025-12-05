@@ -119,13 +119,18 @@ const PropertyList = () => {
         {/* Header */}
         <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-            <div>
-              <h1 className="text-2xl font-semibold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-                Properties Management
-              </h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Manage and approve property listings
-              </p>
+            <div className="flex items-center gap-3 mr-auto">
+              <div className="p-3 bg-gradient-to-br from-blue-500 to-emerald-500 rounded-xl">
+                <List className="text-white" size={24} />
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
+                  Properties Management
+                </h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  Manage and approve property listings
+                </p>
+              </div>
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
@@ -198,7 +203,7 @@ const PropertyList = () => {
           <>
             {/* Grid View */}
             {viewMode === "grid" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {filteredProperties.map((p) => {
                   // showApprove => show approve action (true when not already approved)
                   const showApprove = (p.approval_status || "").toLowerCase() !== "approved";

@@ -84,14 +84,6 @@ const LoanCalculator: React.FC = () => {
     setIsFormCollapsed(!isFormCollapsed);
   };
 
-  // Handle new calculation click
-  const handleNewCalculation = () => {
-    setResult(null);
-    setError(null);
-    setValidationErrors({});
-    setIsFormCollapsed(false); // Open form for new calculation
-  };
-
   return (
     <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
       {/* Header - Always visible */}
@@ -396,16 +388,10 @@ const LoanCalculator: React.FC = () => {
                       </>
                     )}
                   </div>
-                  <button
-                    onClick={handleNewCalculation}
-                    className="bg-white border border-blue-600 text-blue-600 font-medium py-2 px-4 rounded-lg hover:bg-blue-50 transition whitespace-nowrap"
-                  >
-                    New Calculation
-                  </button>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
                 <div className="bg-white p-4 rounded-lg border">
                   <p className="text-sm text-gray-500">Loan Amount</p>
                   <p className="text-2xl font-bold text-gray-900">

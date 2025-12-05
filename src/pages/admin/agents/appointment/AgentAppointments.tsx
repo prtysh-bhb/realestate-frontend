@@ -29,6 +29,8 @@ import {
   Eye,
   Check,
   Slash,
+  House,
+  ClipboardClock,
 } from "lucide-react";
 import { getAgentProperties } from "@/api/agent/property";
 import { Customer } from "@/types/appointment";
@@ -137,7 +139,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
   const loadProperties = useCallback(async () => {
     try {
       const data = await safeApiCall(getAgentProperties, token);
-      const items = (data && data.data) ? data.data : toArray(data);
+      const items = data && data.data ? data.data : toArray(data);
       setProperties(items.map((p: any) => ({ ...p, image: resolveImageUrl(API_BASE, p.image) })));
     } catch (e) {
       console.error("loadProperties", e);
@@ -159,7 +161,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
   const loadAppointments = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await safeApiCall(fetchAppointments, 12, token);      
+      const data = await safeApiCall(fetchAppointments, 12, token);
       // handle multiple shapes
       const items = toArray(data?.appointments ?? data);
       setAppointments(
@@ -193,7 +195,8 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
       const items = data?.time_slots ?? data?.data?.time_slots ?? data ?? [];
       const normalized = (Array.isArray(items) ? items : []).map((it: any) => ({
         datetime: it.datetime ?? `${date}T${it.start_time ?? "09:00"}:00`,
-        is_available: typeof it.is_available === "boolean" ? it.is_available : !(it.booked ?? false),
+        is_available:
+          typeof it.is_available === "boolean" ? it.is_available : !(it.booked ?? false),
       }));
       setSlots(normalized);
     } catch (e) {
@@ -243,7 +246,9 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
         notes: row.notes ?? "",
       });
       // fetch availability for the date so agent can change slot
-      await handleCheckAvailability(moment.utc(row.scheduled_at).tz("Asia/Kolkata").format("YYYY-MM-DD"));
+      await handleCheckAvailability(
+        moment.utc(row.scheduled_at).tz("Asia/Kolkata").format("YYYY-MM-DD")
+      );
       setShowCreate(true);
       setShowEdit(true);
     } catch (e) {
@@ -258,12 +263,15 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
     if (!form.date) return toast.error("Select date");
     if (!form.slot) return toast.error("Pick a slot");
     if (form.type === "visit" && !form.location) return toast.error("Enter visit location");
-    if (form.type === "call" && !form.phone_number) return toast.error("Enter phone number for call");
+    if (form.type === "call" && !form.phone_number)
+      return toast.error("Enter phone number for call");
 
     setCreating(true);
     try {
       // combine local date + time with Asia/Kolkata tz
-      const combinedDateSlot = moment.tz(`${form.date} ${form.slot}`, "YYYY-MM-DD HH:mm", "Asia/Kolkata").toISOString();
+      const combinedDateSlot = moment
+        .tz(`${form.date} ${form.slot}`, "YYYY-MM-DD HH:mm", "Asia/Kolkata")
+        .toISOString();
 
       const payload: any = {
         property_id: form.property_id,
@@ -329,11 +337,18 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
     if (!cancelReason.trim()) return toast.error("Cancellation reason required");
     setActionLoading((prev) => ({ ...prev, [selected.id]: "cancelling" }));
     try {
-      await safeApiCall(cancelAppointment, selected.id, { cancellation_reason: cancelReason }, token);
+      await safeApiCall(
+        cancelAppointment,
+        selected.id,
+        { cancellation_reason: cancelReason },
+        token
+      );
       toast.success("Appointment cancelled");
 
       // Update local state quickly
-      setAppointments((prev) => prev.map((a) => (a.id === selected.id ? { ...a, status: "cancelled" } : a)));
+      setAppointments((prev) =>
+        prev.map((a) => (a.id === selected.id ? { ...a, status: "cancelled" } : a))
+      );
       setSelected((prev: any) => (prev ? { ...prev, status: "cancelled" } : prev));
 
       setShowCancelModal(false);
@@ -410,7 +425,9 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
       await safeApiCall(updateAppointment, appt.id, { status: "approved" }, token);
       toast.success("Appointment approved");
 
-      setAppointments((prev) => prev.map((a) => (a.id === appt.id ? { ...a, status: "approved" } : a)));
+      setAppointments((prev) =>
+        prev.map((a) => (a.id === appt.id ? { ...a, status: "approved" } : a))
+      );
       if (selected?.id === appt.id) setSelected((s: any) => ({ ...s, status: "approved" }));
 
       // refresh list
@@ -460,8 +477,11 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
       );
 
       toast.success("Appointment declined");
-      setAppointments((prev) => prev.map((a) => (a.id === declineTarget.id ? { ...a, status: "declined" } : a)));
-      if (selected?.id === declineTarget.id) setSelected((s: any) => ({ ...s, status: "declined", decline_reason: declineReason }));
+      setAppointments((prev) =>
+        prev.map((a) => (a.id === declineTarget.id ? { ...a, status: "declined" } : a))
+      );
+      if (selected?.id === declineTarget.id)
+        setSelected((s: any) => ({ ...s, status: "declined", decline_reason: declineReason }));
 
       setShowDeclineModal(false);
       setDeclineTarget(null);
@@ -500,13 +520,25 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
         <div className="mx-auto py-6">
           {/* Header Section - New Appointment button removed */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Appointments</h1>
-              <p className="text-sm text-gray-600 mt-1">Manage and schedule customer appointments</p>
+            <div className="flex items-center gap-3 mr-auto">
+              <div className="p-3 bg-gradient-to-br from-blue-500 to-emerald-500 rounded-xl">
+                <ClipboardClock className="text-white" size={24} />
+              </div>
+              <div className="flex flex-col">
+                <h1 className="text-2xl font-bold text-gray-900">Appointments</h1>
+                <p className="text-sm text-gray-600 mt-1">
+                  Manage and schedule customer appointments
+                </p>
+              </div>
             </div>
+            <div></div>
 
             <div>
-              <Button onClick={handleOpenCreate} disabled={false} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-medium">
+              <Button
+                onClick={handleOpenCreate}
+                disabled={false}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-medium"
+              >
                 Create Appointment
               </Button>
             </div>
@@ -606,7 +638,10 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                       </select>
                     </div>
                     <div className="flex items-center gap-2 w-full sm:w-auto">
-                      <button onClick={() => loadAppointments()} className="p-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 w-full sm:w-auto justify-center flex">
+                      <button
+                        onClick={() => loadAppointments()}
+                        className="p-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 w-full sm:w-auto justify-center flex"
+                      >
                         <Filter className="w-4 h-4 text-gray-600" />
                       </button>
                     </div>
@@ -624,7 +659,9 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                       <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                       <p className="text-gray-500 text-lg font-medium">No appointments found</p>
                       <p className="text-gray-400 text-sm mt-1">
-                        {searchTerm || statusFilter !== "all" ? "Try adjusting your filters" : "No appointments available"}
+                        {searchTerm || statusFilter !== "all"
+                          ? "Try adjusting your filters"
+                          : "No appointments available"}
                       </p>
                     </div>
                   ) : (
@@ -650,7 +687,8 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                               <div className="flex-1 md:flex gap-3 items-start justify-between">
                                 <div>
                                   <h3 className="font-semibold text-gray-900 truncate text-[22px] lg:text-3xl">
-                                    {appointment.property?.title || `Property #${appointment.property_id}`}
+                                    {appointment.property?.title ||
+                                      `Property #${appointment.property_id}`}
                                   </h3>
                                   <div className="flex items-center gap-2 mt-1 ">
                                     <User className="w-4 h-4 text-gray-400" />
@@ -679,22 +717,40 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                                       <button
                                         onClick={() => handleApprove(appointment)}
                                         disabled={!canAction}
-                                        title={!canAction ? "Only scheduled appointments can be approved" : "Approve appointment"}
-                                        className={`ml-2 inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${!canAction ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}`}
+                                        title={
+                                          !canAction
+                                            ? "Only scheduled appointments can be approved"
+                                            : "Approve appointment"
+                                        }
+                                        className={`ml-2 inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                                          !canAction
+                                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                            : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                                        }`}
                                       >
                                         {isActionLoading === "approving" ? (
                                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-emerald-600"></div>
                                         ) : (
                                           <Check className="w-4 h-4" />
                                         )}
-                                        {isActionLoading === "approving" ? "Approving..." : "Approve"}
+                                        {isActionLoading === "approving"
+                                          ? "Approving..."
+                                          : "Approve"}
                                       </button>
 
                                       <button
                                         onClick={() => openDeclineModal(appointment)}
                                         disabled={!canAction}
-                                        title={!canAction ? "Only scheduled appointments can be declined" : "Decline appointment"}
-                                        className={`ml-2 inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${!canAction ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-rose-50 text-rose-700 hover:bg-rose-100"}`}
+                                        title={
+                                          !canAction
+                                            ? "Only scheduled appointments can be declined"
+                                            : "Decline appointment"
+                                        }
+                                        className={`ml-2 inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                                          !canAction
+                                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                            : "bg-rose-50 text-rose-700 hover:bg-rose-100"
+                                        }`}
                                       >
                                         <Slash className="w-4 h-4" />
                                         Decline
@@ -708,20 +764,34 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                                 <div className="flex items-center gap-1.5">
                                   <Calendar className="w-4 h-4 text-gray-400" />
                                   <span className="text-sm text-gray-600">
-                                    {moment.utc(appointment.scheduled_at).tz("Asia/Kolkata").format("MMM D, YYYY")}
+                                    {moment
+                                      .utc(appointment.scheduled_at)
+                                      .tz("Asia/Kolkata")
+                                      .format("MMM D, YYYY")}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                   <Clock className="w-4 h-4 text-gray-400" />
                                   <span className="text-sm text-gray-600">
-                                    {moment.utc(appointment.scheduled_at).tz("Asia/Kolkata").format("h:mm A")}
+                                    {moment
+                                      .utc(appointment.scheduled_at)
+                                      .tz("Asia/Kolkata")
+                                      .format("h:mm A")}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>
+                                  <span
+                                    className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                                      appointment.status
+                                    )}`}
+                                  >
                                     {appointment.status}
                                   </span>
-                                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getTypeColor(appointment.type)}`}>
+                                  <span
+                                    className={`px-2.5 py-1 rounded-full text-xs font-medium ${getTypeColor(
+                                      appointment.type
+                                    )}`}
+                                  >
                                     {appointment.type}
                                   </span>
                                 </div>
@@ -789,21 +859,33 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                     <div>
                       <label className="text-sm font-medium text-gray-600">Customer</label>
                       <p className="text-gray-900 font-medium mt-1">{selected.customer?.name}</p>
-                      {selected.customer?.email && <p className="text-sm text-gray-500 mt-1">{selected.customer.email}</p>}
+                      {selected.customer?.email && (
+                        <p className="text-sm text-gray-500 mt-1">{selected.customer.email}</p>
+                      )}
                     </div>
 
                     <div>
                       <label className="text-sm font-medium text-gray-600">Date & Time</label>
                       <p className="text-gray-900 font-medium mt-1">
-                        {moment(selected.scheduled_at).tz("Asia/Kolkata").format("MMMM D, YYYY [at] h:mm A")}
+                        {moment(selected.scheduled_at)
+                          .tz("Asia/Kolkata")
+                          .format("MMMM D, YYYY [at] h:mm A")}
                       </p>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selected.status)}`}>
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                          selected.status
+                        )}`}
+                      >
                         {selected.status}
                       </span>
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getTypeColor(selected.type)}`}>
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm font-medium ${getTypeColor(
+                          selected.type
+                        )}`}
+                      >
                         {selected.type}
                       </span>
                     </div>
@@ -826,7 +908,11 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                       <button
                         onClick={() => handleApprove(selected)}
                         disabled={!canTakeAction(selected)}
-                        className={`px-4 py-2.5 rounded-xl ${!canTakeAction(selected) ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"} font-medium transition-colors`}
+                        className={`px-4 py-2.5 rounded-xl ${
+                          !canTakeAction(selected)
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                        } font-medium transition-colors`}
                       >
                         {actionLoading[selected.id] === "approving" ? "Approving..." : "Approve"}
                       </button>
@@ -834,7 +920,11 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                       <button
                         onClick={() => openDeclineModal(selected)}
                         disabled={!canTakeAction(selected)}
-                        className={`px-4 py-2.5 rounded-xl ${!canTakeAction(selected) ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-rose-50 text-rose-700 hover:bg-rose-100"} font-medium transition-colors`}
+                        className={`px-4 py-2.5 rounded-xl ${
+                          !canTakeAction(selected)
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "bg-rose-50 text-rose-700 hover:bg-rose-100"
+                        } font-medium transition-colors`}
                       >
                         Decline
                       </button>
@@ -842,7 +932,11 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                       <button
                         onClick={() => handleOpenCancel(selected)}
                         disabled={selected.status !== "scheduled"}
-                        className={`px-4 py-2.5 rounded-xl ${selected.status !== "scheduled" ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-red-50 text-red-600 hover:bg-red-100"} font-medium transition-colors`}
+                        className={`px-4 py-2.5 rounded-xl ${
+                          selected.status !== "scheduled"
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "bg-red-50 text-red-600 hover:bg-red-100"
+                        } font-medium transition-colors`}
                       >
                         Cancel
                       </button>
@@ -866,8 +960,13 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
               <div className="absolute inset-0 bg-black/40" onClick={() => setShowCreate(false)} />
               <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-xl p-6 z-10 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-gray-900">{showEdit ? "Edit Appointment" : "Create New Appointment"}</h3>
-                  <button onClick={() => setShowCreate(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                  <h3 className="text-xl font-bold text-gray-900">
+                    {showEdit ? "Edit Appointment" : "Create New Appointment"}
+                  </h3>
+                  <button
+                    onClick={() => setShowCreate(false)}
+                    className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+                  >
                     <X className="w-5 h-5 text-gray-400" />
                   </button>
                 </div>
@@ -876,24 +975,54 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                   {/* Left Column */}
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Property</label>
-                      <select value={form.property_id} onChange={(e) => setForm((s: any) => ({ ...s, property_id: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Property
+                      </label>
+                      <select
+                        value={form.property_id}
+                        onChange={(e) =>
+                          setForm((s: any) => ({ ...s, property_id: e.target.value }))
+                        }
+                        className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
                         <option value="">Select property</option>
-                        {properties.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
+                        {properties.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.title}
+                          </option>
+                        ))}
                       </select>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Customer</label>
-                      <select value={form.customer_id} onChange={(e) => setForm((s: any) => ({ ...s, customer_id: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Customer
+                      </label>
+                      <select
+                        value={form.customer_id}
+                        onChange={(e) =>
+                          setForm((s: any) => ({ ...s, customer_id: e.target.value }))
+                        }
+                        className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
                         <option value="">Select customer</option>
-                        {customers.map((c) => <option key={c.id} value={c.id}>{c.name} {c.email ? `(${c.email})` : ""}</option>)}
+                        {customers.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name} {c.email ? `(${c.email})` : ""}
+                          </option>
+                        ))}
                       </select>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Appointment Type</label>
-                      <select value={form.type} onChange={(e) => setForm((s: any) => ({ ...s, type: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Appointment Type
+                      </label>
+                      <select
+                        value={form.type}
+                        onChange={(e) => setForm((s: any) => ({ ...s, type: e.target.value }))}
+                        className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
                         <option value="visit">Property Visit</option>
                         <option value="call">Phone Call</option>
                       </select>
@@ -901,57 +1030,154 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
-                      <input type="date" value={form.date} onChange={(e) => setForm((s: any) => ({ ...s, date: e.target.value, slot: "" }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                      <input
+                        type="date"
+                        value={form.date}
+                        onChange={(e) =>
+                          setForm((s: any) => ({ ...s, date: e.target.value, slot: "" }))
+                        }
+                        className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Duration (minutes)</label>
-                      <input type="number" min={15} max={480} value={form.duration_minutes} onChange={(e) => setForm((s: any) => ({ ...s, duration_minutes: Number(e.target.value) }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Duration (minutes)
+                      </label>
+                      <input
+                        type="number"
+                        min={15}
+                        max={480}
+                        value={form.duration_minutes}
+                        onChange={(e) =>
+                          setForm((s: any) => ({ ...s, duration_minutes: Number(e.target.value) }))
+                        }
+                        className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
                     </div>
                   </div>
 
                   {/* Right Column */}
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">{form.type === "call" ? "Phone Number" : "Meeting Location"}</label>
-                      <input maxLength={form.type === "call" ? 15 : 50} value={form.type === "call" ? form.phone_number : form.location} onChange={(e) => form.type === "call" ? setForm((s: any) => ({ ...s, phone_number: e.target.value })) : setForm((s: any) => ({ ...s, location: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder={form.type === "call" ? "Enter phone number" : "Enter address or meeting spot"} />
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        {form.type === "call" ? "Phone Number" : "Meeting Location"}
+                      </label>
+                      <input
+                        maxLength={form.type === "call" ? 15 : 50}
+                        value={form.type === "call" ? form.phone_number : form.location}
+                        onChange={(e) =>
+                          form.type === "call"
+                            ? setForm((s: any) => ({ ...s, phone_number: e.target.value }))
+                            : setForm((s: any) => ({ ...s, location: e.target.value }))
+                        }
+                        className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder={
+                          form.type === "call"
+                            ? "Enter phone number"
+                            : "Enter address or meeting spot"
+                        }
+                      />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Inquiry ID (optional)</label>
-                      <input value={form.inquiry_id} onChange={(e) => setForm((s: any) => ({ ...s, inquiry_id: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Link an inquiry ID" />
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Inquiry ID (optional)
+                      </label>
+                      <input
+                        value={form.inquiry_id}
+                        onChange={(e) =>
+                          setForm((s: any) => ({ ...s, inquiry_id: e.target.value }))
+                        }
+                        className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Link an inquiry ID"
+                      />
                     </div>
 
                     <div>
                       <div className="flex items-center gap-3 mb-3">
-                        <button onClick={() => handleCheckAvailability(form.date)} disabled={!form.date} className="px-4 py-2.5 rounded-xl bg-blue-600 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors">Check Availability</button>
+                        <button
+                          onClick={() => handleCheckAvailability(form.date)}
+                          disabled={!form.date}
+                          className="px-4 py-2.5 rounded-xl bg-blue-600 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
+                        >
+                          Check Availability
+                        </button>
                         <span className="text-sm text-gray-500">Find available time slots</span>
                       </div>
 
                       <div className="flex flex-wrap gap-2">
-                        {checkingSlots ? <div className="text-sm text-gray-500">Checking available slots...</div> : slots.length === 0 ? <div className="text-sm text-gray-400">Select a date to see available slots</div> : slots.map((slot: any) => {
-                          const isAvailable = slot.is_available !== false;
-                          const hhmm = moment(slot.datetime).tz("Asia/Kolkata").format("HH:mm");
-                          return (
-                            <button key={slot.datetime} onClick={() => isAvailable && setForm((f: any) => ({ ...f, slot: hhmm }))} disabled={!isAvailable} className={`px-4 py-2 rounded-xl border-2 transition-all ${form.slot === hhmm ? "border-blue-600 bg-blue-600 text-white" : isAvailable ? "border-gray-200 hover:border-blue-300 hover:bg-blue-50 text-gray-700" : "border-gray-100 bg-gray-50 text-gray-400 line-through cursor-not-allowed"}`}>
-                              {moment(slot.datetime).tz("Asia/Kolkata").format("h:mm A")}
-                            </button>
-                          );
-                        })}
+                        {checkingSlots ? (
+                          <div className="text-sm text-gray-500">Checking available slots...</div>
+                        ) : slots.length === 0 ? (
+                          <div className="text-sm text-gray-400">
+                            Select a date to see available slots
+                          </div>
+                        ) : (
+                          slots.map((slot: any) => {
+                            const isAvailable = slot.is_available !== false;
+                            const hhmm = moment(slot.datetime).tz("Asia/Kolkata").format("HH:mm");
+                            return (
+                              <button
+                                key={slot.datetime}
+                                onClick={() =>
+                                  isAvailable && setForm((f: any) => ({ ...f, slot: hhmm }))
+                                }
+                                disabled={!isAvailable}
+                                className={`px-4 py-2 rounded-xl border-2 transition-all ${
+                                  form.slot === hhmm
+                                    ? "border-blue-600 bg-blue-600 text-white"
+                                    : isAvailable
+                                    ? "border-gray-200 hover:border-blue-300 hover:bg-blue-50 text-gray-700"
+                                    : "border-gray-100 bg-gray-50 text-gray-400 line-through cursor-not-allowed"
+                                }`}
+                              >
+                                {moment(slot.datetime).tz("Asia/Kolkata").format("h:mm A")}
+                              </button>
+                            );
+                          })
+                        )}
                       </div>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-                      <textarea value={form.notes} onChange={(e) => setForm((s: any) => ({ ...s, notes: e.target.value }))} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-24" placeholder="Additional notes about the appointment..." />
+                      <textarea
+                        value={form.notes}
+                        onChange={(e) => setForm((s: any) => ({ ...s, notes: e.target.value }))}
+                        className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-24"
+                        placeholder="Additional notes about the appointment..."
+                      />
                     </div>
                   </div>
                 </div>
 
                 <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
-                  <button onClick={() => setShowCreate(false)} className="px-6 py-3 rounded-xl border border-gray-200 font-medium hover:bg-gray-50 transition-colors">Cancel</button>
-                  <button onClick={handleSubmit} disabled={creating || !canCreate()} className={`px-6 py-3 rounded-xl font-medium transition-colors ${creating || !canCreate() ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-green-600 text-white hover:bg-green-700"}`}>
-                    {creating ? <div className="flex items-center gap-2"><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>{showEdit ? "Updating..." : "Creating..."}</div> : showEdit ? "Save Changes" : "Create Appointment"}
+                  <button
+                    onClick={() => setShowCreate(false)}
+                    className="px-6 py-3 rounded-xl border border-gray-200 font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSubmit}
+                    disabled={creating || !canCreate()}
+                    className={`px-6 py-3 rounded-xl font-medium transition-colors ${
+                      creating || !canCreate()
+                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        : "bg-green-600 text-white hover:bg-green-700"
+                    }`}
+                  >
+                    {creating ? (
+                      <div className="flex items-center gap-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        {showEdit ? "Updating..." : "Creating..."}
+                      </div>
+                    ) : showEdit ? (
+                      "Save Changes"
+                    ) : (
+                      "Create Appointment"
+                    )}
                   </button>
                 </div>
               </div>
@@ -961,7 +1187,10 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
           {/* Cancel Modal */}
           {showCancelModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <div className="absolute inset-0 bg-black/40" onClick={() => setShowCancelModal(false)} />
+              <div
+                className="absolute inset-0 bg-black/40"
+                onClick={() => setShowCancelModal(false)}
+              />
               <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl p-6 z-10">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="p-2 bg-red-100 rounded-lg">
@@ -974,13 +1203,33 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Cancellation Reason <span className="text-red-500">*</span></label>
-                  <textarea value={cancelReason} onChange={(e) => setCancelReason(e.target.value)} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-red-500 focus:border-transparent h-28" placeholder="Please provide a reason for cancellation..." />
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Cancellation Reason <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-red-500 focus:border-transparent h-28"
+                    placeholder="Please provide a reason for cancellation..."
+                  />
                 </div>
 
                 <div className="flex justify-end gap-3">
-                  <button onClick={() => setShowCancelModal(false)} className="px-6 py-3 rounded-xl border border-gray-200 font-medium hover:bg-gray-50 transition-colors">Keep Appointment</button>
-                  <button onClick={handleConfirmCancel} disabled={!cancelReason.trim()} className={`px-6 py-3 rounded-xl font-medium transition-colors ${!cancelReason.trim() ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-red-600 text-white hover:bg-red-700"}`}>
+                  <button
+                    onClick={() => setShowCancelModal(false)}
+                    className="px-6 py-3 rounded-xl border border-gray-200 font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    Keep Appointment
+                  </button>
+                  <button
+                    onClick={handleConfirmCancel}
+                    disabled={!cancelReason.trim()}
+                    className={`px-6 py-3 rounded-xl font-medium transition-colors ${
+                      !cancelReason.trim()
+                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        : "bg-red-600 text-white hover:bg-red-700"
+                    }`}
+                  >
                     Confirm Cancellation
                   </button>
                 </div>
@@ -991,7 +1240,10 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
           {/* Decline Modal (replaces prompt) */}
           {showDeclineModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <div className="absolute inset-0 bg-black/40" onClick={() => setShowDeclineModal(false)} />
+              <div
+                className="absolute inset-0 bg-black/40"
+                onClick={() => setShowDeclineModal(false)}
+              />
               <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl p-6 z-10">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="p-2 bg-rose-100 rounded-lg">
@@ -999,18 +1251,40 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">Decline Appointment</h3>
-                    <p className="text-sm text-gray-600">Provide a reason for declining this appointment</p>
+                    <p className="text-sm text-gray-600">
+                      Provide a reason for declining this appointment
+                    </p>
                   </div>
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Decline Reason <span className="text-red-500">*</span></label>
-                  <textarea value={declineReason} onChange={(e) => setDeclineReason(e.target.value)} className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-rose-500 focus:border-transparent h-28" placeholder="Please provide a reason for declining..." />
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Decline Reason <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    value={declineReason}
+                    onChange={(e) => setDeclineReason(e.target.value)}
+                    className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-rose-500 focus:border-transparent h-28"
+                    placeholder="Please provide a reason for declining..."
+                  />
                 </div>
 
                 <div className="flex justify-end gap-3">
-                  <button onClick={() => setShowDeclineModal(false)} className="px-6 py-3 rounded-xl border border-gray-200 font-medium hover:bg-gray-50 transition-colors">Cancel</button>
-                  <button onClick={confirmDecline} disabled={!declineReason.trim()} className={`px-6 py-3 rounded-xl font-medium transition-colors ${!declineReason.trim() ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-rose-600 text-white hover:bg-rose-700"}`}>
+                  <button
+                    onClick={() => setShowDeclineModal(false)}
+                    className="px-6 py-3 rounded-xl border border-gray-200 font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmDecline}
+                    disabled={!declineReason.trim()}
+                    className={`px-6 py-3 rounded-xl font-medium transition-colors ${
+                      !declineReason.trim()
+                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        : "bg-rose-600 text-white hover:bg-rose-700"
+                    }`}
+                  >
                     Confirm Decline
                   </button>
                 </div>

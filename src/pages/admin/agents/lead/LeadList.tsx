@@ -12,6 +12,7 @@ import {
   Home,
   DollarSign,
   ClipboardList,
+  NotebookPen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -67,9 +68,12 @@ const LeadList = () => {
       <div className="min-h-screen transition-colors">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-            📋 My Leads
-          </h1>
+          <div className="flex items-center gap-3 mr-auto">
+            <div className="p-3 bg-gradient-to-br from-blue-500 to-emerald-500 rounded-xl">
+              <NotebookPen className="text-white" size={24} />
+            </div>
+            <h1 className="text-2xl font-semibold text-gray-800">My Leads</h1>
+          </div>
           <span className="text-sm text-gray-500 dark:text-gray-400">
             {leads.length} lead{leads.length !== 1 && "s"}
           </span>

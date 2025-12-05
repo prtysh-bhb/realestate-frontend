@@ -12,6 +12,7 @@ import {
   PropertyFormData,
 } from "@/api/customer/properties";
 import { validateImage } from "@/helpers/image_helper";
+import { HousePlus } from "lucide-react";
 
 const AddProperty = () => {
   const navigate = useNavigate();
@@ -211,14 +212,17 @@ const AddProperty = () => {
   return (
     <AdminLayout>
       <div className="bg-white rounded-2xl p-8 mt-6">
-        <h2 className="text-3xl font-bold text-gray-800 mb-6">
-          🏠 Add New Property
-        </h2>
+       <div className="flex items-center gap-3 mr-auto">
+            <div className="p-3 bg-gradient-to-br from-blue-500 to-emerald-500 rounded-xl">
+              <HousePlus className="text-white" size={24} />
+            </div>
+            <h1 className="text-2xl font-semibold text-gray-800">Add New Properties</h1>
+          </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* ---------- Property Info Section ---------- */}
           <div>
-            <h3 className="text-2xl font-semibold text-gray-800 mb-4">
+            <h3 className="text-2xl font-semibold text-gray-800 my-4">
               Property Information
             </h3>
 
