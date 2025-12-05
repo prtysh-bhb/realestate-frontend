@@ -121,14 +121,6 @@ const PropertyValuation: React.FC = () => {
     setIsFormCollapsed(!isFormCollapsed);
   };
 
-  // Handle new valuation click
-  const handleNewValuation = () => {
-    setResult(null);
-    setError(null);
-    setValidationErrors({});
-    setIsFormCollapsed(false); // Open form for new valuation
-  };
-
   return (
     <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
       {/* Header - Always visible */}
@@ -371,12 +363,6 @@ const PropertyValuation: React.FC = () => {
                     <Target className="w-4 h-4" />
                     Estimated Value
                   </div>
-                  <button
-                    onClick={handleNewValuation}
-                    className="bg-white border border-purple-600 text-purple-600 font-medium py-2 px-4 rounded-lg hover:bg-purple-50 transition whitespace-nowrap"
-                  >
-                    New Valuation
-                  </button>
                 </div>
               </div>
 

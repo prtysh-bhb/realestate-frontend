@@ -166,9 +166,7 @@ export const markAsFeatured = async (id: number) => {
   }
 };
 
-/**
- * Remove featured status (agent)
- */
+// Remove featured status
 export const removeFeatured = async (id: number) => {
   try {
     const response = await api.post(`/agent/properties/${id}/remove-featured`);

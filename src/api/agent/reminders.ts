@@ -81,43 +81,43 @@ export interface ReminderFormData {
   status?: "pending" | "completed";
 }
 
-// ✅ Get all agent inquiries (with filters)
+// Get all agent inquiries (with filters)
 export const getAgentReminders = async (params = {}) => {
   const res = await api.get<RemindersListResponse>("/agent/reminders", { params });
   return res.data;
 };
 
-// ✅ Get inquiry details
+// Get reminder details
 export const getReminderById = async (id: number) => {
   const res = await api.get<ReminderResponse>(`/agent/reminders/${id}`);
   return res.data;
 };
 
-// ✅ Add reminder
+// Add reminder
 export const storeReminder = async (formData: ReminderFormData) => {
   const res = await api.post<ReminderResponse>(`/agent/reminders`, formData);
   return res.data;
 };
 
-// ✅ Update reminder
+// Update reminder
 export const updateReminder = async (id: number, formData: ReminderFormData) => {
   const res = await api.put<ReminderResponse>(`/agent/reminders/${id}`, formData);
   return res.data;
 };
 
-// ✅ Delete reminder
+// Delete reminder
 export const deleteReminder = async (id: number) => {
   const res = await api.delete<ReminderResponse>(`/agent/reminders/${id}`);
   return res.data;
 };
 
-// ✅ Complete reminder
+// Complete reminder
 export const completeReminder = async (id: number, notes: string) => {
   const res = await api.post<ReminderResponse>(`/agent/reminders/${id}/complete`, { notes });
   return res.data;
 };
 
-// ✅ Complete reminder
+// Complete reminder
 export const setSnoozeReminder = async (id: number, time: string) => {
   const res = await api.post<ReminderResponse>(`/agent/reminders/${id}/snooze`, { snooze_until: time });
   return res.data;
