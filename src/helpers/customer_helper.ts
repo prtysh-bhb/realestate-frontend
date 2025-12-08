@@ -65,9 +65,8 @@ export function formatTime(datetime: string): string {
 
   return `${hours}:${minutesStr} ${ampm}`;
 }
-
 export const handleKeyPress = (
-  e: React.KeyboardEvent<HTMLInputElement>,
+  e: React.KeyboardEvent<HTMLInputElement> | React.KeyboardEvent<HTMLTextAreaElement>,
   allowedPattern: RegExp,
   allowLeadingSpace: boolean = false
 ) => {

@@ -72,9 +72,7 @@ export interface PropertyResponse {
   };
 }
 
-/**
- * Fetch favorite properties (with pagination)
- */
+// Fetch favorite properties (with pagination)
 export const getFavProperties = async (
   page = 1
 ): Promise<ApiResponse<FavoritesResponseData>> => {
@@ -89,9 +87,7 @@ export const getFavProperties = async (
   }
 };
 
-/**
- * Add property to favorites
- */
+// Add property to favorites
 export const setFavProperties = async (
   id: number
 ): Promise<ApiResponse<FavoritesResponseData>> => {
@@ -110,9 +106,7 @@ export const setFavProperties = async (
   }
 };
 
-/**
- * Remove property from favorites
- */
+// Remove property from favorites
 export const removeFavProperties = async (
   id: number
 ): Promise<ApiResponse<FavoritesResponseData>> => {
@@ -131,9 +125,7 @@ export const removeFavProperties = async (
   }
 };
 
-/**
- * Get properties by filter (with pagination and search)
- */
+// Get properties by filter (with pagination and search)
 export const getPropertiesByFilter = async (
   page = 1,
   filters: FilterState
@@ -149,9 +141,7 @@ export const getPropertiesByFilter = async (
   }
 };
 
-/**
- * Get single property by ID
- */
+// Get single property by ID
 export const getProperty = async (id: number): Promise<ApiResponse<PropertyListResponseData>> => {
   try {
     const response = await api.get<ApiResponse<PropertyListResponseData>>(`/properties/${id}`);
@@ -161,9 +151,7 @@ export const getProperty = async (id: number): Promise<ApiResponse<PropertyListR
   }
 };
 
-/**
- * Submit property inquiry
- */
+// Submit property inquiry
 export const propertyInquiry = async (
   id: number,
   formData: InquiryFormData
@@ -179,9 +167,7 @@ export const propertyInquiry = async (
   }
 };
 
-/**
- * Get property attributes (amenities, property types)
- */
+// Get property attributes (amenities, property types)
 export const propertyAttributes = async (): Promise<
   ApiResponse<PropertyAttributesData>
 > => {

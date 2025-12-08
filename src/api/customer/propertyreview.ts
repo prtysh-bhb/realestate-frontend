@@ -34,9 +34,8 @@ interface FetchReviewsResponse {
   data: Review[];
 }
 
-/**
- * Payload for creating a review (matches Laravel validator fields)
- */
+
+ // Payload for creating a review (matches Laravel validator fields)
 export interface CreateReviewPayload {
   construction: number; // 1..5
   amenities: number; // 1..5
@@ -48,19 +47,15 @@ export interface CreateReviewPayload {
   negative_comment?: string | null;
 }
 
-/**
- * Response returned by store endpoint
- */
+// Response returned by store endpoint
 interface CreateReviewResponse {
   success: boolean;
   message?: string;
   data?: Review;
 }
 
-/**
- * Fetch all reviews for a property
- * @param propertyId - property id
- */
+// Fetch all reviews for a property
+// @param propertyId - property id
 export const fetchPropertyReviews = async (propertyId: number | string): Promise<{
   success: boolean;
   data: Review[];
@@ -78,10 +73,8 @@ export const fetchPropertyReviews = async (propertyId: number | string): Promise
   }
 };
 
-/**
- * Submit a new review for a property
- * Requires authentication (assumes your axios instance attaches token)
- */
+// Submit a new review for a property
+// Requires authentication (assumes your axios instance attaches token)
 export const submitPropertyReview = async (
   propertyId: number | string,
   payload: CreateReviewPayload

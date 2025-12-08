@@ -14,7 +14,7 @@ import {
   DollarSign,
   TrendingUp,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
 } from "lucide-react";
 
 const PropertyStats = () => {
@@ -59,7 +59,7 @@ const PropertyStats = () => {
       iconColor: "text-blue-600 dark:text-blue-400",
       borderColor: "border-blue-200 dark:border-blue-800",
       change: "+12%",
-      trend: "up"
+      trend: "up",
     },
     {
       label: "Published",
@@ -69,7 +69,7 @@ const PropertyStats = () => {
       iconColor: "text-emerald-600 dark:text-emerald-400",
       borderColor: "border-emerald-200 dark:border-emerald-800",
       change: "+8%",
-      trend: "up"
+      trend: "up",
     },
     {
       label: "Pending Approval",
@@ -79,7 +79,7 @@ const PropertyStats = () => {
       iconColor: "text-amber-600 dark:text-amber-400",
       borderColor: "border-amber-200 dark:border-amber-800",
       change: "-5%",
-      trend: "down"
+      trend: "down",
     },
     {
       label: "Approved",
@@ -89,7 +89,7 @@ const PropertyStats = () => {
       iconColor: "text-teal-600 dark:text-teal-400",
       borderColor: "border-teal-200 dark:border-teal-800",
       change: "+15%",
-      trend: "up"
+      trend: "up",
     },
     {
       label: "Rejected",
@@ -99,7 +99,7 @@ const PropertyStats = () => {
       iconColor: "text-red-600 dark:text-red-400",
       borderColor: "border-red-200 dark:border-red-800",
       change: "-3%",
-      trend: "down"
+      trend: "down",
     },
     {
       label: "Sold",
@@ -109,7 +109,7 @@ const PropertyStats = () => {
       iconColor: "text-purple-600 dark:text-purple-400",
       borderColor: "border-purple-200 dark:border-purple-800",
       change: "+22%",
-      trend: "up"
+      trend: "up",
     },
     {
       label: "Rented",
@@ -119,7 +119,7 @@ const PropertyStats = () => {
       iconColor: "text-indigo-600 dark:text-indigo-400",
       borderColor: "border-indigo-200 dark:border-indigo-800",
       change: "+18%",
-      trend: "up"
+      trend: "up",
     },
   ];
 
@@ -129,13 +129,18 @@ const PropertyStats = () => {
         {/* Header */}
         <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h1 className="text-2xl font-semibold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-                Property Statistics
-              </h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Overview of all property metrics and performance
-              </p>
+            <div className="flex items-center gap-3 mr-auto">
+              <div className="p-3 bg-gradient-to-br from-blue-500 to-emerald-500 rounded-xl">
+                <Building2 className="text-white" size={24} />
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
+                  Property Statistics
+                </h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  Overview of all property metrics and performance
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-emerald-50 dark:from-blue-950/30 dark:to-emerald-950/30 rounded-lg border border-blue-100 dark:border-emerald-900/50">
               <BarChart3 className="text-blue-600 dark:text-emerald-400" size={16} />
@@ -157,13 +162,23 @@ const PropertyStats = () => {
               >
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
-                    <div className={`p-3 rounded-xl ${item.bgColor} group-hover:scale-110 transition-transform`}>
+                    <div
+                      className={`p-3 rounded-xl ${item.bgColor} group-hover:scale-110 transition-transform`}
+                    >
                       <Icon className={`${item.iconColor}`} size={24} />
                     </div>
-                    <div className={`flex items-center gap-0.5 text-xs font-semibold ${
-                      item.trend === "up" ? "text-emerald-600 dark:text-emerald-500" : "text-red-600 dark:text-red-500"
-                    }`}>
-                      {item.trend === "up" ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                    <div
+                      className={`flex items-center gap-0.5 text-xs font-semibold ${
+                        item.trend === "up"
+                          ? "text-emerald-600 dark:text-emerald-500"
+                          : "text-red-600 dark:text-red-500"
+                      }`}
+                    >
+                      {item.trend === "up" ? (
+                        <ArrowUpRight size={14} />
+                      ) : (
+                        <ArrowDownRight size={14} />
+                      )}
                       <span>{item.change}</span>
                     </div>
                   </div>
@@ -215,7 +230,7 @@ const PropertyStats = () => {
               <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Active Listings</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {(stats.published)?.toLocaleString() || 0}
+                  {stats.published?.toLocaleString() || 0}
                 </p>
               </div>
             </div>

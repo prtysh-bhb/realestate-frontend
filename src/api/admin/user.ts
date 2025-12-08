@@ -32,9 +32,7 @@ export interface CustomerResponse {
   };
 }
 
-/**
- * Fetch customers (with pagination + search)
- */
+// Fetch customers (with pagination + search)
 export const getCustomers = async (page = 1, search = "") => {
   const response = await api.get<CustomerResponse>("/admin/customers", {
     params: { page, search },
@@ -42,9 +40,7 @@ export const getCustomers = async (page = 1, search = "") => {
   return response.data;
 };
 
-/**
- * Update user (Agent/Customer) profile by Admin
- */
+// Update user (Agent/Customer) profile by Admin
 export const updateUserProfile = async (userId: number, formData: Record<string, any>) => {
   try {
     const response = await api.put(`/admin/users/${userId}`, formData);

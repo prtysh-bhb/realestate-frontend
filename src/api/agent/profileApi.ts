@@ -2,16 +2,16 @@
 import api from "@/api/axios";
 import { User } from "@/types";
 
-// ✅ Fetch agent profile
+// Fetch agent profile
 export const getProfile = () => api.get("/profile");
 
-// ✅ Update agent profile
+// Update agent profile
 export const updateProfile = (data: any) => api.put("/profile", data);
 
-// ✅ Change password
+// Change password
 export const changePassword = (data: any) => api.put("/profile/password", data);
-
-// ✅ Upload avatar (multipart)
+  
+// Upload avatar (multipart)
 export const uploadAvatar = (formData: FormData) =>
   api.post("/profile/avatar", formData, {
     headers: {
@@ -19,10 +19,10 @@ export const uploadAvatar = (formData: FormData) =>
     },
   });
 
-// ✅ Delete avatar
+// Delete avatar
 export const deleteAvatar = () => api.delete("/profile/avatar");
 
-// ✅ Delete account
+// Delete account
 export const deleteAccount = (data: any) =>
   api.delete("/profile/account", { data } as any);
 

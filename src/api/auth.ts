@@ -225,9 +225,7 @@ export const logout = async (): Promise<ApiResponse<null>> => {
 
 /* ---------------------- 2FA SETUP ---------------------- */
 
-/**
- * Request new QR code for 2FA setup
- */
+// Request new QR code for 2FA setup
 export const requestTwoFactorNewCode = async (): Promise<TwoFactorSetupResponse> => {
   try {
     const response = await api.post<TwoFactorSetupResponse>("/2fa/setup");
@@ -237,9 +235,7 @@ export const requestTwoFactorNewCode = async (): Promise<TwoFactorSetupResponse>
   }
 };
 
-/**
- * Enable two-factor authentication
- */
+// Enable two-factor authentication
 export const enableTwoFactor = async (code: string): Promise<TwoFactorResponse> => {
   try {
     const response = await api.post<TwoFactorResponse>("/2fa/enable", { code });
@@ -249,9 +245,7 @@ export const enableTwoFactor = async (code: string): Promise<TwoFactorResponse> 
   }
 };
 
-/**
- * Disable two-factor authentication
- */
+// Disable two-factor authentication
 export const disableTwoFactor = async (code: string): Promise<TwoFactorResponse> => {
   try {
     const response = await api.post<TwoFactorResponse>("/2fa/disable", { code });
@@ -261,9 +255,7 @@ export const disableTwoFactor = async (code: string): Promise<TwoFactorResponse>
   }
 };
 
-/**
- * Verify 2FA code during login
- */
+// Verify 2FA code during login
 export const verifyTwoFactor = async (code: string): Promise<TwoFactorResponse> => {
   try {
     const response = await api.post<TwoFactorResponse>("/2fa/verify", { code });
@@ -273,9 +265,7 @@ export const verifyTwoFactor = async (code: string): Promise<TwoFactorResponse> 
   }
 };
 
-/**
- * Get restricted mail domains
- */
+// Get restricted mail domains
 export const getRestrictedMailDomains = async () => {
   const res = await api.get<RestrictedMailDomainsResponse>("/restricted-mail-domains");
   return res.data;

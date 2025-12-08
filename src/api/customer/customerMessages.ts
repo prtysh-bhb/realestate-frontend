@@ -50,9 +50,7 @@ export interface CustomerAgentsApiResponse{
   agents: Agent[];
 }
 
-/**
- * Sent message
- */
+// Send a message
 export const sentMessage = async (data: MessageFormData | undefined) => {
   const response = await api.post<ApiResponse>(`/customer/messages/sent`, data, {
       headers: {
@@ -62,41 +60,31 @@ export const sentMessage = async (data: MessageFormData | undefined) => {
   return response.data;
 };
 
-/**
- * get messages
- */
+// Get messages
 export const getMessages = async (userId: number) => {
   const response = await api.get<MessageApiResponse>(`/customer/messages/${userId}`);
   return response.data;
 };
 
-/**
- * get customer agents
- */
+// Get customer agents
 export const getCustomerAgents = async () => {
   const response = await api.get<CustomerAgentsApiResponse>(`/customer/messages/agents`);
   return response.data;
 };
 
-/**
- * Typing event call
- */
+// Typing event call
 export const isTypingCall = async (receiver_id: number) => {
   const response = await api.post(`/customer/messages/is_typing`, {receiver_id});
   return response.data;
 };
 
-/**
- * Read all messages
- */
+// Read all messages
 export const readAgentMessages = async (partnerId: number) => {
   const response = await api.post(`/customer/messages/read/${partnerId}`);
   return response.data;
 };
 
-/**
- * Unread messages count
- */
+// Unread messages count
 export const unreadMessagesCountCustomer = async () => {
   const response = await api.get<UnreadCountResponse>(`/customer/messages/unread-counts`);
   return response.data;

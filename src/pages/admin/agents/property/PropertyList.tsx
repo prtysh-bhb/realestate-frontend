@@ -18,6 +18,8 @@ import {
   AlertTriangle,
   X,
   Star,
+  Bell,
+  House,
 } from "lucide-react";
 import { formatAmount } from "@/helpers/customer_helper";
 
@@ -103,8 +105,14 @@ const PropertyList = () => {
     <AdminLayout>
       <div className="p-0 min-h-screen">
         {/* ---------- Header ---------- */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold text-gray-800">🏠 My Properties</h1>
+        <div className="flex justify-start items-center mb-6">
+          <div className="flex items-center gap-3 mr-auto">
+            <div className="p-3 bg-gradient-to-br from-blue-500 to-emerald-500 rounded-xl">
+              <House className="text-white" size={24} />
+            </div>
+            <h1 className="text-2xl font-semibold text-gray-800">My Properties</h1>
+          </div>
+
           <Button
             onClick={() => navigate("/agent/properties/new")}
             className="bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
@@ -112,7 +120,7 @@ const PropertyList = () => {
             + Add New Property
           </Button>
         </div>
-
+      
         {/* ---------- Loading / Empty / List ---------- */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-500">
@@ -164,7 +172,7 @@ const PropertyList = () => {
                   </div>
 
                   <div className="text-sm text-gray-500 flex items-center gap-1 mb-1">
-                    <MapPin size={14} className="text-blue-500" />
+                    <div><MapPin size={14} className="text-blue-500" /></div>
                     {property.city}, {property.state}
                   </div>
 
@@ -210,7 +218,7 @@ const PropertyList = () => {
           </div>
         )}
 
-        {/* ✅ Delete Confirmation Popup */}
+        {/* Delete Confirmation Popup */}
         {showConfirm && (
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
             <div className="bg-white rounded-xl shadow-lg p-6 w-[90%] max-w-md animate-fadeIn">
