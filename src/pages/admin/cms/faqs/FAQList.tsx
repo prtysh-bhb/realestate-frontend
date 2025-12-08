@@ -5,7 +5,6 @@ import {
   Edit,
   Trash2,
   X,
-  AlertTriangle,
   Filter,
   HelpCircle,
   Grid3x3,
@@ -20,6 +19,7 @@ import {
 import AdminLayout from "@/components/layout/admin/AdminLayout";
 import { toast } from "sonner";
 import { deleteFaq, FAQ, getFaqs, updateFaqStatus, createFaq, updateFaq } from "@/api/admin/cms";
+import DeleteModal from "../../agents/components/DeleteModal";
 
 const FAQList = () => {
   const [faqs, setFaqs] = useState<FAQ[]>([]);
@@ -28,6 +28,7 @@ const FAQList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const [showStatusUpdatePopup, setShowStatusUpdatePopup] = useState(false);
   const [selectedFAQ, setSelectedFAQ] = useState<FAQ | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
@@ -89,11 +90,14 @@ const FAQList = () => {
     await loadFAQs();
   };
 
-  const handleToggleStatus = async (id: number) => {
+  const handleToggleStatus = async () => {
     try {
-      await updateFaqStatus(id);
+      setSubmitting(true);
+      await updateFaqStatus(selectedFAQ!.id);
       toast.success("FAQ status updated successfully");
+      setShowStatusUpdatePopup(false);
       refresh();
+      setSubmitting(false);
     } catch {
       toast.error("Failed to update FAQ status");
     }
@@ -475,7 +479,7 @@ const FAQList = () => {
                                       e.stopPropagation();
                                       openEditModal(faq);
                                     }}
-                                    className="p-2 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 transition-all hover:scale-110"
+                                    className="p-2 rounded-lg hover:bg-emerald-100 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 transition-all hover:scale-110"
                                     title="Edit FAQ"
                                   >
                                     <Edit size={18} />
@@ -483,7 +487,8 @@ const FAQList = () => {
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleToggleStatus(faq.id);
+                                      setSelectedFAQ(faq);
+                                      setShowStatusUpdatePopup(true)
                                     }}
                                     className={`p-2 rounded-lg transition-all hover:scale-110 ${
                                       faq.status
@@ -606,20 +611,23 @@ const FAQList = () => {
                       </div>
 
                       {/* Actions */}
-                      <div className="flex gap-2 p-4 pt-0 border-t border-gray-100 dark:border-gray-700">
+                      <div className="flex gap-2 p-4 justify-between border-t border-gray-100 dark:border-gray-700">
                         <button
                           onClick={() => openEditModal(faq)}
-                          className="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 transition-all font-medium text-sm cursor-pointer"
+                          className="flex items-center justify-center gap-2 p-2.5 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 transition-all font-medium text-sm cursor-pointer"
                         >
                           <Edit size={16} />
                           <span>Edit</span>
                         </button>
                         <button
-                          onClick={() => handleToggleStatus(faq.id)}
+                          onClick={() => {
+                            setSelectedFAQ(faq);
+                            setShowStatusUpdatePopup(true)
+                          }}
                           className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                             faq.status
-                              ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50"
-                              : "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/50"
+                              ? "hover:bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 dark:hover:bg-amber-900/50"
+                              : "hover:bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-900/50"
                           }`}
                         >
                           {faq.status ? <XCircle size={16} /> : <CheckCircle size={16} />}
@@ -664,48 +672,32 @@ const FAQList = () => {
           submitting={submitting}
         />
 
+        {/* Status update Confirmation Popup */}
+        <DeleteModal
+          show={showStatusUpdatePopup}
+          title="Update News Status"
+          message="Do you really want to update this news status?"
+          onClose={() => setShowStatusUpdatePopup(false)}
+          onConfirm={handleToggleStatus}
+          loading={submitting}
+          confirmText="Update"
+          cancelText="Cancel"
+          loadingText="Updating..."
+          buttonColor={!selectedFAQ?.status ? "amber" : "green"}
+          modalIcon={CheckCircle}
+        />
+
         {/* Delete Confirmation Popup */}
-        {showDeletePopup && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-[90%] max-w-md border border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-lg font-semibold flex items-center gap-2 text-gray-800 dark:text-gray-100">
-                  <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
-                    <AlertTriangle className="text-red-600 dark:text-red-400" size={20} />
-                  </div>
-                  Delete FAQ
-                </h4>
-                <button
-                  onClick={() => setShowDeletePopup(false)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                Are you sure you want to delete the FAQ:{" "}
-                <span className="font-semibold text-gray-900 dark:text-white">{selectedFAQ?.question}</span>?
-                This action cannot be undone.
-              </p>
-
-              <div className="flex justify-end gap-2">
-                <button
-                  onClick={() => setShowDeletePopup(false)}
-                  className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmDelete}
-                  className="px-4 py-2 rounded-lg text-sm bg-red-600 hover:bg-red-700 text-white font-medium transition-all shadow-md hover:shadow-lg"
-                >
-                  Delete FAQ
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <DeleteModal
+          show={showDeletePopup}
+          title="Delete News"
+          message="This action cannot be undone. Do you really want to delete this news?"
+          onClose={() => setShowDeletePopup(false)}
+          onConfirm={confirmDelete}
+          loading={loading}
+          confirmText="Delete"
+          cancelText="Cancel"
+        />
       </div>
     </AdminLayout>
   );

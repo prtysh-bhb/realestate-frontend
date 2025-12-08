@@ -32,13 +32,22 @@ export interface Blog {
   title: string;
   description: string;
   image: string | null;
+  category_id: number | null;
   image_url?: string | null;
-  status: number;
+  status: string;
   created_at: string;
   updated_at: string;
 }
 
 export interface BlogFormData{
+  title: string;
+  description: string;
+  category_id: number | null;
+  image?: string | null;
+  status: string;
+}
+
+export interface NewsFormData{
   title: string;
   description: string;
   image?: string | null;
@@ -54,6 +63,37 @@ export interface BlogResponse {
 export interface BlogListResponse {
   success: boolean;
   data: Blog[];
+}
+
+// =============================
+// Blog Categories Interfaces
+// =============================
+export interface BlogCategory {
+  id: number;
+  name: string;
+  description: string;
+  is_active: boolean;
+  blogs_count: number;
+  slug: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BlogCategoryFormData{
+  name: string;
+  description: string;
+  is_active: boolean;
+}
+
+export interface BlogCategoryResponse {
+  success: boolean;
+  message?: string;
+  data: BlogCategory;
+}
+
+export interface BlogCategoryListResponse {
+  success: boolean;
+  data: BlogCategory[];
 }
 
 // =============================
@@ -129,13 +169,10 @@ export const createBlog = async (form: FormData) => {
   return response.data;
 };
 
-export const updateBlog = async (id: number, payload: any) => {
-  const form = new FormData();
-  Object.keys(payload).forEach((key) => {
-    form.append(key, payload[key]);
-  });
+export const updateBlog = async (id: number, form: FormData) => {
+  form.append('_method', 'PUT');
 
-  const response = await api.post<BlogResponse>(`/admin/blogs/${id}?_method=PUT"`, form, {
+  const response = await api.post<BlogResponse>(`/admin/blogs/${id}`, form, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return response.data;
@@ -152,6 +189,41 @@ export const updateBlogStatus = async (id: number) => {
 };
 
 // =============================
+// Blog Categories API
+// =============================
+export const getBlogCategories = async () => {
+  const response = await api.get<BlogCategoryListResponse>("/admin/blog-categories");
+  return response.data;
+};
+
+export const getBlogCategory = async (id: number) => {
+  const response = await api.get<BlogCategoryResponse>(`/admin/blog-categories/${id}`);
+  return response.data;
+};
+
+export const createBlogCategory = async (form: BlogCategoryFormData) => {
+  const response = await api.post<BlogCategoryResponse>("/admin/blog-categories", form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response.data;
+};
+
+export const updateBlogCategory = async (id: number, form: BlogCategoryFormData) => {  
+  const response = await api.put<BlogCategoryResponse>(`/admin/blog-categories/${id}`, form);
+  return response.data;
+};
+
+export const deleteBlogCategory = async (id: number) => {
+  const response = await api.delete(`/admin/blog-categories/${id}`);
+  return response.data;
+};
+
+export const updateBlogCategoryStatus = async (id: number) => {
+  const response = await api.post(`/admin/blog-categories/update-status/${id}`);
+  return response.data;
+};
+
+// =============================
 // News API
 // =============================
 export const getNews = async () => {
@@ -164,25 +236,16 @@ export const getSingleNews = async (id: number) => {
   return response.data;
 };
 
-export const createNews = async (payload: any) => {
-  const form = new FormData();
-  Object.keys(payload).forEach((key) => {
-    form.append(key, payload[key]);
-  });
-
+export const createNews = async (form: FormData) => {
   const response = await api.post<NewsResponse>("/admin/news", form, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return response.data;
 };
 
-export const updateNews = async (id: number, payload: any) => {
-  const form = new FormData();
-  Object.keys(payload).forEach((key) => {
-    form.append(key, payload[key]);
-  });
-
-  const response = await api.post<NewsResponse>(`/admin/news/${id}?_method=PUT`, form, {
+export const updateNews = async (id: number, form: FormData) => {
+  form.append('_method', 'PUT');
+  const response = await api.post<NewsResponse>(`/admin/news/${id}`, form, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return response.data;

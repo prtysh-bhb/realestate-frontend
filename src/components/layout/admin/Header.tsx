@@ -6,6 +6,7 @@ import { logout } from "@/api/auth";
 import Notifications from "./Notifications";
 import { deleteNotification, getNotifications, getUnreadNotificationsCount, markAllAsReadNotification, markAsReadNotification, NotificationItem } from "@/api/public/notifications";
 import echo from "@/lib/echo";
+import { useTheme } from "@/context/ThemeContext";
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -13,11 +14,11 @@ interface HeaderProps {
 
 const Header = ({ onMenuClick }: HeaderProps) => {
   const { user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const [darkMode, setDarkMode] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -25,6 +26,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
 
   const avatarUrl = user?.avatar_url || "/default-avatar.png";
   const role = user?.role || "customer";
+  const isDark = theme === 'dark';
 
   const profilePathMap: Record<string, string> = {
     admin: "/admin/profile",
@@ -192,12 +194,12 @@ const Header = ({ onMenuClick }: HeaderProps) => {
 
             {/* Dark Mode Toggle */}
             <button
-              onClick={() => setDarkMode(!darkMode)}
+              onClick={toggleTheme}
               className="p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/20 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              aria-pressed={darkMode}
+              aria-pressed={isDark}
               aria-label="Toggle dark mode"
             >
-              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+              {isDark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
 
             {/* Notifications */}

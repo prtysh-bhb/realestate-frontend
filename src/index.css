@@ -3,6 +3,9 @@
 /* Professional Font Imports */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&display=swap');
 
+/* Enable class-based dark mode */
+@variant dark (&:where(.dark, .dark *));
+
 @layer base {
   html {
     @apply antialiased;

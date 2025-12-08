@@ -11,7 +11,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100 dark:from-slate-900 dark:via-blue-900/40 dark:to-slate-900 overflow-hidden">
+    <div className="flex min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-950 overflow-hidden">
       {/* Sidebar */}
       <AdminSidebar
         collapsed={collapsed}

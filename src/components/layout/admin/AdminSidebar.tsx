@@ -25,6 +25,7 @@ import {
   GalleryVerticalEnd,
   Newspaper,
   MonitorCog,
+  Blocks,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
@@ -145,6 +146,12 @@ const menuItems =
               name: "FAQs",
               icon: List,
               path: "/admin/faqs",
+              exact: true,
+            },
+            {
+              name: "Blog Categories",
+              icon: Blocks,
+              path: "/admin/blog-categories",
               exact: true,
             },
             {

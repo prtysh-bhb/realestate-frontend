@@ -226,9 +226,7 @@ const ChatPage = () => {
     setIsSending(true);
     emitTyping(false);
 
-    try {
-      console.log(formData);
-      
+    try {      
       // Call Laravel API
       const response = await sentMessage(formData);
       

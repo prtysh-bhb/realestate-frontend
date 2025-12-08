@@ -78,7 +78,9 @@ import EditReminder from "./pages/admin/agents/reminders/EditReminder";
 import ShowReminder from "./pages/admin/agents/reminders/ShowReminder";
 import CustomerChatPage from "./pages/customer/CustomerChatPage";
 import FAQList from "./pages/admin/cms/faqs/FAQList";
-import BlogList from "./pages/admin/cms/faqs/BlogList";
+import BlogList from "./pages/admin/cms/blogs/BlogList";
+import NewsList from "./pages/admin/cms/news/NewsList";
+import BlogCategories from "./pages/admin/cms/blogs/BlogCategories";
 
 function App() {
   return (
@@ -488,6 +490,14 @@ function App() {
             }
           />
           <Route
+            path="/admin/blog-categories"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <BlogCategories />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/admin/blogs"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
@@ -499,7 +509,7 @@ function App() {
             path="/admin/news"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-                <PropertyStatsAdmin />
+                <NewsList />
               </ProtectedRoute>
             }
           />

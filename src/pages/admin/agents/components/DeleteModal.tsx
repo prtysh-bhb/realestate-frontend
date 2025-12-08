@@ -1,5 +1,5 @@
 import React from "react";
-import { AlertTriangle, X } from "lucide-react";
+import { AlertTriangle, LucideIcon, X } from "lucide-react";
 
 interface DeleteModalProps {
   show: boolean;
@@ -11,6 +11,8 @@ interface DeleteModalProps {
   cancelText?: string;
   confirmText?: string;
   loadingText?: string;
+  buttonColor?: string;
+  modalIcon?: LucideIcon;
 }
 
 const DeleteModal: React.FC<DeleteModalProps> = ({
@@ -23,6 +25,8 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
   cancelText = "Cancel",
   confirmText = "Delete",
   loadingText = "Deleting...",
+  buttonColor = "red",
+  modalIcon: Icon
 }) => {
   if (!show) return null;
 
@@ -33,7 +37,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
           <h4 className="text-lg font-semibold flex items-center gap-2">
-            <AlertTriangle className="text-yellow-500" size={20} />
+            {Icon ? (<Icon className={`text-${buttonColor}-500`} size={24} />) : (<AlertTriangle className="text-yellow-500" size={24} />)}
             {title}
           </h4>
 
@@ -62,8 +66,8 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
             disabled={loading}
             className={`px-4 py-2 rounded text-white text-sm cursor-pointer ${
               loading
-                ? "bg-red-400 cursor-not-allowed"
-                : "bg-red-600 hover:bg-red-700"
+                ? `bg-${buttonColor}-400 cursor-not-allowed`
+                : `bg-${buttonColor}-600 hover:bg-${buttonColor}-700`
             }`}
           >
             {loading ? loadingText : confirmText}
