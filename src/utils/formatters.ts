@@ -33,7 +33,7 @@ export const formatAmount = (amount: number | string): string => {
 /**
  * Format currency with symbol
  */
-export const formatCurrency = (amount: number | string, currency = "₹"): string => {
+export const formatCurrency = (amount: number | string, currency = "$"): string => {
   const formatted = formatAmount(amount);
   return `${currency}${formatted}`;
 };

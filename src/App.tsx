@@ -80,8 +80,11 @@ import CustomerChatPage from "./pages/customer/CustomerChatPage";
 import FAQList from "./pages/admin/cms/faqs/FAQList";
 import BlogList from "./pages/admin/cms/blogs/BlogList";
 import AgentBlogList from "./pages/admin/agents/cms/Bloglist";
+import AgentcommentList from "./pages/admin/agents/cms/Commentslist";
 import NewsList from "./pages/admin/cms/news/NewsList";
 import BlogCategories from "./pages/admin/cms/blogs/BlogCategories";
+import BlogPage from "./pages/customer/Blog/BlogPage";
+import SingleBlogPage from "./pages/customer/Blog/SingleBlog";
 
 function App() {
   return (
@@ -174,6 +177,9 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            {/* Blog Page */}
+            <Route path="/blog" element={<BlogPage />} />
+            <Route path="/blog/:slug" element={<SingleBlogPage />} />
             {/* Customer Protected Route */}
           </Route>
 
@@ -572,6 +578,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["agent"]}>
                 <AgentBlogList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/agent/comments"
+            element={
+              <ProtectedRoute allowedRoles={["agent"]}>
+                <AgentcommentList />
               </ProtectedRoute>
             }
           />

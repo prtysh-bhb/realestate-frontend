@@ -45,13 +45,13 @@ const NewsList = () => {
   // Form states
   const [formData, setFormData] = useState<NewsFormData>({
     title: "",
-    description: "",
+    content: "",
     image: null,
     status: 0
   });
   const [formErrors, setFormErrors] = useState({
     title: "",
-    description: "",
+    content: "",
     image: ""
   });
   const [submitting, setSubmitting] = useState(false);
@@ -69,7 +69,7 @@ const NewsList = () => {
         const filteredNews = data.data.filter((news: News) => {
           const matchesSearch = search === "" || 
             news.title.toLowerCase().includes(search.toLowerCase()) ||
-            news.description.toLowerCase().includes(search.toLowerCase());
+            news.content.toLowerCase().includes(search.toLowerCase());
           
           const matchesFilter = filter === "all" || 
             (filter === "active" && news.status) ||
@@ -151,11 +151,11 @@ const NewsList = () => {
   const openAddModal = () => {
     setFormData({
       title: "",
-      description: "",
+      content: "",
       image: "",
       status: 1
     });
-    setFormErrors({ title: "", description: "", image: "" });
+    setFormErrors({ title: "", content: "", image: "" });
     setImagePreview("");
     setShowAddModal(true);
   };
@@ -165,10 +165,10 @@ const NewsList = () => {
     setEditingNews(news);
     setFormData({
       title: news.title,
-      description: news.description,
+      content: news.content,
       status: news.status,
     });
-    setFormErrors({ title: "", description: "", image: "" });
+    setFormErrors({ title: "", content: "", image: "" });
     setImagePreview(news?.image_url ?? "");
     setShowEditModal(true);
   };
@@ -201,7 +201,7 @@ const NewsList = () => {
 
   // Validate form
   const validateForm = () => {
-    const errors = { title: "", description: "", image: "" };
+    const errors = { title: "", content: "", image: "" };
     let isValid = true;
 
     if (!formData?.title.trim()) {
@@ -209,8 +209,8 @@ const NewsList = () => {
       isValid = false;
     }
 
-    if (!formData?.description.trim()) {
-      errors.description = "Description is required";
+    if (!formData?.content.trim()) {
+      errors.content = "content is required";
       isValid = false;
     }
 
@@ -306,6 +306,7 @@ const NewsList = () => {
   };
 
   const truncateText = (text: string, maxLength: number) => {
+    if (!text) return "";
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
   };
@@ -510,7 +511,7 @@ const NewsList = () => {
                                       {news.title}
                                     </p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
-                                      {truncateText(news.description, 100)}
+                                      {truncateText(news.content, 100)}
                                     </p>
                                   </div>
                                 </div>
@@ -583,8 +584,8 @@ const NewsList = () => {
                                           />
                                         </div>
                                         <div className="flex-1">
-                                          <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-2">Description:</h4>
-                                          <p className="text-gray-600 dark:text-gray-400">{news.description}</p>
+                                          <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-2">content:</h4>
+                                          <p className="text-gray-600 dark:text-gray-400">{news.content}</p>
                                           <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                                             <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                                               <span>Updated: {formatDate(news.updated_at)}</span>
@@ -674,8 +675,8 @@ const NewsList = () => {
 
                         {expandedNews === news.id ? (
                           <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                            <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Description:</h4>
-                            <p className="text-gray-600 dark:text-gray-400 mb-4">{news.description}</p>
+                            <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">content:</h4>
+                            <p className="text-gray-600 dark:text-gray-400 mb-4">{news.content}</p>
                             <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
                               <div className="flex items-center gap-2">
                               </div>
@@ -684,7 +685,7 @@ const NewsList = () => {
                           </div>
                         ) : (
                           <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-3">
-                            {truncateText(news.description, 150)}
+                            {truncateText(news.content, 150)}
                           </p>
                         )}
                       </div>
@@ -886,7 +887,7 @@ const NewsList = () => {
                 </div>
               </div>
 
-              {/* Right Column - Image & Description */}
+              {/* Right Column - Image & content */}
               <div className="space-y-6">
                 {/* Image Upload/URL Field */}
                 <div>                  
@@ -942,26 +943,26 @@ const NewsList = () => {
               </div>
             </div>
 
-            {/* Description Field - Full Width */}
+            {/* content Field - Full Width */}
             <div className="mt-6">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Description *
+                content *
               </label>
               <textarea
-                name="description"
-                value={formData.description}
+                name="content"
+                value={formData.content}
                 onChange={handleInputChange}
                 rows={6}
                 className={`w-full px-4 py-3 rounded-lg border ${
-                  formErrors.description 
+                  formErrors.content 
                     ? 'border-red-300 dark:border-red-700 focus:ring-red-500 focus:border-red-500' 
                     : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500 dark:focus:border-emerald-500'
                 } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-all resize-none`}
-                placeholder="Enter news description/content"
+                placeholder="Enter news content/content"
                 disabled={submitting}
               />
-              {formErrors.description && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{formErrors.description}</p>
+              {formErrors.content && (
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{formErrors.content}</p>
               )}
             </div>
 

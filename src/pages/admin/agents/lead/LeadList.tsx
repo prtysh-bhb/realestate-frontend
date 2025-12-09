@@ -128,7 +128,7 @@ const LeadList = () => {
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                       <DollarSign size={14} className="text-green-500" />
-                      <span>₹{Number(lead.property.price).toLocaleString()}</span>
+                      <span>${Number(lead.property.price).toLocaleString()}</span>
                     </div>
                   </div>
                 )}

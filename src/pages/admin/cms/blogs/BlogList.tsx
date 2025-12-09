@@ -18,6 +18,8 @@ import {
   Eye,
   Image as ImageIcon,
   Calendar,
+  Star,
+  ImageOff,
 } from "lucide-react";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
 import { toast } from "sonner";
@@ -127,7 +129,7 @@ const BlogsList = () => {
     loadBlogs();
   }, [search, filter]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, isFeatured = false) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
@@ -135,18 +137,18 @@ const BlogsList = () => {
     if (!validFiles) return;
 
     if (validFiles.length > 0) {
-      setImage(validFiles[0]);
-      setImagePreview(URL.createObjectURL(validFiles[0]));
-      setFeaturedImage(null);
+      const file = validFiles[0];
+      const previewUrl = URL.createObjectURL(file);
+      
+      if (isFeatured) {
+        setFeaturedImage(file);
+        setFeaturedImagePreview(previewUrl);
+      } else {
+        setImage(file);
+        setImagePreview(previewUrl);
+      }
     } else {
       e.target.value = "";
-    }
-  };
-  const handleFeaturedImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFeaturedImage(file);
-      setFeaturedImagePreview(URL.createObjectURL(file));
     }
   };
 
@@ -200,36 +202,35 @@ const BlogsList = () => {
 
   // Open Edit Modal
   const openEditModal = (blog: Blog) => {
-  fetchCategories();
-  setEditingBlog(blog);
+    fetchCategories();
+    setEditingBlog(blog);
 
-  // Extract meta tags correctly
-  const meta = (blog as any).meta_tags || {};
+    // Extract meta tags correctly
+    const meta = (blog as any).meta_tags || {};
 
-  setFormData({
-    title: blog.title,
-    content: blog.content,
-    category_id: blog.category_id,
-    status: blog.status,
-    
-    meta_title: meta.title ?? "",
-    meta_description: meta.description ?? "",
-    meta_keywords: meta.keywords ?? "",
+    setFormData({
+      title: blog.title,
+      content: blog.content,
+      category_id: blog.category_id,
+      status: blog.status,
+      
+      meta_title: meta.title ?? "",
+      meta_description: meta.description ?? "",
+      meta_keywords: meta.keywords ?? "",
 
-    image: null,            // ❌ never use URL inside formData
-    featured_image: null,   // ❌
-  });
+      image: null,
+      featured_image: null,
+    });
 
-  // Correct previews
-  setImagePreview(blog.image_url || "");
-  setFeaturedImagePreview(blog.featured_image_url || "");
+    // Correct previews
+    setImagePreview(blog.image_url || "");
+    setFeaturedImagePreview(blog.featured_image_url || "");
 
-  setImage(null);
-  setFeaturedImage(null);
+    setImage(null);
+    setFeaturedImage(null);
 
-  setShowEditModal(true);
-};
-
+    setShowEditModal(true);
+  };
 
   // Handle form input changes
   const handleInputChange = (
@@ -289,7 +290,9 @@ const BlogsList = () => {
       const form = new FormData();
 
       (Object.keys(formData) as Array<keyof BlogFormData>).forEach((key) => {
-        form.append(key, formData[key] as any);
+        if (key !== 'image' && key !== 'featured_image') {
+          form.append(key, (formData as any)[key] as any);
+        }
       });
 
       if (image) {
@@ -324,45 +327,54 @@ const BlogsList = () => {
 
   // Handle form submission for Edit
   const handleEditSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!validateForm() || !editingBlog) return;
+    e.preventDefault();
+    if (!validateForm() || !editingBlog) return;
 
-  setSubmitting(true);
+    setSubmitting(true);
 
-  try {
-    const form = new FormData();
+    try {
+      const form = new FormData();
 
-    // Append content fields only
-    form.append("title", formData.title);
-    form.append("content", formData.content);
-    form.append("category_id", String(formData.category_id));
-    form.append("status", formData.status);
+      // Append content fields only
+      form.append("title", formData.title);
+      form.append("content", formData.content);
+      form.append("category_id", String(formData.category_id));
+      form.append("status", formData.status);
 
-    // Correct meta tag format
-    form.append("meta_tags[title]", formData.meta_title || "");
-    form.append("meta_tags[description]", formData.meta_description || "");
-    form.append("meta_tags[keywords]", formData.meta_keywords || "");
+      // Correct meta tag format
+      form.append("meta_tags[title]", formData.meta_title || "");
+      form.append("meta_tags[description]", formData.meta_description || "");
+      form.append("meta_tags[keywords]", formData.meta_keywords || "");
 
-    // Only append new files
-    if (image instanceof File) form.append("image", image);
-    if (featuredImage instanceof File) form.append("featured_image", featuredImage);
+      // Only append new files
+      if (image instanceof File) form.append("image", image);
+      if (featuredImage instanceof File) form.append("featured_image", featuredImage);
 
-    const response = await updateBlog(editingBlog.id, form);
+      const response = await updateBlog(editingBlog.id, form);
 
-    if (response.success) {
-      toast.success("Blog updated successfully");
-      setShowEditModal(false);
-      refresh();
-    } else {
-      toast.error(response.message || "Failed to update blog");
+      if (response.success) {
+        toast.success("Blog updated successfully");
+        setShowEditModal(false);
+        refresh();
+      } else {
+        toast.error(response.message || "Failed to update blog");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Error updating blog");
+    } finally {
+      setSubmitting(false);
     }
-  } catch (error: any) {
-    toast.error(error.message || "Error updating blog");
-  } finally {
-    setSubmitting(false);
-  }
-};
+  };
 
+  const clearImage = (isFeatured: boolean) => {
+    if (isFeatured) {
+      setFeaturedImage(null);
+      setFeaturedImagePreview("");
+    } else {
+      setImage(null);
+      setImagePreview("");
+    }
+  };
 
   const badge = (status: string) => {
     const baseClasses = "inline-flex items-center px-3 py-1 rounded-full text-xs font-bold";
@@ -386,6 +398,7 @@ const BlogsList = () => {
   };
 
   const truncateText = (text: string, maxLength: number) => {
+    if (!text) return "";
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + "...";
   };
@@ -829,7 +842,7 @@ const BlogsList = () => {
           </>
         )}
 
-        {/* Add Modal */}
+        {/* Modals */}
         <BlogModal
           isEdit={false}
           isOpen={showAddModal}
@@ -838,16 +851,15 @@ const BlogsList = () => {
           formData={formData}
           formErrors={formErrors}
           handleInputChange={handleInputChange}
-          handleFeaturedImageChange={handleFeaturedImageChange}
-          featuredImagePreview={featuredImagePreview ?? ""}
-          imagePreview={imagePreview ?? ""}
           handleFileChange={handleFileChange}
+          imagePreview={imagePreview}
+          featuredImagePreview={featuredImagePreview}
+          clearImage={clearImage}
           submitting={submitting}
           categories={categories}
           statusOptions={statusOptions}
         />
 
-        {/* Edit Modal */}
         <BlogModal
           isEdit={true}
           isOpen={showEditModal}
@@ -856,10 +868,10 @@ const BlogsList = () => {
           formData={formData}
           formErrors={formErrors}
           handleInputChange={handleInputChange}
-          handleFeaturedImageChange={handleFeaturedImageChange}
-          featuredImagePreview={featuredImagePreview ?? ""}
-          imagePreview={imagePreview ?? ""}
           handleFileChange={handleFileChange}
+          imagePreview={imagePreview}
+          featuredImagePreview={featuredImagePreview}
+          clearImage={clearImage}
           submitting={submitting}
           categories={categories}
           statusOptions={statusOptions}
@@ -890,10 +902,10 @@ const BlogModal = ({
   formData,
   formErrors,
   handleInputChange,
-  handleFeaturedImageChange,
-  featuredImagePreview,
-  imagePreview,
   handleFileChange,
+  imagePreview,
+  featuredImagePreview,
+  clearImage,
   submitting,
   categories,
   statusOptions,
@@ -904,13 +916,13 @@ const BlogModal = ({
   onSubmit: (e: React.FormEvent) => void;
   formData: any;
   formErrors: any;
-  handleFeaturedImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  featuredImagePreview: string | null;
   handleInputChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => void;
+  handleFileChange: (e: React.ChangeEvent<HTMLInputElement>, isFeatured?: boolean) => void;
   imagePreview: string | null;
-  handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  featuredImagePreview: string | null;
+  clearImage: (isFeatured: boolean) => void;
   submitting: boolean;
   categories: BlogCategory[];
   statusOptions: any;
@@ -921,7 +933,7 @@ const BlogModal = ({
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl border border-gray-200 dark:border-gray-700 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
           <h4 className="text-lg font-semibold flex items-center gap-2 text-gray-800 dark:text-gray-100">
             <div className="p-2 bg-gradient-to-br from-blue-500 to-emerald-500 rounded-lg">
               <FileText className="text-white" size={20} />
@@ -937,7 +949,7 @@ const BlogModal = ({
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="p-6">
+        <form onSubmit={onSubmit} className="p-4 sm:p-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* LEFT COLUMN */}
             <div className="space-y-6">
@@ -969,7 +981,6 @@ const BlogModal = ({
                 <label className="block text-sm font-bold text-gray-900 dark:text-gray-200 mb-3">
                   Category
                 </label>
-
                 <Select
                   options={categories.map((category) => ({
                     value: category.id,
@@ -1008,7 +1019,6 @@ const BlogModal = ({
                 <label className="block text-sm font-bold text-gray-900 dark:text-gray-200 mb-3">
                   Status
                 </label>
-
                 <Select
                   options={statusOptions}
                   value={
@@ -1036,6 +1046,9 @@ const BlogModal = ({
 
               {/* META FIELDS */}
               <div className="space-y-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-200 mb-2">
+                  SEO Settings
+                </h3>
                 {/* META TITLE */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -1047,7 +1060,7 @@ const BlogModal = ({
                     value={formData.meta_title || ""}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                    placeholder="Meta title"
+                    placeholder="Meta title for SEO"
                     disabled={submitting}
                   />
                 </div>
@@ -1063,7 +1076,7 @@ const BlogModal = ({
                     onChange={handleInputChange}
                     rows={3}
                     className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                    placeholder="Meta description"
+                    placeholder="Meta description for SEO"
                     disabled={submitting}
                   ></textarea>
                 </div>
@@ -1086,37 +1099,114 @@ const BlogModal = ({
               </div>
             </div>
 
-            {/* RIGHT COLUMN */}
+            {/* RIGHT COLUMN - IMAGES */}
             <div className="space-y-6">
-              {/* MAIN IMAGE */}
-              <div>
-                {imagePreview && (
-                  <div className="mb-4">
-                    <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-                      <img
-                        src={imagePreview}
-                        alt="Preview"
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 rounded text-xs">
-                        Preview
-                      </div>
-                    </div>
+              {/* FEATURED IMAGE - Highlighted */}
+              <div className="border border-amber-200 dark:border-amber-700 rounded-xl p-4 bg-amber-50/30 dark:bg-amber-900/10">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Star className="text-amber-500" size={16} />
+                    <label className="block text-sm font-semibold text-gray-900 dark:text-gray-200">
+                      Featured Image *
+                    </label>
+                  </div>
+                  <span className="text-xs px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">
+                    Displayed on blog list
+                  </span>
+                </div>
+                
+                {featuredImagePreview ? (
+                  <div className="mb-3 relative">
+                    <img
+                      src={featuredImagePreview}
+                      alt="Featured Preview"
+                      className="w-full h-48 object-cover rounded-lg border-2 border-amber-300 dark:border-amber-600"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => clearImage(true)}
+                      className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                      disabled={submitting}
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mb-4 text-center py-8 bg-amber-50/50 dark:bg-amber-900/10 rounded-lg border-2 border-dashed border-amber-300 dark:border-amber-700">
+                    <ImageOff className="text-amber-400 mx-auto mb-2" size={24} />
+                    <p className="text-sm text-amber-600 dark:text-amber-400 mb-3">
+                      No featured image selected
+                    </p>
                   </div>
                 )}
 
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Upload Image
-                </label>
+                <div className="border-2 border-dashed border-amber-300 dark:border-amber-600 rounded-lg p-4 text-center hover:border-amber-400 dark:hover:border-amber-500 transition-colors bg-white dark:bg-gray-700">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    id="featured-image-upload"
+                    onChange={(e) => handleFileChange(e, true)}
+                    disabled={submitting}
+                  />
+                  <label
+                    htmlFor="featured-image-upload"
+                    className="cursor-pointer flex flex-col items-center"
+                  >
+                    <ImageIcon className="text-amber-500 mb-2" size={24} />
+                    <span className="text-sm font-medium text-amber-600 dark:text-amber-400">
+                      Upload Featured Image
+                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Recommended: 1200×630px
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              {/* MAIN IMAGE */}
+              <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 bg-white dark:bg-gray-800">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-sm font-semibold text-gray-900 dark:text-gray-200">
+                    Content Image
+                  </label>
+                  <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">
+                    Optional
+                  </span>
+                </div>
+                
+                {imagePreview ? (
+                  <div className="mb-3 relative">
+                    <img
+                      src={imagePreview}
+                      alt="Content Preview"
+                      className="w-full h-48 object-cover rounded-lg border border-gray-300 dark:border-gray-600"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => clearImage(false)}
+                      className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                      disabled={submitting}
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mb-4 text-center py-8 bg-gray-50/50 dark:bg-gray-800/50 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
+                    <ImageOff className="text-gray-400 mx-auto mb-2" size={24} />
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                      No content image selected
+                    </p>
+                  </div>
+                )}
 
                 <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:border-blue-500 dark:hover:border-emerald-500 transition-colors">
                   <input
                     type="file"
-                    name="image"
                     accept="image/*"
-                    onChange={handleFileChange}
                     className="hidden"
                     id="image-upload"
+                    onChange={(e) => handleFileChange(e, false)}
                     disabled={submitting}
                   />
                   <label
@@ -1124,44 +1214,11 @@ const BlogModal = ({
                     className="cursor-pointer flex flex-col items-center"
                   >
                     <ImageIcon className="text-gray-400 mb-2" size={24} />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Click to upload or drag and drop
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      Upload Content Image
                     </span>
-                  </label>
-                </div>
-              </div>
-
-              {/* FEATURED IMAGE */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Featured Image
-                </label>
-
-                {featuredImagePreview && (
-                  <div className="mb-3">
-                    <img
-                      src={featuredImagePreview}
-                      className="w-full h-40 object-cover rounded-lg border border-gray-300 dark:border-gray-700"
-                    />
-                  </div>
-                )}
-
-                <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:border-emerald-500 transition-colors">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    id="featured-image-upload"
-                    onChange={handleFeaturedImageChange}
-                    disabled={submitting}
-                  />
-                  <label
-                    htmlFor="featured-image-upload"
-                    className="cursor-pointer flex flex-col items-center"
-                  >
-                    <ImageIcon className="text-gray-400 mb-2" size={24} />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Upload Featured Image
+                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Displayed within blog content
                     </span>
                   </label>
                 </div>
@@ -1178,23 +1235,26 @@ const BlogModal = ({
               name="content"
               value={formData.content}
               onChange={handleInputChange}
-              rows={6}
+              rows={8}
               className={`w-full px-4 py-3 rounded-lg border ${
                 formErrors.content
                   ? "border-red-300 dark:border-red-700"
                   : "border-gray-300 dark:border-gray-600"
-              } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-all`}
-              placeholder="Enter blog description/content"
+              } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-all resize-y`}
+              placeholder="Enter blog description/content (Supports HTML)"
               disabled={submitting}
             />
+            {formErrors.content && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{formErrors.content}</p>
+            )}
           </div>
 
           {/* ACTION BUTTONS */}
-          <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="px-4 py-2.5 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="px-4 py-2.5 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 order-2 sm:order-1"
               disabled={submitting}
             >
               Cancel
@@ -1203,7 +1263,7 @@ const BlogModal = ({
             <button
               type="submit"
               disabled={submitting}
-              className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white shadow-md"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white shadow-md order-1 sm:order-2"
             >
               {submitting ? (
                 <>
