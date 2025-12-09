@@ -252,6 +252,18 @@ const menuItems =
           path: "/agent/leads",
           exact: false,
         },
+        {
+          name: "CMS",
+          icon: MonitorCog,
+          children: [
+            {
+              name: "Blogs",
+              icon: List,
+              path: "/agent/blogs",
+              exact: true,
+            },
+          ],
+        },
         { name: "Appointment", icon: HousePlus, path: "/agent/appointments", exact: true },
         { name: "Reminders", icon: Bell, path: "/agent/reminders", exact: true },
         { name: "Inbox*", icon: MailOpen, path: "/admin/inbox", exact: true },

@@ -23,15 +23,15 @@ import AdminLayout from "@/components/layout/admin/AdminLayout";
 import { toast } from "sonner";
 import {
   Blog,
-  BlogCategory,
   BlogFormData,
   createBlog,
   deleteBlog,
-  getBlogCategories,
   getBlogs,
   updateBlog,
   updateBlogStatus,
-} from "@/api/admin/cms";
+  BlogCategory,
+  getBlogCategories,
+} from "@/api/agent/cms";
 import { validateImage } from "@/helpers/image_helper";
 import DeleteModal from "../../agents/components/DeleteModal";
 import Select from "react-select";
@@ -44,7 +44,7 @@ const statusOptions = [
   { value: "rejected", label: "Rejected" },
 ];
 
-const BlogsList = () => {
+const AgentBlogsList = () => {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [categories, setCategories] = useState<BlogCategory[]>([]);
   const [search, setSearch] = useState("");
@@ -92,25 +92,25 @@ const BlogsList = () => {
     try {
       setLoading(true);
       const data = await getBlogs();
-      if (data.success) {
-        const filteredBlogs = data.data.filter((blog: Blog) => {
-          const matchesSearch =
-            search === "" ||
-            blog.title.toLowerCase().includes(search.toLowerCase()) ||
-            blog.content.toLowerCase().includes(search.toLowerCase());
 
-          const matchesFilter =
-            filter === "all" ||
-            (filter === "active" && blog.status) ||
-            (filter === "inactive" && !blog.status);
+      // If your API returns { success, data }, add check here
+      const blogsArray: Blog[] = (data as any).data.data ?? data;
 
-          return matchesSearch && matchesFilter;
-        });
+      const filteredBlogs = blogsArray.filter((blog: Blog) => {
+        const matchesSearch =
+          search === "" ||
+          blog.title.toLowerCase().includes(search.toLowerCase()) ||
+          blog.content.toLowerCase().includes(search.toLowerCase());
 
-        setBlogs(filteredBlogs);
-      } else {
-        setError("Failed to fetch blogs.");
-      }
+        const matchesFilter =
+          filter === "all" ||
+          (filter === "active" && blog.status) ||
+          (filter === "inactive" && !blog.status);
+
+        return matchesSearch && matchesFilter;
+      });
+
+      setBlogs(filteredBlogs);
     } catch {
       setError("Failed to fetch blogs.");
     } finally {
@@ -119,7 +119,7 @@ const BlogsList = () => {
   };
 
   const fetchCategories = async () => {
-    const res = await getBlogCategories();
+    const res = await getBlogCategories(); // from admin API, only for categories
     setCategories(res.data);
   };
 
@@ -142,6 +142,7 @@ const BlogsList = () => {
       e.target.value = "";
     }
   };
+
   const handleFeaturedImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -191,7 +192,7 @@ const BlogsList = () => {
       image: "",
       category_id: null,
       status: "",
-    });
+    } as any);
     setFormErrors({ title: "", content: "", image: "" });
     setImagePreview("");
     setFeaturedImagePreview("");
@@ -199,33 +200,34 @@ const BlogsList = () => {
   };
 
   // Open Edit Modal
-  const openEditModal = (blog: Blog) => {
+  // Open Edit Modal
+const openEditModal = (blog: Blog) => {
   fetchCategories();
+
   setEditingBlog(blog);
 
-  // Extract meta tags correctly
-  const meta = (blog as any).meta_tags || {};
+  // If your API returns meta tags in meta_tags: { title, description, keywords }
+  const meta = (blog as any).meta_tags ?? {};
 
   setFormData({
     title: blog.title,
     content: blog.content,
     category_id: blog.category_id,
     status: blog.status,
-    
     meta_title: meta.title ?? "",
     meta_description: meta.description ?? "",
     meta_keywords: meta.keywords ?? "",
-
-    image: null,            // ❌ never use URL inside formData
-    featured_image: null,   // ❌
+    image: null,             // we use separate state for actual File
+    featured_image: null,
   });
 
-  // Correct previews
-  setImagePreview(blog.image_url || "");
-  setFeaturedImagePreview(blog.featured_image_url || "");
-
+  // reset file states
   setImage(null);
   setFeaturedImage(null);
+
+  // show previews from existing URLs
+  setImagePreview(blog.image_url || "");
+  setFeaturedImagePreview(blog.featured_image_url || "");
 
   setShowEditModal(true);
 };
@@ -239,12 +241,12 @@ const BlogsList = () => {
 
     if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
-      setFormData((prev) => ({
+      setFormData((prev: any) => ({
         ...prev,
         [name]: checked ? 1 : 0,
       }));
     } else {
-      setFormData((prev) => ({
+      setFormData((prev: any) => ({
         ...prev,
         [name]: value,
       }));
@@ -264,12 +266,12 @@ const BlogsList = () => {
     const errors = { title: "", content: "", image: "" };
     let isValid = true;
 
-    if (!formData?.title.trim()) {
+    if (!formData?.title?.trim()) {
       errors.title = "Title is required";
       isValid = false;
     }
 
-    if (!formData?.content.trim()) {
+    if (!formData?.content?.trim()) {
       errors.content = "Content is required";
       isValid = false;
     }
@@ -289,7 +291,7 @@ const BlogsList = () => {
       const form = new FormData();
 
       (Object.keys(formData) as Array<keyof BlogFormData>).forEach((key) => {
-        form.append(key, formData[key] as any);
+        form.append(key, (formData as any)[key] as any);
       });
 
       if (image) {
@@ -304,12 +306,12 @@ const BlogsList = () => {
       form.append("meta_tags[keywords]", formData.meta_keywords || "");
 
       const response = await createBlog(form);
-      if (response.success) {
+      if ((response as any).success) {
         toast.success("Blog added successfully");
         setShowAddModal(false);
         refresh();
       } else {
-        toast.error(response.message || "Failed to add blog");
+        toast.error((response as any).message || "Failed to add blog");
       }
     } catch (error: any) {
       toast.error(error.message || "Failed to add blog");
@@ -332,32 +334,37 @@ const BlogsList = () => {
   try {
     const form = new FormData();
 
-    // Append content fields only
     form.append("title", formData.title);
     form.append("content", formData.content);
-    form.append("category_id", String(formData.category_id));
-    form.append("status", formData.status);
+    form.append("category_id", String(formData.category_id ?? ""));
+    form.append("status", formData.status ?? "");
 
-    // Correct meta tag format
+    // Only append files if user chose new ones.
+    // If not, backend should keep old images.
+    if (image instanceof File) {
+      form.append("image", image);
+    }
+
+    if (featuredImage instanceof File) {
+      form.append("featured_image", featuredImage);
+    }
+
+    // ✅ send meta tags in same format as createBlog
     form.append("meta_tags[title]", formData.meta_title || "");
     form.append("meta_tags[description]", formData.meta_description || "");
     form.append("meta_tags[keywords]", formData.meta_keywords || "");
 
-    // Only append new files
-    if (image instanceof File) form.append("image", image);
-    if (featuredImage instanceof File) form.append("featured_image", featuredImage);
-
     const response = await updateBlog(editingBlog.id, form);
 
-    if (response.success) {
+    if (response?.success) {
       toast.success("Blog updated successfully");
       setShowEditModal(false);
       refresh();
     } else {
-      toast.error(response.message || "Failed to update blog");
+      toast.error(response?.message || "Failed to update blog");
     }
-  } catch (error: any) {
-    toast.error(error.message || "Error updating blog");
+  } catch (err: any) {
+    toast.error(err.message || "Error updating blog");
   } finally {
     setSubmitting(false);
   }
@@ -386,6 +393,7 @@ const BlogsList = () => {
   };
 
   const truncateText = (text: string, maxLength: number) => {
+    if (!text) return "";
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + "...";
   };
@@ -576,9 +584,8 @@ const BlogsList = () => {
                         </tr>
                       ) : (
                         blogs.map((blog, index) => (
-                          <>
+                          <tbody key={blog.id}>
                             <tr
-                              key={blog.id}
                               className={`border-b border-gray-100 dark:border-gray-800 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all group cursor-pointer ${
                                 index % 2 === 0
                                   ? "bg-white dark:bg-gray-900"
@@ -710,7 +717,7 @@ const BlogsList = () => {
                                 </td>
                               </tr>
                             )}
-                          </>
+                          </tbody>
                         ))
                       )}
                     </tbody>
@@ -748,7 +755,11 @@ const BlogsList = () => {
                       {/* Blog Image */}
                       <div className="relative h-48 overflow-hidden">
                         <img
-                          src={blog.featured_image_url ||blog.image_url || "/assets/no_image_found.jpg"}
+                          src={
+                            blog.featured_image_url ||
+                            blog.image_url ||
+                            "/assets/no_image_found.jpg"
+                          }
                           alt={blog.title}
                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                         />
@@ -786,7 +797,7 @@ const BlogsList = () => {
                             <span>{formatDate(blog.created_at)}</span>
                           </div>
                         </div>
-                            
+
                         {expandedBlog === blog.id ? (
                           <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                             <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -1105,7 +1116,7 @@ const BlogModal = ({
                   </div>
                 )}
 
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text.sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Upload Image
                 </label>
 
@@ -1224,4 +1235,4 @@ const BlogModal = ({
   );
 };
 
-export default BlogsList;
+export default AgentBlogsList;

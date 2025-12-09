@@ -28,9 +28,14 @@ export interface FAQListResponse {
 // Blog Interfaces
 // =============================
 export interface Blog {
+  views_count: number;
+  featured_image_url?: string | null;
+  meta_title: string;
+  meta_description: string;
+  meta_keywords: string;
   id: number;
   title: string;
-  description: string;
+  content: string;
   image: string | null;
   category_id: number | null;
   image_url?: string | null;
@@ -41,15 +46,19 @@ export interface Blog {
 
 export interface BlogFormData{
   title: string;
-  description: string;
+  content: string;
   category_id: number | null;
+  featured_image?: string | null;
+  meta_title?: string | null;
+  meta_description?: string | null;
+  meta_keywords?: string | null;
   image?: string | null;
   status: string;
 }
 
 export interface NewsFormData{
   title: string;
-  description: string;
+  content: string;
   image?: string | null;
   status: number;
 }
@@ -71,7 +80,7 @@ export interface BlogListResponse {
 export interface BlogCategory {
   id: number;
   name: string;
-  description: string;
+  content: string;
   is_active: boolean;
   blogs_count: number;
   slug: string;
@@ -81,7 +90,7 @@ export interface BlogCategory {
 
 export interface BlogCategoryFormData{
   name: string;
-  description: string;
+  content: string;
   is_active: boolean;
 }
 
@@ -102,7 +111,7 @@ export interface BlogCategoryListResponse {
 export interface News {
   id: number;
   title: string;
-  description: string;
+  content: string;
   image: string | null;
   image_url?: string | null;
   status: number;

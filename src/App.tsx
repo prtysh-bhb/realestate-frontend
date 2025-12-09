@@ -79,6 +79,7 @@ import ShowReminder from "./pages/admin/agents/reminders/ShowReminder";
 import CustomerChatPage from "./pages/customer/CustomerChatPage";
 import FAQList from "./pages/admin/cms/faqs/FAQList";
 import BlogList from "./pages/admin/cms/blogs/BlogList";
+import AgentBlogList from "./pages/admin/agents/cms/Bloglist";
 import NewsList from "./pages/admin/cms/news/NewsList";
 import BlogCategories from "./pages/admin/cms/blogs/BlogCategories";
 
@@ -563,6 +564,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["agent"]}>
                 <ChatPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/agent/blogs"
+            element={
+              <ProtectedRoute allowedRoles={["agent"]}>
+                <AgentBlogList />
               </ProtectedRoute>
             }
           />

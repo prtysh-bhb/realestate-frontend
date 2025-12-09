@@ -46,12 +46,12 @@ const BlogCategories = () => {
   // Form states
   const [formData, setFormData] = useState<BlogCategoryFormData>({
     name: "",
-    description: "",
+    content: "",
     is_active: false
   });
   const [formErrors, setFormErrors] = useState({
     name: "",
-    description: ""
+    content: ""
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -77,7 +77,7 @@ const BlogCategories = () => {
         const filteredCategories = data.data.filter((category: BlogCategory) => {
           const matchesSearch = search === "" || 
             category.name.toLowerCase().includes(search.toLowerCase()) ||
-            category.description.toLowerCase().includes(search.toLowerCase());
+            category.content.toLowerCase().includes(search.toLowerCase());
           
           const matchesFilter = filter === "all" || 
             (filter === "active" && category.is_active) ||
@@ -144,10 +144,10 @@ const BlogCategories = () => {
   const openAddModal = () => {
     setFormData({
       name: "",
-      description: "",
+      content: "",
       is_active: false
     });
-    setFormErrors({ name: "", description: "" });
+    setFormErrors({ name: "", content: "" });
     setShowAddModal(true);
   };
 
@@ -156,10 +156,10 @@ const BlogCategories = () => {
     setEditingCategory(category);
     setFormData({
       name: category.name,
-      description: category.description,
+      content: category.content,
       is_active: category.is_active
     });
-    setFormErrors({ name: "", description: "" });
+    setFormErrors({ name: "", content: "" });
     setShowEditModal(true);
   };
 
@@ -191,7 +191,7 @@ const BlogCategories = () => {
 
   // Validate form
   const validateForm = () => {
-    const errors = { name: "", description: "" };
+    const errors = { name: "", content: "" };
     let isValid = true;
 
     if (!formData.name.trim()) {
@@ -202,11 +202,11 @@ const BlogCategories = () => {
       isValid = false;
     }
 
-    if (!formData.description.trim()) {
-      errors.description = "Description is required";
+    if (!formData.content.trim()) {
+      errors.content = "content is required";
       isValid = false;
-    } else if (formData.description.length < 10) {
-      errors.description = "Description must be at least 10 characters";
+    } else if (formData.content.length < 10) {
+      errors.content = "content must be at least 10 characters";
       isValid = false;
     }
 
@@ -489,7 +489,7 @@ const BlogCategories = () => {
                                         {category.name}
                                       </p>
                                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
-                                        {category.description}
+                                        {category.content}
                                       </p>
                                     </div>
                                   </div>
@@ -560,8 +560,8 @@ const BlogCategories = () => {
                                       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                                         <div className="grid grid-cols-2 gap-4 mb-4">
                                           <div>
-                                            <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-2">Description:</h4>
-                                            <p className="text-gray-600 dark:text-gray-400">{category.description}</p>
+                                            <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-2">content:</h4>
+                                            <p className="text-gray-600 dark:text-gray-400">{category.content}</p>
                                           </div>
                                           <div>
                                             <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-2">Details:</h4>
@@ -667,8 +667,8 @@ const BlogCategories = () => {
 
                           {expandedCategory === category.id && (
                             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                              <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Description:</h4>
-                              <p className="text-gray-600 dark:text-gray-400 mb-4">{category.description}</p>
+                              <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">content:</h4>
+                              <p className="text-gray-600 dark:text-gray-400 mb-4">{category.content}</p>
                               <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
                                 <div className="space-x-4">
                                   <span className="flex items-center gap-1">
@@ -855,29 +855,29 @@ const CategoryModal = ({
                 </p>
               </div>
 
-              {/* Description Field */}
+              {/* content Field */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Description *
+                  content *
                 </label>
                 <textarea
-                  name="description"
-                  value={formData.description}
+                  name="content"
+                  value={formData.content}
                   onChange={handleInputChange}
                   rows={4}
                   className={`w-full px-4 py-3 rounded-lg border ${
-                    formErrors.description 
+                    formErrors.content 
                       ? 'border-red-300 dark:border-red-700 focus:ring-red-500 focus:border-red-500' 
                       : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-500'
                   } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-all resize-none`}
                   placeholder="Describe what this category is about..."
                   disabled={submitting}
                 />
-                {formErrors.description && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{formErrors.description}</p>
+                {formErrors.content && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{formErrors.content}</p>
                 )}
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  {formData.description.length}/500 characters
+                  {formData.content.length}/500 characters
                 </p>
               </div>
 
