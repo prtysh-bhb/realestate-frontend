@@ -180,7 +180,7 @@ const LoanCalculator: React.FC = () => {
                     </label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                        ₹
+                        $
                       </span>
                       <input
                         type="text"
@@ -208,7 +208,7 @@ const LoanCalculator: React.FC = () => {
                     </label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                        ₹
+                        $
                       </span>
                       <input
                         type="text"
@@ -230,7 +230,7 @@ const LoanCalculator: React.FC = () => {
                     </label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                        ₹
+                        $
                       </span>
                       <input
                         type="text"

@@ -1,4 +1,5 @@
 import { InquiryFormData } from '@/api/customer/properties';
+import { handleKeyPress } from '@/helpers/customer_helper';
 import { useState, FormEvent, useEffect } from 'react';
 
 interface InquiryModalProps {
@@ -158,6 +159,9 @@ const CustomerInquiryModal = ({ isOpen, onClose, onSubmit }: InquiryModalProps) 
                 type="text"
                 id="name"
                 value={formData.name}
+                onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                                        handleKeyPress(e, /[a-zA-Z0-9@._-]/, false)
+                                      }
                 onChange={(e) => handleInputChange('name', e.target.value)}
                 maxLength={100}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
@@ -182,6 +186,9 @@ const CustomerInquiryModal = ({ isOpen, onClose, onSubmit }: InquiryModalProps) 
                 type="email"
                 id="email"
                 value={formData.email}
+                onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                                        handleKeyPress(e, /[a-z0-9@._-]/, false)
+                                      }
                 maxLength={100}
                 onChange={(e) => handleInputChange('email', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
@@ -206,6 +213,9 @@ const CustomerInquiryModal = ({ isOpen, onClose, onSubmit }: InquiryModalProps) 
                 type="tel"
                 id="phone"
                 value={formData.phone}
+                onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                                        handleKeyPress(e, /[0-9()+-\s]/, false)
+                                      }
                 onChange={(e) => handleInputChange('phone', e.target.value)}
                 maxLength={20}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
@@ -230,6 +240,9 @@ const CustomerInquiryModal = ({ isOpen, onClose, onSubmit }: InquiryModalProps) 
                 id="message"
                 rows={4}
                 value={formData.message}
+                onKeyPress={(e: React.KeyboardEvent<HTMLTextAreaElement>) =>
+                                        handleKeyPress(e, /[a-zA-Z0-9 .,!?'"()-]/, true)
+                                      }
                 onChange={(e) => handleInputChange('message', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none ${
                   errors.message ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'

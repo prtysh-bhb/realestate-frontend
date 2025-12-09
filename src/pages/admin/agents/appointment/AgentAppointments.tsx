@@ -35,6 +35,7 @@ import {
 import { getAgentProperties } from "@/api/agent/property";
 import { Customer } from "@/types/appointment";
 import { Button } from "@/components/ui/button";
+import { handleKeyPress } from "@/helpers/customer_helper";
 
 /**
  * Note: This component uses a safeApiCall helper to handle functions that may
@@ -1066,6 +1067,9 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                       <input
                         maxLength={form.type === "call" ? 15 : 50}
                         value={form.type === "call" ? form.phone_number : form.location}
+                        onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                                                handleKeyPress(e, /[0-9()+-\s]/, false)
+                                              }
                         onChange={(e) =>
                           form.type === "call"
                             ? setForm((s: any) => ({ ...s, phone_number: e.target.value }))

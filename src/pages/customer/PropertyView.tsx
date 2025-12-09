@@ -60,7 +60,7 @@ import { JSX, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import CustomerInquiryModal from "./CustomerInquiryModal";
 import { toast } from "sonner";
-import { formatAmount, getDocumentTypeFromUrl, getFileSizeInMB } from "@/helpers/customer_helper";
+import { formatAmount, getDocumentTypeFromUrl, getFileSizeInMB, handleKeyPress } from "@/helpers/customer_helper";
 import ImageModal from "./ImageModal";
 import { AnimatePresence, motion } from "framer-motion";
 import ReactPlayer from "react-player";
@@ -1686,6 +1686,9 @@ const PropertyView = () => {
                     type="tel"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
+                    onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                        handleKeyPress(e, /[0-9()+-\s]/, false)
+                      }
                     placeholder="Enter your phone number"
                     className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />

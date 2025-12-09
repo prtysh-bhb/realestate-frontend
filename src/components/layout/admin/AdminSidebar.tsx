@@ -262,6 +262,12 @@ const menuItems =
               path: "/agent/blogs",
               exact: true,
             },
+            {
+              name: "Comments",
+              icon: MessageCircle,
+              path: "/agent/comments",
+              exact: true,
+            },
           ],
         },
         { name: "Appointment", icon: HousePlus, path: "/agent/appointments", exact: true },
