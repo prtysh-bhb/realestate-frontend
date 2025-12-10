@@ -175,38 +175,33 @@ const CreateReminder = () => {
       inquiry_followup: { 
         icon: MessageCircle, 
         color: 'from-amber-500 to-orange-500',
+        darkColor: 'dark:from-amber-600 dark:to-orange-600',
         bgColor: 'from-amber-50 to-orange-50',
+        darkBgColor: 'dark:from-amber-900/30 dark:to-orange-900/30',
         borderColor: 'border-amber-200',
+        darkBorderColor: 'dark:border-amber-800/50',
         label: 'Inquiry Follow-up'
       },
       appointment_followup: { 
         icon: Calendar, 
         color: 'from-blue-500 to-cyan-500',
+        darkColor: 'dark:from-blue-600 dark:to-cyan-600',
         bgColor: 'from-blue-50 to-cyan-50',
+        darkBgColor: 'dark:from-blue-900/30 dark:to-cyan-900/30',
         borderColor: 'border-blue-200',
+        darkBorderColor: 'dark:border-blue-800/50',
         label: 'Appointment Follow-up'
       },
       general: { 
         icon: Bell, 
         color: 'from-purple-500 to-violet-500',
+        darkColor: 'dark:from-purple-600 dark:to-violet-600',
         bgColor: 'from-purple-50 to-violet-50',
+        darkBgColor: 'dark:from-purple-900/30 dark:to-violet-900/30',
         borderColor: 'border-purple-200',
+        darkBorderColor: 'dark:border-purple-800/50',
         label: 'General'
       },
-    //   document_pending: { 
-    //     icon: FileText, 
-    //     color: 'from-emerald-500 to-green-500',
-    //     bgColor: 'from-emerald-50 to-green-50',
-    //     borderColor: 'border-emerald-200',
-    //     label: 'Document Pending'
-    //   },
-    //   payment_followup: { 
-    //     icon: CreditCard, 
-    //     color: 'from-rose-500 to-pink-500',
-    //     bgColor: 'from-rose-50 to-pink-50',
-    //     borderColor: 'border-rose-200',
-    //     label: 'Payment Follow-up'
-    //   }
     };
 
     return typeConfig[type as keyof typeof typeConfig] || typeConfig.general;
@@ -214,10 +209,10 @@ const CreateReminder = () => {
 
   const getPriorityConfig = (priority: string) => {
     const priorityConfig = {
-      low: { color: 'text-gray-600 bg-gray-100', icon: Bell },
-      medium: { color: 'text-blue-600 bg-blue-100', icon: Clock },
-      high: { color: 'text-amber-600 bg-amber-100', icon: AlertTriangle },
-      urgent: { color: 'text-red-600 bg-red-100', icon: Zap }
+      low: { color: 'text-gray-600 bg-gray-100', darkColor: 'dark:text-gray-300 dark:bg-gray-800', icon: Bell },
+      medium: { color: 'text-blue-600 bg-blue-100', darkColor: 'dark:text-blue-400 dark:bg-blue-900/30', icon: Clock },
+      high: { color: 'text-amber-600 bg-amber-100', darkColor: 'dark:text-amber-400 dark:bg-amber-900/30', icon: AlertTriangle },
+      urgent: { color: 'text-red-600 bg-red-100', darkColor: 'dark:text-red-400 dark:bg-red-900/30', icon: Zap }
     };
 
     return priorityConfig[priority as keyof typeof priorityConfig] || priorityConfig.medium;
@@ -262,7 +257,7 @@ const CreateReminder = () => {
         <div className="flex items-center justify-center min-h-96">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading reminder...</p>
+            <p className="mt-4 text-gray-600 dark:text-gray-400">Loading reminder...</p>
           </div>
         </div>
       </AdminLayout>
@@ -273,17 +268,17 @@ const CreateReminder = () => {
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600 p-8 rounded-2xl shadow-2xl border-0 text-white relative overflow-hidden">
-          <div className="absolute inset-0 bg-black/10"></div>
+        <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600 dark:from-blue-700 dark:via-purple-700 dark:to-emerald-700 p-8 rounded-2xl shadow-2xl border-0 text-white relative overflow-hidden">
+          <div className="absolute inset-0 bg-black/10 dark:bg-black/20"></div>
           <div className="relative z-10">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="p-4 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/30">
+                <div className="p-4 bg-white/20 dark:bg-white/10 backdrop-blur-sm rounded-2xl border border-white/30 dark:border-white/20">
                   <Bell className="w-8 h-8 text-white" />
                 </div>
                 <div>
                   <h1 className="text-3xl font-bold mb-2">Create New Reminder</h1>
-                  <p className="text-blue-100 text-lg">
+                  <p className="text-blue-100 dark:text-blue-200 text-lg">
                     Set up reminders to stay organized and never miss important tasks
                   </p>
                 </div>
@@ -291,7 +286,7 @@ const CreateReminder = () => {
               <Button
                 onClick={() => navigate('/agent/reminders')}
                 variant="outline"
-                className="bg-white/20 backdrop-blur-sm hover:bg-white/30 border border-white/30 text-white"
+                className="bg-white/20 dark:bg-white/10 backdrop-blur-sm hover:bg-white/30 dark:hover:bg-white/20 border border-white/30 dark:border-white/20 text-white"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Reminders
@@ -303,32 +298,32 @@ const CreateReminder = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Form */}
           <div className="lg:col-span-2">
-            <Card className="bg-white border-2 border-gray-200 rounded-2xl shadow-xl">
+            <Card className="bg-white dark:bg-gray-900/50 dark:backdrop-blur-sm border-2 border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl">
               <CardContent className="p-8">
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Basic Information */}
                   <div className="space-y-6">
                     <div className="flex items-center gap-3 mb-6">
-                      <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl">
+                      <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 dark:from-blue-600 dark:to-cyan-600 rounded-xl">
                         <Bell className="w-6 h-6 text-white" />
                       </div>
-                      <h2 className="text-2xl font-bold text-gray-900">Reminder Details</h2>
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Reminder Details</h2>
                     </div>
 
                     {/* Title */}
                     <div>
-                      <label className="block text-sm font-bold text-gray-900 mb-3">
+                      <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">
                         Title <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         value={formData.title}
                         onChange={(e) => handleChange('title', e.target.value)}
-                        className={`w-full px-4 py-3 bg-gray-50 border-2 ${
+                        className={`w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 ${
                           errors.title 
                             ? 'border-red-500 focus:ring-red-500' 
-                            : 'border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                        } rounded-xl text-gray-900 placeholder:text-gray-400 transition-all`}
+                            : 'border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600'
+                        } rounded-xl text-gray-900 dark:text-white dark:placeholder:text-gray-400 transition-all`}
                         placeholder="Enter reminder title..."
                         maxLength={100}
                       />
@@ -336,25 +331,25 @@ const CreateReminder = () => {
                         <p className="mt-2 text-sm text-red-600 font-medium">{errors.title}</p>
                       )}
                       <div className="flex justify-between mt-2">
-                        <p className="text-xs text-gray-500">Brief and descriptive title</p>
-                        <p className="text-xs text-gray-500">{formData.title.length}/100</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Brief and descriptive title</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{formData.title.length}/100</p>
                       </div>
                     </div>
 
                     {/* Description */}
                     <div>
-                      <label className="block text-sm font-bold text-gray-900 mb-3">
+                      <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">
                         Description
                       </label>
                       <textarea
                         value={formData?.description ?? ''}
                         onChange={(e) => handleChange('description', e.target.value)}
                         rows={4}
-                        className={`w-full px-4 py-3 bg-gray-50 border-2 ${
+                        className={`w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 ${
                           errors.description 
                             ? 'border-red-500 focus:ring-red-500' 
-                            : 'border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                        } rounded-xl text-gray-900 placeholder:text-gray-400 resize-none transition-all`}
+                            : 'border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600'
+                        } rounded-xl text-gray-900 dark:text-white dark:placeholder:text-gray-400 resize-none transition-all`}
                         placeholder="Add detailed description about the reminder..."
                         maxLength={1000}
                       />
@@ -362,8 +357,8 @@ const CreateReminder = () => {
                         <p className="mt-2 text-sm text-red-600 font-medium">{errors.description}</p>
                       )}
                       <div className="flex justify-between mt-2">
-                        <p className="text-xs text-gray-500">Optional detailed description</p>
-                        <p className="text-xs text-gray-500">{formData?.description?.length ?? 0}/1000</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Optional detailed description</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{formData?.description?.length ?? 0}/1000</p>
                       </div>
                     </div>
 
@@ -371,7 +366,7 @@ const CreateReminder = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Type */}
                       <div>
-                        <label className="block text-sm font-bold text-gray-900 mb-3">
+                        <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">
                           Type <span className="text-red-500">*</span>
                         </label>
                         <div className="space-y-3">
@@ -379,8 +374,6 @@ const CreateReminder = () => {
                             { value: 'inquiry_followup', label: 'Inquiry Follow-up' },
                             { value: 'appointment_followup', label: 'Appointment Follow-up' },
                             { value: 'general', label: 'General' },
-                            // { value: 'document_pending', label: 'Document Pending' },
-                            // { value: 'payment_followup', label: 'Payment Follow-up' }
                           ].map((type) => {
                             const config = getTypeConfig(type.value);
                             const Icon = config.icon;
@@ -390,8 +383,8 @@ const CreateReminder = () => {
                                 key={type.value}
                                 className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
                                   formData.type === type.value
-                                    ? `${config.borderColor} bg-gradient-to-r ${config.bgColor} shadow-md`
-                                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                    ? `${config.borderColor} ${config.darkBorderColor} bg-gradient-to-r ${config.bgColor} ${config.darkBgColor} shadow-md dark:shadow-lg`
+                                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
                                 }`}
                               >
                                 <input
@@ -402,14 +395,14 @@ const CreateReminder = () => {
                                   onChange={(e) => handleChange('type', e.target.value)}
                                   className="hidden"
                                 />
-                                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${config.color} flex items-center justify-center flex-shrink-0`}>
+                                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${config.color} ${config.darkColor} flex items-center justify-center flex-shrink-0`}>
                                   <Icon className="w-5 h-5 text-white" />
                                 </div>
                                 <div>
-                                  <p className="font-semibold text-gray-900">{type.label}</p>
+                                  <p className="font-semibold text-gray-900 dark:text-white">{type.label}</p>
                                 </div>
                                 {formData.type === type.value && (
-                                  <CheckCircle className="w-5 h-5 text-emerald-500 ml-auto" />
+                                  <CheckCircle className="w-5 h-5 text-emerald-500 dark:text-emerald-400 ml-auto" />
                                 )}
                               </label>
                             );
@@ -422,7 +415,7 @@ const CreateReminder = () => {
 
                       {/* Priority */}
                       <div>
-                        <label className="block text-sm font-bold text-gray-900 mb-3">
+                        <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">
                           Priority
                         </label>
                         <div className="space-y-3">
@@ -440,8 +433,8 @@ const CreateReminder = () => {
                                 key={priority.value}
                                 className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
                                   formData.priority === priority.value
-                                    ? 'border-blue-200 bg-blue-50 shadow-md'
-                                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                    ? 'border-blue-200 dark:border-blue-800/50 bg-blue-50 dark:bg-blue-900/30 shadow-md dark:shadow-lg'
+                                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
                                 }`}
                               >
                                 <input
@@ -452,14 +445,14 @@ const CreateReminder = () => {
                                   onChange={(e) => handleChange('priority', e.target.value)}
                                   className="hidden"
                                 />
-                                <div className={`w-10 h-10 rounded-lg ${config.color} flex items-center justify-center flex-shrink-0`}>
+                                <div className={`w-10 h-10 rounded-lg ${config.color} ${config.darkColor} flex items-center justify-center flex-shrink-0`}>
                                   <Icon className="w-5 h-5" />
                                 </div>
                                 <div>
-                                  <p className="font-semibold text-gray-900">{priority.label}</p>
+                                  <p className="font-semibold text-gray-900 dark:text-white">{priority.label}</p>
                                 </div>
                                 {formData.priority === priority.value && (
-                                  <CheckCircle className="w-5 h-5 text-emerald-500 ml-auto" />
+                                  <CheckCircle className="w-5 h-5 text-emerald-500 dark:text-emerald-400 ml-auto" />
                                 )}
                               </label>
                             );
@@ -473,27 +466,27 @@ const CreateReminder = () => {
 
                     {/* Reminder Time */}
                     <div>
-                      <label className="block text-sm font-bold text-gray-900 mb-3">
+                      <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">
                         Remind At <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
-                        <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                        <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" size={20} />
                         <input
                           type="datetime-local"
                           value={formData.remind_at}
                           onChange={(e) => handleChange('remind_at', e.target.value)}
                           min={getMinDateTime()}
-                          className={`w-full pl-12 pr-4 py-3 bg-gray-50 border-2 ${
+                          className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 ${
                             errors.remind_at 
                               ? 'border-red-500 focus:ring-red-500' 
-                              : 'border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                          } rounded-xl text-gray-900 transition-all`}
+                              : 'border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600'
+                          } rounded-xl text-gray-900 dark:text-white transition-all`}
                         />
                       </div>
                       {errors.remind_at && (
                         <p className="mt-2 text-sm text-red-600 font-medium">{errors.remind_at}</p>
                       )}
-                      <p className="text-xs text-gray-500 mt-2">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                         Set the date and time when you want to be reminded
                       </p>
                     </div>
@@ -501,15 +494,14 @@ const CreateReminder = () => {
                     {/* Related Entities Based on Type */}
                     {formData.type !== 'general' && (
                       <div className="space-y-4">
-                        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                          <User className="w-5 h-5 text-blue-600" />
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                          <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                           Related Information
                         </h3>
 
-
                         {/* Customer */}
                         <div>
-                            <label className="block text-sm font-bold text-gray-900 mb-3">
+                            <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">
                                 Customer
                             </label>
                             <Select
@@ -539,7 +531,7 @@ const CreateReminder = () => {
                         {/* Type-specific fields */}
                         {formData.type === 'inquiry_followup' && (
                         <div>
-                            <label className="block text-sm font-bold text-gray-900 mb-3">
+                            <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">
                             Related Inquiry
                             </label>
                             <Select
@@ -569,7 +561,7 @@ const CreateReminder = () => {
 
                         {formData.type === 'appointment_followup' && (
                         <div>
-                            <label className="block text-sm font-bold text-gray-900 mb-3">
+                            <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">
                             Related Appointment
                             </label>
                             <Select
@@ -596,43 +588,23 @@ const CreateReminder = () => {
                             />
                         </div>
                         )}
-
-                        {/* {(formData.type === 'document_pending' || formData.type === 'payment_followup') && (
-                          <div>
-                            <label className="block text-sm font-bold text-gray-900 mb-3">
-                              Related Property
-                            </label>
-                            <select
-                              value={formData?.property_id ?? ""}
-                              onChange={(e) => handleChange('property_id', e.target.value)}
-                              className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                            >
-                              <option value="">Select a property</option>
-                              {properties.map((property) => (
-                                <option key={property.id} value={property.id}>
-                                  {property.title} - {property.address}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        )} */}
                       </div>
                     )}
 
                     {/* Notes */}
                     <div>
-                      <label className="block text-sm font-bold text-gray-900 mb-3">
+                      <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">
                         Additional Notes
                       </label>
                       <textarea
                         value={formData?.notes ?? ""}
                         onChange={(e) => handleChange('notes', e.target.value)}
                         rows={3}
-                        className={`w-full px-4 py-3 bg-gray-50 border-2 ${
+                        className={`w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 ${
                           errors.notes 
                             ? 'border-red-500 focus:ring-red-500' 
-                            : 'border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                        } rounded-xl text-gray-900 placeholder:text-gray-400 resize-none transition-all`}
+                            : 'border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600'
+                        } rounded-xl text-gray-900 dark:text-white dark:placeholder:text-gray-400 resize-none transition-all`}
                         placeholder="Add any additional notes or context..."
                         maxLength={500}
                       />
@@ -640,18 +612,18 @@ const CreateReminder = () => {
                         <p className="mt-2 text-sm text-red-600 font-medium">{errors.notes}</p>
                       )}
                       <div className="flex justify-between mt-2">
-                        <p className="text-xs text-gray-500">Optional notes for context</p>
-                        <p className="text-xs text-gray-500">{formData?.notes?.length ?? ""}/500</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Optional notes for context</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{formData?.notes?.length ?? ""}/500</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Submit Button */}
-                  <div className="flex gap-4 pt-6 border-t border-gray-200">
+                  <div className="flex gap-4 pt-6 border-t border-gray-200 dark:border-gray-800">
                     <Button
                       type="submit"
                       disabled={loading}
-                      className="flex-1 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                      className="flex-1 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 dark:from-blue-700 dark:to-emerald-700 dark:hover:from-blue-800 dark:hover:to-emerald-800 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                     >
                       {loading ? (
                         <>
@@ -669,7 +641,7 @@ const CreateReminder = () => {
                       type="button"
                       onClick={() => navigate('/agent/reminders')}
                       variant="outline"
-                      className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold py-3 rounded-xl transition-all duration-300"
+                      className="border-2 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 font-semibold py-3 rounded-xl transition-all duration-300"
                     >
                       <XCircle className="w-5 h-5 mr-2" />
                       Cancel
@@ -683,31 +655,31 @@ const CreateReminder = () => {
           {/* Sidebar - Preview & Help */}
           <div className="space-y-6">
             {/* Preview Card */}
-            <Card className="bg-gradient-to-br from-purple-50 to-violet-50 border-2 border-purple-200 rounded-2xl shadow-xl">
+            <Card className="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/30 dark:to-violet-900/30 border-2 border-purple-200 dark:border-purple-800/50 rounded-2xl shadow-xl">
               <CardContent className="p-6">
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Bell className="w-5 h-5 text-purple-600" />
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                  <Bell className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                   Reminder Preview
                 </h3>
                 
                 {formData.title ? (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-gray-900">Type:</span>
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700 capitalize">
+                      <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">Type:</span>
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 capitalize">
                         {formData.type.replace('_', ' ')}
                       </span>
                     </div>
                     
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-gray-900">Priority:</span>
+                      <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">Priority:</span>
                       {getPriorityBadge(formData.priority)}
                     </div>
 
                     {formData.remind_at && (
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-gray-900">Due:</span>
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">Due:</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
                           {new Date(formData.remind_at).toLocaleString()}
                         </span>
                       </div>
@@ -715,15 +687,15 @@ const CreateReminder = () => {
 
                     {formData.description && (
                       <div>
-                        <span className="text-sm font-semibold text-gray-900 block mb-1">Preview:</span>
-                        <p className="text-sm text-gray-600 bg-white p-3 rounded-lg border border-gray-200">
+                        <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 block mb-1">Preview:</span>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
                           {formData.description}
                         </p>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500 text-center py-4">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
                     Fill in the form to see preview
                   </p>
                 )}
@@ -731,27 +703,27 @@ const CreateReminder = () => {
             </Card>
 
             {/* Help Card */}
-            <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-2xl shadow-xl">
+            <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 border-2 border-blue-200 dark:border-blue-800/50 rounded-2xl shadow-xl">
               <CardContent className="p-6">
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-blue-600" />
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   Quick Tips
                 </h3>
-                <div className="space-y-3 text-sm text-gray-600">
+                <div className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
                   <div className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full mt-1.5 flex-shrink-0"></div>
                     <span>Use descriptive titles for easy identification</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full mt-1.5 flex-shrink-0"></div>
                     <span>Set reminder times at least 5 minutes in the future</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full mt-1.5 flex-shrink-0"></div>
                     <span>Link reminders to customers or properties for context</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full mt-1.5 flex-shrink-0"></div>
                     <span>Use priority levels to organize your workflow</span>
                   </div>
                 </div>
@@ -765,17 +737,33 @@ const CreateReminder = () => {
 
   function getPriorityBadge(priority: string) {
     const priorityConfig = {
-      low: { color: 'bg-gray-100 text-gray-700', icon: Bell },
-      medium: { color: 'bg-blue-100 text-blue-700', icon: Clock },
-      high: { color: 'bg-amber-100 text-amber-700', icon: AlertTriangle },
-      urgent: { color: 'bg-red-100 text-red-700', icon: Zap }
+      low: { 
+        color: 'bg-gray-100 text-gray-700', 
+        darkColor: 'dark:bg-gray-800 dark:text-gray-300', 
+        icon: Bell 
+      },
+      medium: { 
+        color: 'bg-blue-100 text-blue-700', 
+        darkColor: 'dark:bg-blue-900/30 dark:text-blue-400', 
+        icon: Clock 
+      },
+      high: { 
+        color: 'bg-amber-100 text-amber-700', 
+        darkColor: 'dark:bg-amber-900/30 dark:text-amber-400', 
+        icon: AlertTriangle 
+      },
+      urgent: { 
+        color: 'bg-red-100 text-red-700', 
+        darkColor: 'dark:bg-red-900/30 dark:text-red-400', 
+        icon: Zap 
+      }
     };
 
     const config = priorityConfig[priority as keyof typeof priorityConfig] || priorityConfig.medium;
     const Icon = config.icon;
 
     return (
-      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${config.color}`}>
+      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${config.color} ${config.darkColor}`}>
         <Icon className="w-3 h-3 mr-1" />
         {priority.charAt(0).toUpperCase() + priority.slice(1)}
       </span>

@@ -344,17 +344,17 @@ const AgentBlogsList = () => {
       const response = await updateBlog(editingBlog.id, form);
 
       if (response?.success) {
-        toast.success("Blog updated successfully");
-        setShowEditModal(false);
-        refresh();
-      } else {
-        toast.error(response?.message || "Failed to update blog");
-      }
-    } catch (err: any) {
-      toast.error(err.message || "Error updating blog");
-    } finally {
-      setSubmitting(false);
-    }
+    toast.success(response.message || "Blog updated successfully");
+    setShowEditModal(false);
+    refresh();
+  } else {
+    toast.error(response?.message || "Failed to update blog");
+  }
+} catch (err: any) {
+  toast.error(err.response?.data?.message || err.message || "Error updating blog");
+} finally {
+  setSubmitting(false);
+}
   };
 
   const badge = (status: string) => {
@@ -827,7 +827,9 @@ const AgentBlogsList = () => {
                             <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">
                               Content:
                             </h4>
-                            <p className="text-gray-600 dark:text-gray-400 mb-4">{blog.content}</p>
+                            <p className="text-gray-600 dark:text-gray-300 mb-4">
+                            {truncateText(blog.content, 120)}
+                          </p>
                             <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
                               <div className="flex items-center gap-2"></div>
                               <span>Updated: {formatDate(blog.updated_at)}</span>
@@ -838,7 +840,7 @@ const AgentBlogsList = () => {
                             {truncateText(blog.content, 150)}
                           </p>
                         )}
-                      </div>
+                    </div>
 
                       {/* Actions */}
                       <div className="flex gap-2 p-4 border-t border-gray-100 dark:border-gray-700 items-center justify-between">

@@ -155,38 +155,33 @@ const EditReminder = () => {
       inquiry_followup: { 
         icon: MessageCircle, 
         color: 'from-amber-500 to-orange-500',
+        darkColor: 'dark:from-amber-600 dark:to-orange-600',
         bgColor: 'from-amber-50 to-orange-50',
+        darkBgColor: 'dark:from-amber-900/30 dark:to-orange-900/30',
         borderColor: 'border-amber-200',
+        darkBorderColor: 'dark:border-amber-800/50',
         label: 'Inquiry Follow-up'
       },
       appointment_followup: { 
         icon: Calendar, 
         color: 'from-blue-500 to-cyan-500',
+        darkColor: 'dark:from-blue-600 dark:to-cyan-600',
         bgColor: 'from-blue-50 to-cyan-50',
+        darkBgColor: 'dark:from-blue-900/30 dark:to-cyan-900/30',
         borderColor: 'border-blue-200',
+        darkBorderColor: 'dark:border-blue-800/50',
         label: 'Appointment Follow-up'
       },
       general: { 
         icon: Bell, 
         color: 'from-purple-500 to-violet-500',
+        darkColor: 'dark:from-purple-600 dark:to-violet-600',
         bgColor: 'from-purple-50 to-violet-50',
+        darkBgColor: 'dark:from-purple-900/30 dark:to-violet-900/30',
         borderColor: 'border-purple-200',
+        darkBorderColor: 'dark:border-purple-800/50',
         label: 'General'
       },
-    //   document_pending: { 
-    //     icon: FileText, 
-    //     color: 'from-emerald-500 to-green-500',
-    //     bgColor: 'from-emerald-50 to-green-50',
-    //     borderColor: 'border-emerald-200',
-    //     label: 'Document Pending'
-    //   },
-    //   payment_followup: { 
-    //     icon: CreditCard, 
-    //     color: 'from-rose-500 to-pink-500',
-    //     bgColor: 'from-rose-50 to-pink-50',
-    //     borderColor: 'border-rose-200',
-    //     label: 'Payment Follow-up'
-    //   }
     };
 
     return typeConfig[type as keyof typeof typeConfig] || typeConfig.general;
@@ -194,10 +189,26 @@ const EditReminder = () => {
 
   const getPriorityConfig = (priority: string) => {
     const priorityConfig = {
-      low: { color: 'text-gray-600 bg-gray-100', icon: Bell },
-      medium: { color: 'text-blue-600 bg-blue-100', icon: Clock },
-      high: { color: 'text-amber-600 bg-amber-100', icon: AlertTriangle },
-      urgent: { color: 'text-red-600 bg-red-100', icon: Zap }
+      low: { 
+        color: 'text-gray-600 bg-gray-100', 
+        darkColor: 'dark:text-gray-300 dark:bg-gray-800', 
+        icon: Bell 
+      },
+      medium: { 
+        color: 'text-blue-600 bg-blue-100', 
+        darkColor: 'dark:text-blue-400 dark:bg-blue-900/30', 
+        icon: Clock 
+      },
+      high: { 
+        color: 'text-amber-600 bg-amber-100', 
+        darkColor: 'dark:text-amber-400 dark:bg-amber-900/30', 
+        icon: AlertTriangle 
+      },
+      urgent: { 
+        color: 'text-red-600 bg-red-100', 
+        darkColor: 'dark:text-red-400 dark:bg-red-900/30', 
+        icon: Zap 
+      }
     };
 
     return priorityConfig[priority as keyof typeof priorityConfig] || priorityConfig.medium;
@@ -205,17 +216,33 @@ const EditReminder = () => {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      pending: { color: 'bg-amber-100 text-amber-700', icon: Clock },
-      completed: { color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle },
-      snoozed: { color: 'bg-purple-100 text-purple-700', icon: RefreshCw },
-      cancelled: { color: 'bg-red-100 text-red-700', icon: XCircle }
+      pending: { 
+        color: 'bg-amber-100 text-amber-700', 
+        darkColor: 'dark:bg-amber-900/30 dark:text-amber-400', 
+        icon: Clock 
+      },
+      completed: { 
+        color: 'bg-emerald-100 text-emerald-700', 
+        darkColor: 'dark:bg-emerald-900/30 dark:text-emerald-400', 
+        icon: CheckCircle 
+      },
+      snoozed: { 
+        color: 'bg-purple-100 text-purple-700', 
+        darkColor: 'dark:bg-purple-900/30 dark:text-purple-400', 
+        icon: RefreshCw 
+      },
+      cancelled: { 
+        color: 'bg-red-100 text-red-700', 
+        darkColor: 'dark:bg-red-900/30 dark:text-red-400', 
+        icon: XCircle 
+      }
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
     const Icon = config.icon;
 
     return (
-      <Badge className={`${config.color} px-3 py-1 text-sm font-semibold`}>
+      <Badge className={`${config.color} ${config.darkColor} px-3 py-1 text-sm font-semibold`}>
         <Icon className="w-3 h-3 mr-1" />
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
@@ -255,7 +282,7 @@ const EditReminder = () => {
         <div className="flex items-center justify-center min-h-96">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading reminder...</p>
+            <p className="mt-4 text-gray-600 dark:text-gray-400">Loading reminder...</p>
           </div>
         </div>
       </AdminLayout>
@@ -266,7 +293,7 @@ const EditReminder = () => {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center min-h-96">
-          <div className="text-center text-gray-500">
+          <div className="text-center text-gray-500 dark:text-gray-400">
             <Bell className="w-16 h-16 mx-auto mb-4 opacity-50" />
             <p className="text-lg">Reminder not found</p>
           </div>
@@ -281,17 +308,17 @@ const EditReminder = () => {
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600 p-8 rounded-2xl shadow-2xl border-0 text-white relative overflow-hidden">
-          <div className="absolute inset-0 bg-black/10"></div>
+        <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600 dark:from-blue-700 dark:via-purple-700 dark:to-emerald-700 p-8 rounded-2xl shadow-2xl border-0 text-white relative overflow-hidden">
+          <div className="absolute inset-0 bg-black/10 dark:bg-black/20"></div>
           <div className="relative z-10">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="p-4 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/30">
+                <div className="p-4 bg-white/20 dark:bg-white/10 backdrop-blur-sm rounded-2xl border border-white/30 dark:border-white/20">
                   <Bell className="w-8 h-8 text-white" />
                 </div>
                 <div>
                   <h1 className="text-3xl font-bold mb-2">Edit Reminder</h1>
-                  <p className="text-blue-100 text-lg">
+                  <p className="text-blue-100 dark:text-blue-200 text-lg">
                     Update reminder details and settings
                   </p>
                 </div>
@@ -300,7 +327,7 @@ const EditReminder = () => {
                 <Button
                   onClick={() => navigate(`/agent/reminders/${reminder.id}`)}
                   variant="outline"
-                  className="bg-white/20 backdrop-blur-sm hover:bg-white/30 border border-white/30 text-white"
+                  className="bg-white/20 dark:bg-white/10 backdrop-blur-sm hover:bg-white/30 dark:hover:bg-white/20 border border-white/30 dark:border-white/20 text-white"
                 >
                   <Eye className="w-4 h-4 mr-2" />
                   View Details
@@ -308,7 +335,7 @@ const EditReminder = () => {
                 <Button
                   onClick={() => navigate('/agent/reminders')}
                   variant="outline"
-                  className="bg-white/20 backdrop-blur-sm hover:bg-white/30 border border-white/30 text-white"
+                  className="bg-white/20 dark:bg-white/10 backdrop-blur-sm hover:bg-white/30 dark:hover:bg-white/20 border border-white/30 dark:border-white/20 text-white"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back to Reminders
@@ -321,29 +348,29 @@ const EditReminder = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Form */}
           <div className="lg:col-span-2">
-            <Card className="bg-white border-2 border-gray-200 rounded-2xl shadow-xl">
+            <Card className="bg-white dark:bg-gray-900/50 dark:backdrop-blur-sm border-2 border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl">
               <CardContent className="p-8">
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Basic Information */}
                   <div className="space-y-6">
                     <div className="flex items-center gap-3 mb-6">
-                      <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl">
+                      <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 dark:from-blue-600 dark:to-cyan-600 rounded-xl">
                         <Bell className="w-6 h-6 text-white" />
                       </div>
-                      <h2 className="text-2xl font-bold text-gray-900">Reminder Details</h2>
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Reminder Details</h2>
                     </div>
 
                     {/* Current Status */}
-                    <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-2xl p-6">
+                    <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 border-2 border-blue-200 dark:border-blue-800/50 rounded-2xl p-6">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
-                          <h3 className="font-semibold text-gray-900 text-lg">{reminder.title}</h3>
-                          <p className="text-gray-600 text-sm mt-1">Current Status</p>
+                          <h3 className="font-semibold text-gray-900 dark:text-white text-lg">{reminder.title}</h3>
+                          <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">Current Status</p>
                         </div>
                         <div className="flex items-center gap-3">
                           {getStatusBadge(reminder.status)}
                           {isOverdue && (
-                            <Badge className="bg-red-100 text-red-700 px-3 py-1 text-sm font-semibold">
+                            <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-3 py-1 text-sm font-semibold">
                               <AlertTriangle className="w-3 h-3 mr-1" />
                               Overdue
                             </Badge>
@@ -351,7 +378,7 @@ const EditReminder = () => {
                         </div>
                       </div>
                       {reminder.completed_at && (
-                        <p className="text-sm text-gray-600 mt-2">
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                           Completed on: {formatReadableDate(reminder.completed_at, true)}
                         </p>
                       )}
@@ -359,18 +386,18 @@ const EditReminder = () => {
 
                     {/* Title */}
                     <div>
-                      <label className="block text-sm font-bold text-gray-900 mb-3">
+                      <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">
                         Title <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         value={formData.title}
                         onChange={(e) => handleChange('title', e.target.value)}
-                        className={`w-full px-4 py-3 bg-gray-50 border-2 ${
+                        className={`w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 ${
                           errors.title 
                             ? 'border-red-500 focus:ring-red-500' 
-                            : 'border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                        } rounded-xl text-gray-900 placeholder:text-gray-400 transition-all`}
+                            : 'border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600'
+                        } rounded-xl text-gray-900 dark:text-white dark:placeholder:text-gray-400 transition-all`}
                         placeholder="Enter reminder title..."
                         maxLength={100}
                       />
@@ -378,25 +405,25 @@ const EditReminder = () => {
                         <p className="mt-2 text-sm text-red-600 font-medium">{errors.title}</p>
                       )}
                       <div className="flex justify-between mt-2">
-                        <p className="text-xs text-gray-500">Brief and descriptive title</p>
-                        <p className="text-xs text-gray-500">{formData.title.length}/100</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Brief and descriptive title</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{formData.title.length}/100</p>
                       </div>
                     </div>
 
                     {/* Description */}
                     <div>
-                      <label className="block text-sm font-bold text-gray-900 mb-3">
+                      <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">
                         Description
                       </label>
                       <textarea
                         value={formData?.description ?? ''}
                         onChange={(e) => handleChange('description', e.target.value)}
                         rows={4}
-                        className={`w-full px-4 py-3 bg-gray-50 border-2 ${
+                        className={`w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 ${
                           errors.description 
                             ? 'border-red-500 focus:ring-red-500' 
-                            : 'border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                        } rounded-xl text-gray-900 placeholder:text-gray-400 resize-none transition-all`}
+                            : 'border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600'
+                        } rounded-xl text-gray-900 dark:text-white dark:placeholder:text-gray-400 resize-none transition-all`}
                         placeholder="Add detailed description about the reminder..."
                         maxLength={1000}
                       />
@@ -404,8 +431,8 @@ const EditReminder = () => {
                         <p className="mt-2 text-sm text-red-600 font-medium">{errors.description}</p>
                       )}
                       <div className="flex justify-between mt-2">
-                        <p className="text-xs text-gray-500">Optional detailed description</p>
-                        <p className="text-xs text-gray-500">{formData?.description?.length ?? 0}/1000</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Optional detailed description</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{formData?.description?.length ?? 0}/1000</p>
                       </div>
                     </div>
 
@@ -413,7 +440,7 @@ const EditReminder = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Type */}
                       <div>
-                        <label className="block text-sm font-bold text-gray-900 mb-3">
+                        <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">
                           Type <span className="text-red-500">*</span>
                         </label>
                         <div className="space-y-3">
@@ -421,8 +448,6 @@ const EditReminder = () => {
                             { value: 'inquiry_followup', label: 'Inquiry Follow-up' },
                             { value: 'appointment_followup', label: 'Appointment Follow-up' },
                             { value: 'general', label: 'General' },
-                            // { value: 'document_pending', label: 'Document Pending' },
-                            // { value: 'payment_followup', label: 'Payment Follow-up' }
                           ].map((type) => {
                             const config = getTypeConfig(type.value);
                             const Icon = config.icon;
@@ -432,8 +457,8 @@ const EditReminder = () => {
                                 key={type.value}
                                 className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
                                   formData.type === type.value
-                                    ? `${config.borderColor} bg-gradient-to-r ${config.bgColor} shadow-md`
-                                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                    ? `${config.borderColor} ${config.darkBorderColor} bg-gradient-to-r ${config.bgColor} ${config.darkBgColor} shadow-md dark:shadow-lg`
+                                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
                                 }`}
                               >
                                 <input
@@ -444,14 +469,14 @@ const EditReminder = () => {
                                   onChange={(e) => handleChange('type', e.target.value)}
                                   className="hidden"
                                 />
-                                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${config.color} flex items-center justify-center flex-shrink-0`}>
+                                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${config.color} ${config.darkColor} flex items-center justify-center flex-shrink-0`}>
                                   <Icon className="w-5 h-5 text-white" />
                                 </div>
                                 <div>
-                                  <p className="font-semibold text-gray-900">{type.label}</p>
+                                  <p className="font-semibold text-gray-900 dark:text-white">{type.label}</p>
                                 </div>
                                 {formData.type === type.value && (
-                                  <CheckCircle className="w-5 h-5 text-emerald-500 ml-auto" />
+                                  <CheckCircle className="w-5 h-5 text-emerald-500 dark:text-emerald-400 ml-auto" />
                                 )}
                               </label>
                             );
@@ -464,7 +489,7 @@ const EditReminder = () => {
 
                       {/* Priority */}
                       <div>
-                        <label className="block text-sm font-bold text-gray-900 mb-3">
+                        <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">
                           Priority
                         </label>
                         <div className="space-y-3">
@@ -482,8 +507,8 @@ const EditReminder = () => {
                                 key={priority.value}
                                 className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
                                   formData.priority === priority.value
-                                    ? 'border-blue-200 bg-blue-50 shadow-md'
-                                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                    ? 'border-blue-200 dark:border-blue-800/50 bg-blue-50 dark:bg-blue-900/30 shadow-md dark:shadow-lg'
+                                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
                                 }`}
                               >
                                 <input
@@ -494,14 +519,14 @@ const EditReminder = () => {
                                   onChange={(e) => handleChange('priority', e.target.value)}
                                   className="hidden"
                                 />
-                                <div className={`w-10 h-10 rounded-lg ${config.color} flex items-center justify-center flex-shrink-0`}>
+                                <div className={`w-10 h-10 rounded-lg ${config.color} ${config.darkColor} flex items-center justify-center flex-shrink-0`}>
                                   <Icon className="w-5 h-5" />
                                 </div>
                                 <div>
-                                  <p className="font-semibold text-gray-900">{priority.label}</p>
+                                  <p className="font-semibold text-gray-900 dark:text-white">{priority.label}</p>
                                 </div>
                                 {formData.priority === priority.value && (
-                                  <CheckCircle className="w-5 h-5 text-emerald-500 ml-auto" />
+                                  <CheckCircle className="w-5 h-5 text-emerald-500 dark:text-emerald-400 ml-auto" />
                                 )}
                               </label>
                             );
@@ -515,44 +540,44 @@ const EditReminder = () => {
 
                     {/* Reminder Time */}
                     <div>
-                      <label className="block text-sm font-bold text-gray-900 mb-3">
+                      <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">
                         Remind At <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
-                        <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                        <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" size={20} />
                         <input
                           type="datetime-local"
                           value={formData.remind_at}
                           onChange={(e) => handleChange('remind_at', e.target.value)}
-                          className={`w-full pl-12 pr-4 py-3 bg-gray-50 border-2 ${
+                          className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 ${
                             errors.remind_at 
                               ? 'border-red-500 focus:ring-red-500' 
-                              : 'border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                          } rounded-xl text-gray-900 transition-all`}
+                              : 'border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600'
+                          } rounded-xl text-gray-900 dark:text-white transition-all`}
                         />
                       </div>
                       {errors.remind_at && (
                         <p className="mt-2 text-sm text-red-600 font-medium">{errors.remind_at}</p>
                       )}
-                      <p className="text-xs text-gray-500 mt-2">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                         Set the date and time when you want to be reminded
                       </p>
                     </div>
 
                     {/* Notes */}
                     <div>
-                      <label className="block text-sm font-bold text-gray-900 mb-3">
+                      <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">
                         Additional Notes
                       </label>
                       <textarea
                         value={formData?.notes ?? ""}
                         onChange={(e) => handleChange('notes', e.target.value)}
                         rows={3}
-                        className={`w-full px-4 py-3 bg-gray-50 border-2 ${
+                        className={`w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 ${
                           errors.notes 
                             ? 'border-red-500 focus:ring-red-500' 
-                            : 'border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                        } rounded-xl text-gray-900 placeholder:text-gray-400 resize-none transition-all`}
+                            : 'border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-600'
+                        } rounded-xl text-gray-900 dark:text-white dark:placeholder:text-gray-400 resize-none transition-all`}
                         placeholder="Add any additional notes or context..."
                         maxLength={500}
                       />
@@ -560,18 +585,18 @@ const EditReminder = () => {
                         <p className="mt-2 text-sm text-red-600 font-medium">{errors.notes}</p>
                       )}
                       <div className="flex justify-between mt-2">
-                        <p className="text-xs text-gray-500">Optional notes for context</p>
-                        <p className="text-xs text-gray-500">{formData?.notes?.length ?? 0}/500</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Optional notes for context</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{formData?.notes?.length ?? 0}/500</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Submit Button */}
-                  <div className="flex gap-4 pt-6 border-t border-gray-200">
+                  <div className="flex gap-4 pt-6 border-t border-gray-200 dark:border-gray-800">
                     <Button
                       type="submit"
                       disabled={saving}
-                      className="flex-1 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                      className="flex-1 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 dark:from-blue-700 dark:to-emerald-700 dark:hover:from-blue-800 dark:hover:to-emerald-800 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                     >
                       {saving ? (
                         <>
@@ -589,7 +614,7 @@ const EditReminder = () => {
                       type="button"
                       onClick={() => navigate('/agent/reminders')}
                       variant="outline"
-                      className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold py-3 rounded-xl transition-all duration-300"
+                      className="border-2 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 font-semibold py-3 rounded-xl transition-all duration-300"
                     >
                       <XCircle className="w-5 h-5 mr-2" />
                       Cancel
@@ -602,57 +627,56 @@ const EditReminder = () => {
 
           {/* Sidebar - Actions & Info */}
           <div className="space-y-6">
-
             {/* Reminder Information */}
-            <Card className="bg-gradient-to-br from-purple-50 to-violet-50 border-2 border-purple-200 rounded-2xl shadow-xl">
+            <Card className="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/30 dark:to-violet-900/30 border-2 border-purple-200 dark:border-purple-800/50 rounded-2xl shadow-xl">
               <CardContent className="p-6">
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Bell className="w-5 h-5 text-purple-600" />
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                  <Bell className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                   Reminder Information
                 </h3>
                 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-gray-900">Created:</span>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">Created:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
                       {formatReadableDate(reminder?.created_at, true)}
                     </span>
                   </div>
                   
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-gray-900">Last Updated:</span>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">Last Updated:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
                       {formatReadableDate(reminder.updated_at, true)}
                     </span>
                   </div>
 
                   {/* Related Entities */}
                   {(reminder.customer || reminder.property || reminder.inquiry || reminder.appointment) && (
-                    <div className="pt-4 border-t border-gray-200">
-                      <h4 className="text-sm font-semibold text-gray-900 mb-3">Related To:</h4>
+                    <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Related To:</h4>
                       <div className="space-y-2">
                         {reminder.customer && (
                           <div className="flex items-center gap-2 text-sm">
-                            <User className="w-4 h-4 text-gray-400" />
-                            <span className="text-gray-600">{reminder.customer.name}</span>
+                            <User className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                            <span className="text-gray-600 dark:text-gray-400">{reminder.customer.name}</span>
                           </div>
                         )}
                         {reminder.property && (
                           <div className="flex items-center gap-2 text-sm">
-                            <Home className="w-4 h-4 text-gray-400" />
-                            <span className="text-gray-600">{reminder.property.title}</span>
+                            <Home className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                            <span className="text-gray-600 dark:text-gray-400">{reminder.property.title}</span>
                           </div>
                         )}
                         {reminder.inquiry && (
                           <div className="flex items-center gap-2 text-sm">
-                            <MessageCircle className="w-4 h-4 text-gray-400" />
-                            <span className="text-gray-600">Inquiry #{reminder.inquiry.id}</span>
+                            <MessageCircle className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                            <span className="text-gray-600 dark:text-gray-400">Inquiry #{reminder.inquiry.id}</span>
                           </div>
                         )}
                         {reminder.appointment && (
                           <div className="flex items-center gap-2 text-sm">
-                            <Calendar className="w-4 h-4 text-gray-400" />
-                            <span className="text-gray-600">Appointment #{reminder.appointment.id}</span>
+                            <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                            <span className="text-gray-600 dark:text-gray-400">Appointment #{reminder.appointment.id}</span>
                           </div>
                         )}
                       </div>
@@ -663,23 +687,23 @@ const EditReminder = () => {
             </Card>
 
             {/* Help Card */}
-            <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-2xl shadow-xl">
+            <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 border-2 border-blue-200 dark:border-blue-800/50 rounded-2xl shadow-xl">
               <CardContent className="p-6">
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <AlertTriangle className="w-5 h-5 text-blue-600" />
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   Editing Tips
                 </h3>
-                <div className="space-y-3 text-sm text-gray-600">
+                <div className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
                   <div className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full mt-1.5 flex-shrink-0"></div>
                     <span>Update the reminder time if it needs to be rescheduled</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full mt-1.5 flex-shrink-0"></div>
                     <span>Change priority if the urgency level has changed</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full mt-1.5 flex-shrink-0"></div>
                     <span>Use notes to add additional context or updates</span>
                   </div>
                 </div>

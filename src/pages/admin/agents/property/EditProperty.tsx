@@ -267,7 +267,7 @@ const EditProperty = () => {
   if (loading)
     return (
       <AdminLayout>
-        <div className="text-center py-10 text-gray-500">
+        <div className="text-center py-10 text-gray-500 dark:text-gray-400">
           Loading property...
         </div>
       </AdminLayout>
@@ -276,7 +276,7 @@ const EditProperty = () => {
   if (!formData)
     return (
       <AdminLayout>
-        <div className="text-center py-10 text-red-500">
+        <div className="text-center py-10 text-red-500 dark:text-red-400">
           Property not found.
         </div>
       </AdminLayout>
@@ -284,18 +284,20 @@ const EditProperty = () => {
 
   return (
     <AdminLayout>
-      <div className="bg-white p-8 rounded-2xl">
+      <div className="bg-white dark:bg-gray-900 p-8 rounded-2xl shadow-lg dark:shadow-gray-800/10 transition-colors duration-200">
         <div className="flex items-center gap-3 mr-auto my-2">
-          <div className="p-3 bg-gradient-to-br from-blue-500 to-emerald-500 rounded-xl">
+          <div className="p-3 bg-gradient-to-br from-blue-500 to-emerald-500 rounded-xl shadow-md">
             <HousePlus className="text-white" size={24} />
           </div>
-          <h1 className="text-2xl font-semibold text-gray-800">Edit Property</h1>
+          <h1 className="text-2xl font-semibold text-gray-800 dark:text-white">
+            Edit Property
+          </h1>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Property Info */}
-          <div>
-            <h2 className="text-2xl font-semibold mb-4 text-gray-800">
+          <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl transition-colors duration-200">
+            <h2 className="text-2xl font-semibold mb-6 text-gray-800 dark:text-white">
               Property Information
             </h2>
 
@@ -305,31 +307,31 @@ const EditProperty = () => {
                 name="title"
                 value={formData.title}
                 onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
-                                    handleKeyPress(e, /[a-zA-Z ]/, false)
-                                  }
+                  handleKeyPress(e, /[a-zA-Z ]/, false)
+                }
                 onChange={handleChange}
                 maxLength={100}
                 error={errors.title}
               />
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Property Type
                 </label>
                 <select
                   name="property_type"
                   value={formData.property_type}
                   onChange={handleChange}
-                  className="w-full border p-2 rounded-md border-gray-300"
+                  className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors duration-200"
                 >
-                  <option value="">Select Property Type</option>
+                  <option value="" className="dark:bg-gray-700">Select Property Type</option>
                   {propertyTypes.map((type) => (
-                    <option key={type.key} value={type.key}>
+                    <option key={type.key} value={type.key} className="dark:bg-gray-700">
                       {type.label}
                     </option>
                   ))}
                 </select>
                 {errors.property_type && (
-                  <p className="text-red-500 text-xs mt-1">
+                  <p className="text-red-500 dark:text-red-400 text-xs mt-1">
                     {errors.property_type}
                   </p>
                 )}
@@ -342,8 +344,8 @@ const EditProperty = () => {
                 value={formData.price}
                 onChange={handleChange}
                 onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
-                                    handleKeyPress(e, /[0-9]/, false)
-                                  }
+                  handleKeyPress(e, /[0-9]/, false)
+                }
                 error={errors.price}
               />
               <InputField
@@ -353,8 +355,8 @@ const EditProperty = () => {
                 value={formData.area}
                 onChange={handleChange}
                 onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
-                                    handleKeyPress(e, /[0-9]/, false)
-                                  }
+                  handleKeyPress(e, /[0-9]/, false)
+                }
                 error={errors.area}
               />
               <InputField
@@ -389,19 +391,19 @@ const EditProperty = () => {
               />
             </div>
 
-            <div className="mt-4">
-              <label className="block text-sm font-medium mb-1 text-gray-700">
+            <div className="mt-6">
+              <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                 Description
               </label>
               <textarea
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                className="w-full border rounded-md p-3 border-gray-300"
+                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors duration-200"
                 rows={4}
               />
               {errors.description && (
-                <p className="text-red-500 text-xs mt-1">
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1">
                   {errors.description}
                 </p>
               )}
@@ -409,20 +411,22 @@ const EditProperty = () => {
           </div>
 
           {/* Amenities */}
-          <div>
-            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Amenities</h3>
-            <div className="grid grid-cols-2 lg:grid-cols-9 gap-3 bg-gray-100 p-4 rounded-lg">
+          <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl transition-colors duration-200">
+            <h3 className="text-2xl font-semibold text-gray-800 dark:text-white mb-6">
+              Amenities
+            </h3>
+            <div className="grid grid-cols-2 lg:grid-cols-9 gap-4 bg-gray-100 dark:bg-gray-700/50 p-6 rounded-xl">
               {amenities.map((item) => (
                 <label
                   key={item.key}
-                  className="flex items-center text-sm gap-2"
+                  className="flex items-center text-sm gap-2 text-gray-700 dark:text-gray-300"
                 >
                   <input
                     type="checkbox"
                     value={item.key}
                     checked={formData.amenities.includes(item.key)}
                     onChange={handleAmenityChange}
-                    className="accent-blue-600 rounded cursor-pointer"
+                    className="accent-blue-600 dark:accent-blue-500 rounded cursor-pointer h-4 w-4"
                   />
                   {item.label}
                 </label>
@@ -431,59 +435,63 @@ const EditProperty = () => {
           </div>
 
           {/* Existing + New Images */}
-          <div>
-            <h3 className="text-2xl font-semibold text-gray-800 mb-4">
+          <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl transition-colors duration-200">
+            <h3 className="text-2xl font-semibold text-gray-800 dark:text-white mb-6">
               Existing Images
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
               {images?.length ? (
                 images.map((img: string, i: number) => (
-                  <div key={i} className="relative">
+                  <div key={i} className="relative group">
                     <img
                       src={getImageUrl(img)}
-                      className={`w-full h-40 object-cover rounded-lg border ${
+                      className={`w-full h-48 object-cover rounded-xl border-2 transition-all duration-300 ${
                         removeImages.includes(i)
-                          ? "opacity-40 border-red-400"
-                          : "border-gray-300"
+                          ? "opacity-40 border-red-400 dark:border-red-500"
+                          : "border-gray-300 dark:border-gray-600 group-hover:border-blue-500 dark:group-hover:border-blue-400"
                       }`}
                     />
                     <button
                       type="button"
                       onClick={() => handleRemoveExistingImage(i)}
-                      className="absolute top-2 right-2 bg-white border rounded-full px-2 py-1 text-xs shadow"
+                      className="absolute top-2 right-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-full px-3 py-1.5 text-xs shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                     >
                       {removeImages.includes(i) ? "Undo" : "Remove"}
                     </button>
                   </div>
                 ))
               ) : (
-                <p className="text-gray-500 text-sm">No existing images.</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm col-span-full">
+                  No existing images.
+                </p>
               )}
             </div>
           </div>
 
-          <div>
-            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Add New Images</h3>
+          <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl transition-colors duration-200">
+            <h3 className="text-2xl font-semibold text-gray-800 dark:text-white mb-6">
+              Add New Images
+            </h3>
             <input
               type="file"
               multiple
               accept="image/*"
               onChange={handleImageUpload}
-              className="border border-gray-300 p-2 rounded-md w-full"
+              className="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors duration-200"
             />
             {newImages.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 mt-6">
                 {newImages.map((file, i) => (
-                  <div key={i} className="relative">
+                  <div key={i} className="relative group">
                     <img
                       src={URL.createObjectURL(file)}
                       alt={`New ${i}`}
-                      className="w-full h-40 object-cover rounded-lg border border-gray-300"
+                      className="w-full h-48 object-cover rounded-xl border-2 border-gray-300 dark:border-gray-600 group-hover:border-blue-500 dark:group-hover:border-blue-400 transition-all duration-300"
                     />
                     <button
                       type="button"
                       onClick={() => handleRemoveNewImage(i)}
-                      className="absolute top-2 right-2 bg-white border rounded-full text-xs px-2 py-1 shadow"
+                      className="absolute top-2 right-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-full px-3 py-1.5 text-xs shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                     >
                       Remove
                     </button>
@@ -494,33 +502,37 @@ const EditProperty = () => {
           </div>
 
           {/* Video */}
-            <h3 className="text-2xl font-semibold text-gray-800 mb-4 mt-4">Add Property Video</h3>
-            <div className="mt-4">
-              <label className="block text-sm font-medium mb-1 text-gray-600">
+          <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl transition-colors duration-200">
+            <h3 className="text-2xl font-semibold text-gray-800 dark:text-white mb-6">
+              Add Property Video
+            </h3>
+            <div>
+              <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                 Upload Video (Supported Extensions: MP4,MOV,AVI,WMV)
               </label>
               <Input
                 type="file"
                 name="video"
-                className={`border-gray-300 ${
-                  errors.video ? "border-red-500" : ""
+                className={`border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 ${
+                  errors.video ? "border-red-500 dark:border-red-400" : ""
                 }`}
                 accept="video/mp4, video/quicktime, video/x-msvideo, video/x-ms-wmv"
                 onChange={handleVideoChange}
               />
               {errors.video && (
-                <p className="text-red-500 text-xs mt-1">{errors.video}</p>
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.video}</p>
               )}
             </div>
+          </div>
 
-          {/* ---------- Location Section ---------- */}
-          <div>
-            <h3 className="text-2xl font-semibold text-gray-800 mb-4">
+          {/* Location Section */}
+          <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl transition-colors duration-200">
+            <h3 className="text-2xl font-semibold text-gray-800 dark:text-white mb-6">
               Location Details
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-600">
+                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                   Address
                 </label>
                 <Input
@@ -528,18 +540,18 @@ const EditProperty = () => {
                   value={formData.address}
                   onChange={handleChange}
                   onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
-                                    handleKeyPress(e, /[a-zA-Z0-9@._-\s]/, false)
-                                  }
-                  className={`border-gray-300 ${errors.address ? "border-red-500" : ""}`}
+                    handleKeyPress(e, /[a-zA-Z0-9@._-\s]/, false)
+                  }
+                  className={`border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 ${errors.address ? "border-red-500 dark:border-red-400" : ""}`}
                   maxLength={255}
                 />
                 {errors.address && (
-                  <p className="text-red-500 text-xs mt-1">{errors.address}</p>
+                  <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.address}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-600">
+                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                   Location
                 </label>
                 <Input
@@ -547,37 +559,37 @@ const EditProperty = () => {
                   value={formData.location}
                   onChange={handleChange}
                   onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
-                                    handleKeyPress(e, /[a-zA-Z0-9@._-\s]/, false)
-                                  }
-                  className={`border-gray-300 ${errors.location ? "border-red-500" : ""}`}
+                    handleKeyPress(e, /[a-zA-Z0-9@._-\s]/, false)
+                  }
+                  className={`border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 ${errors.location ? "border-red-500 dark:border-red-400" : ""}`}
                   maxLength={50}
                 />
                 {errors.location && (
-                  <p className="text-red-500 text-xs mt-1">{errors.location}</p>
+                  <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.location}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-600">
+                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                   City
                 </label>
                 <Input
                   name="city"
                   value={formData.city}
                   onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
-                                    handleKeyPress(e, /[a-zA-Z\s]/, false)
-                                  }
+                    handleKeyPress(e, /[a-zA-Z\s]/, false)
+                  }
                   onChange={handleChange}
-                  className={`border-gray-300 ${errors.city ? "border-red-500" : ""}`}
+                  className={`border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 ${errors.city ? "border-red-500 dark:border-red-400" : ""}`}
                   maxLength={50}
                 />
                 {errors.city && (
-                  <p className="text-red-500 text-xs mt-1">{errors.city}</p>
+                  <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.city}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-600">
+                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                   State
                 </label>
                 <Input
@@ -585,25 +597,25 @@ const EditProperty = () => {
                   value={formData.state}
                   onChange={handleChange}
                   onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
-                                    handleKeyPress(e, /[a-zA-Z\s]/, false)
-                                  }
-                  className={`border-gray-300 ${errors.state ? "border-red-500" : ""}`}
+                    handleKeyPress(e, /[a-zA-Z\s]/, false)
+                  }
+                  className={`border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 ${errors.state ? "border-red-500 dark:border-red-400" : ""}`}
                   maxLength={50}
                 />
                 {errors.state && (
-                  <p className="text-red-500 text-xs mt-1">{errors.state}</p>
+                  <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.state}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-600">
+                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                   Zipcode
                 </label>
                 <Input
                   name="zipcode"
                   value={formData.zipcode}
                   onChange={handleChange}
-                  className={`border-gray-300 ${errors.zipcode ? "border-red-500" : ""}`}
+                  className={`border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 ${errors.zipcode ? "border-red-500 dark:border-red-400" : ""}`}
                   maxLength={10}
                   onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
                     const allowedKeys = ["Enter", "Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"];
@@ -613,15 +625,15 @@ const EditProperty = () => {
                   }}
                 />
                 {errors.zipcode && (
-                  <p className="text-red-500 text-xs mt-1">{errors.zipcode}</p>
+                  <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.zipcode}</p>
                 )}
               </div>
             </div>
           </div>
 
           {/* Status + Type */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-4">
+          <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl transition-colors duration-200">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-6">
               Status
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -653,7 +665,7 @@ const EditProperty = () => {
             <Button
               type="submit"
               disabled={saving}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
+              className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-8 py-2.5 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg"
             >
               {saving ? "Updating..." : "Update Property"}
             </Button>
@@ -667,7 +679,7 @@ const EditProperty = () => {
 // ✅ Reusable InputField with inline error
 const InputField = ({ label, name, value, onChange, type = "text", error, maxLength, onKeyPress }: any) => (
   <div>
-    <label className="block text-sm font-medium mb-1 text-gray-700">
+    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
       {label}
     </label>
     <Input
@@ -676,24 +688,28 @@ const InputField = ({ label, name, value, onChange, type = "text", error, maxLen
       value={value || ""}
       onChange={onChange}
       maxLength={maxLength || undefined}
-      className={`border-gray-300 ${error ? "border-red-400" : ""}`}
+      className={`border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white ${
+        error ? "border-red-400 dark:border-red-400" : ""
+      }`}
       onKeyPress={onKeyPress || undefined}
     />
-    {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+    {error && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{error}</p>}
   </div>
 );
 
 const SelectField = ({ label, name, value, onChange, options }: any) => (
   <div>
-    <label className="block text-sm font-medium mb-1 text-gray-700">{label}</label>
+    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+      {label}
+    </label>
     <select
       name={name}
       value={value || ""}
       onChange={onChange}
-      className="w-full border p-2 rounded-md border-gray-300"
+      className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors duration-200"
     >
       {options.map((opt: any) => (
-        <option key={opt.value} value={opt.value}>
+        <option key={opt.value} value={opt.value} className="dark:bg-gray-700">
           {opt.label}
         </option>
       ))}
