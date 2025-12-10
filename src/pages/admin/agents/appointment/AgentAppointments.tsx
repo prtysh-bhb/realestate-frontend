@@ -387,28 +387,28 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "scheduled":
-        return "bg-green-100 text-green-700";
+        return "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border dark:border-emerald-800/50";
       case "cancelled":
-        return "bg-red-100 text-red-700";
+        return "bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 dark:border dark:border-rose-800/50";
       case "completed":
-        return "bg-blue-100 text-blue-700";
+        return "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 dark:border dark:border-blue-800/50";
       case "approved":
-        return "bg-emerald-100 text-emerald-700";
+        return "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border dark:border-emerald-800/50";
       case "declined":
-        return "bg-rose-100 text-rose-700";
+        return "bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 dark:border dark:border-rose-800/50";
       default:
-        return "bg-gray-100 text-gray-700";
+        return "bg-gray-100 text-gray-700 dark:bg-gray-800/50 dark:text-gray-400 dark:border dark:border-gray-700/50";
     }
   };
 
   const getTypeColor = (type: string) => {
     switch (type) {
       case "visit":
-        return "bg-purple-100 text-purple-700";
+        return "bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 dark:border dark:border-purple-800/50";
       case "call":
-        return "bg-orange-100 text-orange-700";
+        return "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 dark:border dark:border-amber-800/50";
       default:
-        return "bg-gray-100 text-gray-700";
+        return "bg-gray-100 text-gray-700 dark:bg-gray-800/50 dark:text-gray-400 dark:border dark:border-gray-700/50";
     }
   };
 
@@ -517,91 +517,88 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
 
   return (
     <AdminLayout>
-      <div className=" bg-gray-50/30">
-        <div className="mx-auto py-6">
-          {/* Header Section - New Appointment button removed */}
+      <div className="min-h-screen">
+        <div className="mx-auto py-6 px-4">
+          {/* Header Section */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
             <div className="flex items-center gap-3 mr-auto">
-              <div className="p-3 bg-gradient-to-br from-blue-500 to-emerald-500 rounded-xl">
+              <div className="p-3 bg-gradient-to-br from-blue-500 to-emerald-500 dark:from-blue-600 dark:to-emerald-600 rounded-xl">
                 <ClipboardClock className="text-white" size={24} />
               </div>
               <div className="flex flex-col">
-                <h1 className="text-2xl font-bold text-gray-900">Appointments</h1>
-                <p className="text-sm text-gray-600 mt-1">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Appointments</h1>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   Manage and schedule customer appointments
                 </p>
               </div>
             </div>
-            <div></div>
-
             <div>
               <Button
                 onClick={handleOpenCreate}
                 disabled={false}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-medium"
+                className="bg-blue-600 hover:bg-blue-700 dark:bg-gradient-to-r dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 text-white px-4 py-2.5 rounded-xl font-medium shadow-lg dark:shadow-blue-900/20"
               >
                 Create Appointment
               </Button>
             </div>
-            {/* intentionally removed "New Appointment" CTA per request */}
           </div>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div className="bg-white dark:bg-gray-900/50 dark:backdrop-blur-sm rounded-2xl p-6 shadow-sm dark:shadow-lg border border-gray-100 dark:border-gray-800">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Appointments</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{appointments.length}</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Appointments</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{appointments.length}</p>
                 </div>
-                <div className="p-3 bg-blue-50 rounded-xl">
-                  <Calendar className="w-6 h-6 text-blue-600" />
+                <div className="p-3 bg-blue-50 dark:bg-blue-900/30 dark:border dark:border-blue-800/30 rounded-xl">
+                  <Calendar className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
               <div className="flex items-center gap-1 mt-3">
-                <span className="text-sm text-green-600 font-medium">+12.5%</span>
-                <span className="text-sm text-gray-500">from last month</span>
+                <span className="text-sm text-green-600 dark:text-emerald-400 font-medium">+12.5%</span>
+                <span className="text-sm text-gray-500 dark:text-gray-500">from last month</span>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div className="bg-white dark:bg-gray-900/50 dark:backdrop-blur-sm rounded-2xl p-6 shadow-sm dark:shadow-lg border border-gray-100 dark:border-gray-800">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Scheduled</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Scheduled</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
                     {appointments.filter((a) => a.status === "scheduled").length}
                   </p>
                 </div>
-                <div className="p-3 bg-green-50 rounded-xl">
-                  <Clock className="w-6 h-6 text-green-600" />
+                <div className="p-3 bg-green-50 dark:bg-emerald-900/30 dark:border dark:border-emerald-800/30 rounded-xl">
+                  <Clock className="w-6 h-6 text-green-600 dark:text-emerald-400" />
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div className="bg-white dark:bg-gray-900/50 dark:backdrop-blur-sm rounded-2xl p-6 shadow-sm dark:shadow-lg border border-gray-100 dark:border-gray-800">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Completed</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Completed</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
                     {appointments.filter((a) => a.status === "completed").length}
                   </p>
                 </div>
-                <div className="p-3 bg-emerald-50 rounded-xl">
-                  <Home className="w-6 h-6 text-emerald-600" />
+                <div className="p-3 bg-emerald-50 dark:bg-blue-900/30 dark:border dark:border-blue-800/30 rounded-xl">
+                  <Home className="w-6 h-6 text-emerald-600 dark:text-blue-400" />
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div className="bg-white dark:bg-gray-900/50 dark:backdrop-blur-sm rounded-2xl p-6 shadow-sm dark:shadow-lg border border-gray-100 dark:border-gray-800">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Cancelled</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Cancelled</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
                     {appointments.filter((a) => a.status === "cancelled").length}
                   </p>
                 </div>
-                <div className="p-3 bg-red-50 rounded-xl">
-                  <X className="w-6 h-6 text-red-600" />
+                <div className="p-3 bg-red-50 dark:bg-rose-900/30 dark:border dark:border-rose-800/30 rounded-xl">
+                  <X className="w-6 h-6 text-red-600 dark:text-rose-400" />
                 </div>
               </div>
             </div>
@@ -610,25 +607,25 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Main Content */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="bg-white dark:bg-gray-900/50 dark:backdrop-blur-sm rounded-2xl shadow-sm dark:shadow-lg border border-gray-100 dark:border-gray-800 overflow-hidden">
                 {/* Header with Filters */}
-                <div className="p-6 border-b border-gray-100">
+                <div className="p-6 border-b border-gray-100 dark:border-gray-800">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-3 w-full sm:w-auto">
                       <div className="relative flex-1 sm:w-64">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
                         <input
                           type="text"
                           placeholder="Search appointments..."
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
-                          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-transparent"
                         />
                       </div>
                       <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-transparent"
                       >
                         <option value="all">All Status (hide cancelled)</option>
                         <option value="scheduled">Scheduled</option>
@@ -641,9 +638,9 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                     <div className="flex items-center gap-2 w-full sm:w-auto">
                       <button
                         onClick={() => loadAppointments()}
-                        className="p-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 w-full sm:w-auto justify-center flex"
+                        className="p-2.5 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors w-full sm:w-auto justify-center flex"
                       >
-                        <Filter className="w-4 h-4 text-gray-600" />
+                        <Filter className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                       </button>
                     </div>
                   </div>
@@ -657,9 +654,9 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                     </div>
                   ) : filteredAppointments.length === 0 ? (
                     <div className="text-center py-12">
-                      <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                      <p className="text-gray-500 text-lg font-medium">No appointments found</p>
-                      <p className="text-gray-400 text-sm mt-1">
+                      <Calendar className="w-12 h-12 text-gray-300 dark:text-gray-700 mx-auto mb-4" />
+                      <p className="text-gray-500 dark:text-gray-400 text-lg font-medium">No appointments found</p>
+                      <p className="text-gray-400 dark:text-gray-600 text-sm mt-1">
                         {searchTerm || statusFilter !== "all"
                           ? "Try adjusting your filters"
                           : "No appointments available"}
@@ -674,44 +671,44 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                         return (
                           <div
                             key={appointment.id}
-                            className="flex-1 md:flex items-center gap-5 p-4 rounded-xl border border-gray-100 hover:shadow-md transition-all duration-200 bg-white"
+                            className="flex-1 md:flex items-center gap-5 p-5 rounded-xl border border-gray-100 dark:border-gray-800 hover:shadow-md dark:hover:bg-gray-800/50 transition-all duration-200 bg-white dark:bg-gray-900/30"
                           >
-                            <div className="flex-shrink-0 w-16 h-16 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
+                            <div className="flex-shrink-0 w-16 h-16 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 dark:border dark:border-blue-800/30 flex items-center justify-center">
                               {appointment.type === "visit" ? (
-                                <MapPin className="w-6 h-6 text-blue-600" />
+                                <MapPin className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                               ) : (
-                                <Phone className="w-6 h-6 text-green-600" />
+                                <Phone className="w-6 h-6 text-green-600 dark:text-emerald-400" />
                               )}
                             </div>
 
                             <div className="flex-1 min-w-0">
                               <div className="flex-1 md:flex gap-3 items-start justify-between">
                                 <div>
-                                  <h3 className="font-semibold text-gray-900 truncate text-[22px] lg:text-3xl">
+                                  <h3 className="font-semibold text-gray-900 dark:text-white truncate text-[22px] lg:text-3xl">
                                     {appointment.property?.title ||
                                       `Property #${appointment.property_id}`}
                                   </h3>
-                                  <div className="flex items-center gap-2 mt-1 ">
-                                    <User className="w-4 h-4 text-gray-400" />
-                                    <span className="text-sm text-gray-600">
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <User className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                                    <span className="text-sm text-gray-600 dark:text-gray-300">
                                       {appointment.customer?.name || "Unknown Customer"}
                                     </span>
 
                                     <div className="flex items-center gap-2 ml-3">
                                       <button
                                         onClick={() => openDetails(appointment.id)}
-                                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                                         title="View details"
                                       >
-                                        <Eye className="w-4 h-4 text-gray-400" />
+                                        <Eye className="w-4 h-4 text-gray-400 dark:hover:text-gray-300" />
                                       </button>
 
                                       <button
                                         onClick={() => handleOpenEdit(appointment)}
-                                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                                         title="Edit appointment"
                                       >
-                                        <Edit className="w-4 h-4 text-gray-400" />
+                                        <Edit className="w-4 h-4 text-gray-400 dark:hover:text-gray-300" />
                                       </button>
 
                                       {/* Approve / Decline (agent actions) */}
@@ -725,12 +722,12 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                                         }
                                         className={`ml-2 inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                                           !canAction
-                                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                            : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                                            ? "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                                            : "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-800/30 dark:border dark:border-emerald-800/50"
                                         }`}
                                       >
                                         {isActionLoading === "approving" ? (
-                                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-emerald-600"></div>
+                                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-emerald-600 dark:border-emerald-400"></div>
                                         ) : (
                                           <Check className="w-4 h-4" />
                                         )}
@@ -749,8 +746,8 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                                         }
                                         className={`ml-2 inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                                           !canAction
-                                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                            : "bg-rose-50 text-rose-700 hover:bg-rose-100"
+                                            ? "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                                            : "bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-800/30 dark:border dark:border-rose-800/50"
                                         }`}
                                       >
                                         <Slash className="w-4 h-4" />
@@ -763,8 +760,8 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
 
                               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-3">
                                 <div className="flex items-center gap-1.5">
-                                  <Calendar className="w-4 h-4 text-gray-400" />
-                                  <span className="text-sm text-gray-600">
+                                  <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                                  <span className="text-sm text-gray-600 dark:text-gray-300">
                                     {moment
                                       .utc(appointment.scheduled_at)
                                       .tz("Asia/Kolkata")
@@ -772,8 +769,8 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
-                                  <Clock className="w-4 h-4 text-gray-400" />
-                                  <span className="text-sm text-gray-600">
+                                  <Clock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                                  <span className="text-sm text-gray-600 dark:text-gray-300">
                                     {moment
                                       .utc(appointment.scheduled_at)
                                       .tz("Asia/Kolkata")
@@ -809,30 +806,30 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
 
             {/* Sidebar */}
             <div className="space-y-6">
-              {/* Quick Actions - removed create button per request */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <h3 className="font-semibold text-gray-900 mb-4">Quick Actions</h3>
+              {/* Quick Actions */}
+              <div className="bg-white dark:bg-gray-900/50 dark:backdrop-blur-sm rounded-2xl p-6 shadow-sm dark:shadow-lg border border-gray-100 dark:border-gray-800">
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
                 <div className="space-y-3">
-                  <button className="w-full flex items-center gap-3 p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      <Calendar className="w-4 h-4 text-green-600" />
+                  <button className="w-full flex items-center gap-3 p-4 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    <div className="p-2 bg-green-100 dark:bg-emerald-900/30 dark:border dark:border-emerald-800/30 rounded-lg">
+                      <Calendar className="w-4 h-4 text-green-600 dark:text-emerald-400" />
                     </div>
                     <div className="text-left">
-                      <div className="font-medium text-gray-900">View Calendar</div>
-                      <div className="text-sm text-gray-500">See all scheduled events</div>
+                      <div className="font-medium text-gray-900 dark:text-white">View Calendar</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">See all scheduled events</div>
                     </div>
                   </button>
 
                   <button
                     onClick={() => loadAppointments()}
-                    className="w-full flex items-center gap-3 p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors"
+                    className="w-full flex items-center gap-3 p-4 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
-                    <div className="p-2 bg-gray-100 rounded-lg">
-                      <Filter className="w-4 h-4 text-gray-600" />
+                    <div className="p-2 bg-gray-100 dark:bg-gray-800 dark:border dark:border-gray-700 rounded-lg">
+                      <Filter className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                     </div>
                     <div className="text-left">
-                      <div className="font-medium text-gray-900">Refresh List</div>
-                      <div className="text-sm text-gray-500">Fetch latest appointments</div>
+                      <div className="font-medium text-gray-900 dark:text-white">Refresh List</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Fetch latest appointments</div>
                     </div>
                   </button>
                 </div>
@@ -840,12 +837,12 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
 
               {/* Appointment Details */}
               {selected && (
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <div className="bg-white dark:bg-gray-900/50 dark:backdrop-blur-sm rounded-2xl p-6 shadow-sm dark:shadow-lg border border-gray-100 dark:border-gray-800">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-gray-900">Appointment Details</h3>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">Appointment Details</h3>
                     <button
                       onClick={() => setSelected(null)}
-                      className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                      className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                     >
                       <X className="w-4 h-4 text-gray-400" />
                     </button>
@@ -853,21 +850,21 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
 
                   <div className="space-y-4">
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Property</label>
-                      <p className="text-gray-900 font-medium mt-1">{selected.property?.title}</p>
+                      <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Property</label>
+                      <p className="text-gray-900 dark:text-white font-medium mt-1">{selected.property?.title}</p>
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Customer</label>
-                      <p className="text-gray-900 font-medium mt-1">{selected.customer?.name}</p>
+                      <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Customer</label>
+                      <p className="text-gray-900 dark:text-white font-medium mt-1">{selected.customer?.name}</p>
                       {selected.customer?.email && (
-                        <p className="text-sm text-gray-500 mt-1">{selected.customer.email}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{selected.customer.email}</p>
                       )}
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Date & Time</label>
-                      <p className="text-gray-900 font-medium mt-1">
+                      <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Date & Time</label>
+                      <p className="text-gray-900 dark:text-white font-medium mt-1">
                         {moment(selected.scheduled_at)
                           .tz("Asia/Kolkata")
                           .format("MMMM D, YYYY [at] h:mm A")}
@@ -893,15 +890,15 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
 
                     {selected.notes && (
                       <div>
-                        <label className="text-sm font-medium text-gray-600">Notes</label>
-                        <p className="text-gray-700 mt-1 text-sm">{selected.notes}</p>
+                        <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Notes</label>
+                        <p className="text-gray-700 dark:text-gray-300 mt-1 text-sm">{selected.notes}</p>
                       </div>
                     )}
 
                     {selected.decline_reason && selected.status === "declined" && (
                       <div>
-                        <label className="text-sm font-medium text-gray-600">Decline Reason</label>
-                        <p className="text-gray-700 mt-1 text-sm">{selected.decline_reason}</p>
+                        <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Decline Reason</label>
+                        <p className="text-gray-700 dark:text-gray-300 mt-1 text-sm">{selected.decline_reason}</p>
                       </div>
                     )}
 
@@ -911,8 +908,8 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                         disabled={!canTakeAction(selected)}
                         className={`px-4 py-2.5 rounded-xl ${
                           !canTakeAction(selected)
-                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                            : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                            ? "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                            : "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-800/30 dark:border dark:border-emerald-800/50"
                         } font-medium transition-colors`}
                       >
                         {actionLoading[selected.id] === "approving" ? "Approving..." : "Approve"}
@@ -923,8 +920,8 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                         disabled={!canTakeAction(selected)}
                         className={`px-4 py-2.5 rounded-xl ${
                           !canTakeAction(selected)
-                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                            : "bg-rose-50 text-rose-700 hover:bg-rose-100"
+                            ? "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                            : "bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-800/30 dark:border dark:border-rose-800/50"
                         } font-medium transition-colors`}
                       >
                         Decline
@@ -935,8 +932,8 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                         disabled={selected.status !== "scheduled"}
                         className={`px-4 py-2.5 rounded-xl ${
                           selected.status !== "scheduled"
-                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                            : "bg-red-50 text-red-600 hover:bg-red-100"
+                            ? "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                            : "bg-red-50 dark:bg-rose-900/30 text-red-600 dark:text-rose-400 hover:bg-red-100 dark:hover:bg-rose-800/30 dark:border dark:border-rose-800/50"
                         } font-medium transition-colors`}
                       >
                         Cancel
@@ -944,7 +941,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
 
                       <button
                         onClick={() => setSelected(null)}
-                        className="px-4 py-2.5 rounded-xl border border-gray-200 font-medium hover:bg-gray-50 transition-colors"
+                        className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                       >
                         Close
                       </button>
@@ -955,18 +952,18 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
             </div>
           </div>
 
-          {/* Create / Edit Modal (unchanged) */}
+          {/* Create / Edit Modal */}
           {showCreate && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <div className="absolute inset-0 bg-black/40" onClick={() => setShowCreate(false)} />
-              <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-xl p-6 z-10 max-h-[90vh] overflow-y-auto">
+              <div className="absolute inset-0 bg-black/40 dark:bg-black/60" onClick={() => setShowCreate(false)} />
+              <div className="relative w-full max-w-4xl bg-white dark:bg-gray-900 dark:border dark:border-gray-800 rounded-2xl shadow-xl dark:shadow-2xl p-6 z-10 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-gray-900">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                     {showEdit ? "Edit Appointment" : "Create New Appointment"}
                   </h3>
                   <button
                     onClick={() => setShowCreate(false)}
-                    className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
                   >
                     <X className="w-5 h-5 text-gray-400" />
                   </button>
@@ -976,7 +973,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                   {/* Left Column */}
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
                         Property
                       </label>
                       <select
@@ -984,7 +981,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                         onChange={(e) =>
                           setForm((s: any) => ({ ...s, property_id: e.target.value }))
                         }
-                        className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-transparent"
                       >
                         <option value="">Select property</option>
                         {properties.map((p) => (
@@ -996,7 +993,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
                         Customer
                       </label>
                       <select
@@ -1004,7 +1001,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                         onChange={(e) =>
                           setForm((s: any) => ({ ...s, customer_id: e.target.value }))
                         }
-                        className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-transparent"
                       >
                         <option value="">Select customer</option>
                         {customers.map((c) => (
@@ -1016,13 +1013,13 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
                         Appointment Type
                       </label>
                       <select
                         value={form.type}
                         onChange={(e) => setForm((s: any) => ({ ...s, type: e.target.value }))}
-                        className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-transparent"
                       >
                         <option value="visit">Property Visit</option>
                         <option value="call">Phone Call</option>
@@ -1030,19 +1027,19 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">Date</label>
                       <input
                         type="date"
                         value={form.date}
                         onChange={(e) =>
                           setForm((s: any) => ({ ...s, date: e.target.value, slot: "" }))
                         }
-                        className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-transparent"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
                         Duration (minutes)
                       </label>
                       <input
@@ -1053,7 +1050,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                         onChange={(e) =>
                           setForm((s: any) => ({ ...s, duration_minutes: Number(e.target.value) }))
                         }
-                        className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-transparent"
                       />
                     </div>
                   </div>
@@ -1061,7 +1058,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                   {/* Right Column */}
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
                         {form.type === "call" ? "Phone Number" : "Meeting Location"}
                       </label>
                       <input
@@ -1075,7 +1072,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                             ? setForm((s: any) => ({ ...s, phone_number: e.target.value }))
                             : setForm((s: any) => ({ ...s, location: e.target.value }))
                         }
-                        className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-transparent"
                         placeholder={
                           form.type === "call"
                             ? "Enter phone number"
@@ -1085,7 +1082,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
                         Inquiry ID (optional)
                       </label>
                       <input
@@ -1093,7 +1090,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                         onChange={(e) =>
                           setForm((s: any) => ({ ...s, inquiry_id: e.target.value }))
                         }
-                        className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-transparent"
                         placeholder="Link an inquiry ID"
                       />
                     </div>
@@ -1103,18 +1100,18 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                         <button
                           onClick={() => handleCheckAvailability(form.date)}
                           disabled={!form.date}
-                          className="px-4 py-2.5 rounded-xl bg-blue-600 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
+                          className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 dark:bg-gradient-to-r dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                           Check Availability
                         </button>
-                        <span className="text-sm text-gray-500">Find available time slots</span>
+                        <span className="text-sm text-gray-500 dark:text-gray-500">Find available time slots</span>
                       </div>
 
                       <div className="flex flex-wrap gap-2">
                         {checkingSlots ? (
-                          <div className="text-sm text-gray-500">Checking available slots...</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">Checking available slots...</div>
                         ) : slots.length === 0 ? (
-                          <div className="text-sm text-gray-400">
+                          <div className="text-sm text-gray-400 dark:text-gray-500">
                             Select a date to see available slots
                           </div>
                         ) : (
@@ -1132,8 +1129,8 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                                   form.slot === hhmm
                                     ? "border-blue-600 bg-blue-600 text-white"
                                     : isAvailable
-                                    ? "border-gray-200 hover:border-blue-300 hover:bg-blue-50 text-gray-700"
-                                    : "border-gray-100 bg-gray-50 text-gray-400 line-through cursor-not-allowed"
+                                    ? "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                    : "border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 text-gray-400 dark:text-gray-600 line-through cursor-not-allowed"
                                 }`}
                               >
                                 {moment(slot.datetime).tz("Asia/Kolkata").format("h:mm A")}
@@ -1145,21 +1142,21 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">Notes</label>
                       <textarea
                         value={form.notes}
                         onChange={(e) => setForm((s: any) => ({ ...s, notes: e.target.value }))}
-                        className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-24"
+                        className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-transparent h-24"
                         placeholder="Additional notes about the appointment..."
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
+                <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
                   <button
                     onClick={() => setShowCreate(false)}
-                    className="px-6 py-3 rounded-xl border border-gray-200 font-medium hover:bg-gray-50 transition-colors"
+                    className="px-6 py-3 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
                     Cancel
                   </button>
@@ -1168,8 +1165,8 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                     disabled={creating || !canCreate()}
                     className={`px-6 py-3 rounded-xl font-medium transition-colors ${
                       creating || !canCreate()
-                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        : "bg-green-600 text-white hover:bg-green-700"
+                        ? "bg-gray-300 dark:bg-gray-800 text-gray-500 dark:text-gray-500 cursor-not-allowed"
+                        : "bg-green-600 hover:bg-green-700 dark:bg-gradient-to-r dark:from-emerald-600 dark:to-emerald-700 dark:hover:from-emerald-700 dark:hover:to-emerald-800 text-white"
                     }`}
                   >
                     {creating ? (
@@ -1192,28 +1189,28 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
           {showCancelModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
               <div
-                className="absolute inset-0 bg-black/40"
+                className="absolute inset-0 bg-black/40 dark:bg-black/60"
                 onClick={() => setShowCancelModal(false)}
               />
-              <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl p-6 z-10">
+              <div className="relative w-full max-w-md bg-white dark:bg-gray-900 dark:border dark:border-gray-800 rounded-2xl shadow-xl dark:shadow-2xl p-6 z-10">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-red-100 rounded-lg">
-                    <X className="w-5 h-5 text-red-600" />
+                  <div className="p-2 bg-red-100 dark:bg-rose-900/30 dark:border dark:border-rose-800/30 rounded-lg">
+                    <X className="w-5 h-5 text-red-600 dark:text-rose-400" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Cancel Appointment</h3>
-                    <p className="text-sm text-gray-600">This action cannot be undone</p>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Cancel Appointment</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">This action cannot be undone</p>
                   </div>
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Cancellation Reason <span className="text-red-500">*</span>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
+                    Cancellation Reason <span className="text-red-500 dark:text-rose-500">*</span>
                   </label>
                   <textarea
                     value={cancelReason}
                     onChange={(e) => setCancelReason(e.target.value)}
-                    className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-red-500 focus:border-transparent h-28"
+                    className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-red-500 dark:focus:ring-rose-600 focus:border-transparent h-28"
                     placeholder="Please provide a reason for cancellation..."
                   />
                 </div>
@@ -1221,7 +1218,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                 <div className="flex justify-end gap-3">
                   <button
                     onClick={() => setShowCancelModal(false)}
-                    className="px-6 py-3 rounded-xl border border-gray-200 font-medium hover:bg-gray-50 transition-colors"
+                    className="px-6 py-3 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
                     Keep Appointment
                   </button>
@@ -1230,8 +1227,8 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                     disabled={!cancelReason.trim()}
                     className={`px-6 py-3 rounded-xl font-medium transition-colors ${
                       !cancelReason.trim()
-                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        : "bg-red-600 text-white hover:bg-red-700"
+                        ? "bg-gray-300 dark:bg-gray-800 text-gray-500 dark:text-gray-500 cursor-not-allowed"
+                        : "bg-red-600 hover:bg-red-700 dark:bg-gradient-to-r dark:from-rose-600 dark:to-rose-700 dark:hover:from-rose-700 dark:hover:to-rose-800 text-white"
                     }`}
                   >
                     Confirm Cancellation
@@ -1241,34 +1238,34 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
             </div>
           )}
 
-          {/* Decline Modal (replaces prompt) */}
+          {/* Decline Modal */}
           {showDeclineModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
               <div
-                className="absolute inset-0 bg-black/40"
+                className="absolute inset-0 bg-black/40 dark:bg-black/60"
                 onClick={() => setShowDeclineModal(false)}
               />
-              <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl p-6 z-10">
+              <div className="relative w-full max-w-md bg-white dark:bg-gray-900 dark:border dark:border-gray-800 rounded-2xl shadow-xl dark:shadow-2xl p-6 z-10">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-rose-100 rounded-lg">
-                    <Slash className="w-5 h-5 text-rose-600" />
+                  <div className="p-2 bg-rose-100 dark:bg-rose-900/30 dark:border dark:border-rose-800/30 rounded-lg">
+                    <Slash className="w-5 h-5 text-rose-600 dark:text-rose-400" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Decline Appointment</h3>
-                    <p className="text-sm text-gray-600">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Decline Appointment</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
                       Provide a reason for declining this appointment
                     </p>
                   </div>
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Decline Reason <span className="text-red-500">*</span>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
+                    Decline Reason <span className="text-red-500 dark:text-rose-500">*</span>
                   </label>
                   <textarea
                     value={declineReason}
                     onChange={(e) => setDeclineReason(e.target.value)}
-                    className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-rose-500 focus:border-transparent h-28"
+                    className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-rose-500 dark:focus:ring-rose-600 focus:border-transparent h-28"
                     placeholder="Please provide a reason for declining..."
                   />
                 </div>
@@ -1276,7 +1273,7 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                 <div className="flex justify-end gap-3">
                   <button
                     onClick={() => setShowDeclineModal(false)}
-                    className="px-6 py-3 rounded-xl border border-gray-200 font-medium hover:bg-gray-50 transition-colors"
+                    className="px-6 py-3 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
                     Cancel
                   </button>
@@ -1285,8 +1282,8 @@ export default function AgentAppointments({ token }: { token?: string | null }) 
                     disabled={!declineReason.trim()}
                     className={`px-6 py-3 rounded-xl font-medium transition-colors ${
                       !declineReason.trim()
-                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        : "bg-rose-600 text-white hover:bg-rose-700"
+                        ? "bg-gray-300 dark:bg-gray-800 text-gray-500 dark:text-gray-500 cursor-not-allowed"
+                        : "bg-rose-600 hover:bg-rose-700 dark:bg-gradient-to-r dark:from-rose-600 dark:to-rose-700 dark:hover:from-rose-700 dark:hover:to-rose-800 text-white"
                     }`}
                   >
                     Confirm Decline

@@ -26,13 +26,13 @@ const UserMenuItems = ({
           </span>
           {'Profile'}
         </Link>
-        <Link to={'/my-subscriptions'}
+        <Link to={'/my-wallet'}
           className="flex items-center cursor-pointer w-full text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150 py-2"
         >
           <span className="mr-3 text-base">
             <CreditCard size={20} />
           </span>
-          {'My Subscriptions'}
+          {'My Wallet'}
         </Link>
         <Link to={'/chat'}
           className="flex items-center cursor-pointer w-full text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150 py-2"

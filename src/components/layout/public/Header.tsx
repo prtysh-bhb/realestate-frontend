@@ -54,7 +54,7 @@ const Header = () => {
     { name: "For Rent", path: "/properties/rent" },
     { name: "For Sale", path: "/properties/sale" },
     { name: "Contact", path: "/contact" },
-    { name: "Subscriptions", path: "/subscription-plans" },
+    { name: "Subscription", path: "/package-plan"},
     { name: "Blog", path: "/blog" },
   ];
 

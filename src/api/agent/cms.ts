@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import api from "@/api/axios";
 
 
 export interface Blog {
+  user: any;
   views_count: number;
   featured_image_url?: string | null;
   meta_title: string;

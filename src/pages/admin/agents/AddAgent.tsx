@@ -1,7 +1,7 @@
 import { useState } from "react";
 import AdminLayout from "@/components/layout/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
-import { UserPlus, Mail, Phone, MapPin, Upload, User } from "lucide-react";
+import { UserPlus, Mail, Phone, MapPin, User } from "lucide-react";
 import { toast } from "sonner";
 
 const AddAgent = () => {

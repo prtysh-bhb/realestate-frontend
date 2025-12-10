@@ -39,6 +39,9 @@ import AgentDashboardPage from "./pages/admin/agents/AgentDashboardPage";
 import SubscriptionPlanList from "./pages/admin/subscriptions/SubscriptionPlanList";
 import AddSubscriptionPlan from "./pages/admin/subscriptions/AddSubscripitonPlan";
 import EditSubscriptionPlan from "./pages/admin/subscriptions/EditSubscriptionPlan";
+import CreditPackagesList from "./pages/admin/Creditwallate/credit";
+import CreditWallet from "./pages/admin/Creditwallate/wallet";
+
 
 // Property Pages
 import AddProperty from "@/pages/admin/agents/property/AddProperty";
@@ -60,6 +63,9 @@ import ProfileEditForm from "@/pages/customer/ProfileEditForm";
 import PropertyFilters from "@/pages/customer/PropertyFilters";
 import PropertyView from "@/pages/customer/PropertyView";
 import ContactPage from "@/pages/customer/ContactPage";
+import Creditwallate from "@/pages/customer/Creditwallate/mywallet";
+import PackagePlan from "@/pages/customer/Creditwallate/packagepage";
+
 
 // Routing Utils
 import ProtectedRoute from "@/lib/ProtectedRoute";
@@ -85,6 +91,7 @@ import NewsList from "./pages/admin/cms/news/NewsList";
 import BlogCategories from "./pages/admin/cms/blogs/BlogCategories";
 import BlogPage from "./pages/customer/Blog/BlogPage";
 import SingleBlogPage from "./pages/customer/Blog/SingleBlog";
+
 
 function App() {
   return (
@@ -151,6 +158,8 @@ function App() {
 
             {/* Contact Page */}
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/package-plan" element={<PackagePlan />} />
+            <Route path="/my-wallet" element={<Creditwallate />} />
 
             {/* Subscriptions */}
             <Route
@@ -431,6 +440,24 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <EditSubscriptionPlan />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* credit package */}
+          <Route
+            path="/admin/credit"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <CreditPackagesList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/wallet"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <CreditWallet />
               </ProtectedRoute>
             }
           />

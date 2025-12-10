@@ -26,6 +26,8 @@ import {
   Newspaper,
   MonitorCog,
   Blocks,
+  Coins,
+  Wallet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
@@ -134,6 +136,24 @@ const menuItems =
               name: "Add Subscription",
               icon: PlusCircle,
               path: "/admin/subscriptions/new",
+              exact: true,
+            },
+          ],
+        },
+        {
+          name: "Credit",
+          icon: Coins,
+          children: [
+            {
+              name: "Credit Packages",
+              icon: List,
+              path: "/admin/credit",
+              exact: true,
+            },
+             {
+              name: "Wallet",
+              icon: Wallet,
+              path: "/admin/wallet",
               exact: true,
             },
           ],
