@@ -42,7 +42,7 @@ import {
 import Select from "react-select";
 import { customStyles } from "@/utils/reactSelectStyles";
 
-const WalletManagement = () => {
+const Wallet = () => {
   // States
   const [wallets, setWallets] = useState<AdminWallet[]>([]);
   const [transactions, setTransactions] = useState<AdminCreditTransaction[]>([]);
@@ -1218,4 +1218,4 @@ const WalletManagement = () => {
   );
 };
 
-export default WalletManagement;
+export default Wallet;

@@ -39,7 +39,7 @@ import {
 } from "@stripe/react-stripe-js";
 
 // Initialize Stripe (replace with your publishable key)
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "pk_test_123");
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || "pk_test_123");
 
 // Features for each plan tier
 const planFeatures = [

@@ -39,8 +39,8 @@ import AgentDashboardPage from "./pages/admin/agents/AgentDashboardPage";
 import SubscriptionPlanList from "./pages/admin/subscriptions/SubscriptionPlanList";
 import AddSubscriptionPlan from "./pages/admin/subscriptions/AddSubscripitonPlan";
 import EditSubscriptionPlan from "./pages/admin/subscriptions/EditSubscriptionPlan";
-import CreditPackagesList from "./pages/admin/Creditwallate/credit";
-import CreditWallet from "./pages/admin/Creditwallate/wallet";
+import Credit from "./pages/admin/Creditwallet/credit";
+import Wallet from "./pages/admin/Creditwallet/wallet";
 
 
 // Property Pages
@@ -449,7 +449,7 @@ function App() {
             path="/admin/credit"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-                <CreditPackagesList />
+                <Credit />
               </ProtectedRoute>
             }
           />
@@ -457,7 +457,7 @@ function App() {
             path="/admin/wallet"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-                <CreditWallet />
+                <Wallet />
               </ProtectedRoute>
             }
           />

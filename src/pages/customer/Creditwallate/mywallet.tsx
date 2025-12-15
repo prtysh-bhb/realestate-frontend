@@ -23,6 +23,15 @@ import {
   RefreshCw,
   Package,
   Clock,
+  Image,
+  Phone,
+  CalendarDays,
+  FileText,
+  MapPin,
+  Video,
+  MessageSquare,
+  Eye as EyeIcon,
+  BarChart3
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -37,6 +46,7 @@ import {
   spendWalletCredits,
   getWalletBalance,
 } from "@/api/customer/credit";
+import { getAppSettings } from "@/api/admin/appsetting";
 
 // Mock Stripe integration (you'll need to implement actual Stripe)
 import { loadStripe } from "@stripe/stripe-js";
@@ -48,7 +58,28 @@ import {
 } from "@stripe/react-stripe-js";
 
 // Initialize Stripe (replace with your publishable key)
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "pk_test_123");
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || "pk_test_123");
+
+// Icon mapping for quick actions
+const quickActionIcons: Record<string, React.ReactNode> = {
+  property_photo: <Image className="w-4 h-4" />,
+  property_video: <Video className="w-4 h-4" />,
+  agent_number: <Phone className="w-4 h-4" />,
+  book_appointment: <CalendarDays className="w-4 h-4" />,
+  exact_location: <MapPin className="w-4 h-4" />,
+  unlock_documents: <FileText className="w-4 h-4" />,
+  send_inquiry: <MessageSquare className="w-4 h-4" />,
+  unlock_vr_tour: <EyeIcon className="w-4 h-4" />,
+  view_analytics: <BarChart3 className="w-4 h-4" />,
+};
+
+// Default quick actions (fallback if no settings found)
+const defaultQuickActions = [
+  { type: "property_photo" as WalletActionType, label: "Property Photo", cost: 10 },
+  { type: "agent_number" as WalletActionType, label: "Agent Contact", cost: 25 },
+  { type: "book_appointment" as WalletActionType, label: "Book Appointment", cost: 50 },
+  { type: "unlock_documents" as WalletActionType, label: "Unlock Documents", cost: 30 },
+];
 
 const CustomerWallet = () => {
   const [walletSummary, setWalletSummary] = useState<WalletSummary | null>(null);
@@ -70,6 +101,21 @@ const CustomerWallet = () => {
     totalSpent: 0,
     recentTransactions: 0,
   });
+  const [quickActions, setQuickActions] = useState<Array<{
+    type: WalletActionType;
+    label: string;
+    cost: number;
+  }>>(defaultQuickActions);
+  const [loadingQuickActions, setLoadingQuickActions] = useState(false);
+  
+  // New state for quick action modal
+  const [showQuickActionModal, setShowQuickActionModal] = useState(false);
+  const [selectedQuickAction, setSelectedQuickAction] = useState<{
+    type: WalletActionType;
+    label: string;
+    cost: number;
+  } | null>(null);
+  const [propertyId, setPropertyId] = useState<string>("");
 
   // Load wallet data
   const loadWalletData = async () => {
@@ -114,8 +160,95 @@ const CustomerWallet = () => {
     }
   };
 
+  // Load quick actions from app settings
+  const loadQuickActions = async () => {
+    try {
+      setLoadingQuickActions(true);
+      const response = await getAppSettings("wallet_actions");
+      
+      if (response.success && response.data) {
+        // Check if response.data is an array or grouped object
+        let settings: any[] = [];
+        
+        if (Array.isArray(response.data)) {
+          settings = response.data;
+        } else if (typeof response.data === 'object') {
+          // If grouped by category, flatten the object
+          settings = Object.values(response.data).flat();
+        }
+        
+        // Parse quick actions from settings
+        const parsedActions = parseQuickActionsFromSettings(settings);
+        setQuickActions(parsedActions.length > 0 ? parsedActions : defaultQuickActions);
+      } else {
+        // Use default if API fails
+        setQuickActions(defaultQuickActions);
+      }
+    } catch (error) {
+      console.error("Error loading quick actions:", error);
+      setQuickActions(defaultQuickActions);
+    } finally {
+      setLoadingQuickActions(false);
+    }
+  };
+
+  // Helper function to parse quick actions from settings
+  const parseQuickActionsFromSettings = (settings: any[]) => {
+    const actions: Array<{
+      type: WalletActionType;
+      label: string;
+      cost: number;
+    }> = [];
+
+    // Action type mapping from setting names to WalletActionType
+    const actionTypeMapping: Record<string, WalletActionType> = {
+      'property_photo_cost': 'property_photo',
+      'property_video_cost': 'property_video',
+      'agent_contact_cost': 'agent_number',
+      'appointment_cost': 'book_appointment',
+      'location_cost': 'exact_location',
+      'documents_cost': 'unlock_documents',
+      'inquiry_cost': 'send_inquiry',
+      'vr_tour_cost': 'unlock_vr_tour',
+      'analytics_cost': 'view_analytics',
+    };
+
+    // Action label mapping
+    const actionLabelMapping: Record<string, string> = {
+      'property_photo_cost': 'Property Photo',
+      'property_video_cost': 'Property Video',
+      'agent_contact_cost': 'Agent Contact',
+      'appointment_cost': 'Book Appointment',
+      'location_cost': 'Exact Location',
+      'documents_cost': 'Unlock Documents',
+      'inquiry_cost': 'Send Inquiry',
+      'vr_tour_cost': 'VR Tour',
+      'analytics_cost': 'View Analytics',
+    };
+
+    settings.forEach(setting => {
+      const actionType = actionTypeMapping[setting.name];
+      const label = actionLabelMapping[setting.name] || setting.label || setting.name;
+      
+      if (actionType && setting.value) {
+        const cost = parseInt(setting.value, 10);
+        if (!isNaN(cost) && cost > 0) {
+          actions.push({
+            type: actionType,
+            label,
+            cost
+          });
+        }
+      }
+    });
+
+    // If no actions found in settings, return default
+    return actions.length > 0 ? actions : defaultQuickActions;
+  };
+
   useEffect(() => {
     loadWalletData();
+    loadQuickActions();
   }, [currentPage]);
 
   // Handle package purchase
@@ -124,27 +257,59 @@ const CustomerWallet = () => {
     setShowBuyModal(true);
   };
 
-  // Handle spending credits (for demo purposes)
-  const handleSpendCredits = async (actionType: WalletActionType, propertyId?: number) => {
+  // Handle quick action click - opens modal instead of alert
+  const handleQuickActionClick = (action: {
+    type: WalletActionType;
+    label: string;
+    cost: number;
+  }) => {
     if (!walletSummary || walletSummary.current_credits <= 0) {
       toast.error("Insufficient credits");
       return;
     }
 
-    if (!confirm(`Spend credits for ${actionType.replace('_', ' ')}?`)) return;
+    if (walletSummary.current_credits < action.cost) {
+      toast.error(`Insufficient credits. Required: ${action.cost}, Available: ${walletSummary.current_credits}`);
+      return;
+    }
+
+    setSelectedQuickAction(action);
+    setShowQuickActionModal(true);
+  };
+
+  // Handle spending credits from modal
+  const handleSpendCredits = async (propertyId?: number) => {
+    if (!selectedQuickAction || !walletSummary) return;
 
     try {
-      const payload = { action_type: actionType, property_id: propertyId || null };
+      setIsProcessing(true);
+      const payload = { 
+        action_type: selectedQuickAction.type, 
+        property_id: propertyId || null 
+      };
       const response = await spendWalletCredits(payload);
       
       if (response.success) {
-        toast.success("Action completed successfully");
+        toast.success(`${selectedQuickAction.label} completed successfully!`);
         loadWalletData(); // Refresh data
+        
+        // Show remaining balance
+        toast.info(`Remaining credits: ${walletSummary.current_credits - selectedQuickAction.cost}`, {
+          duration: 3000,
+        });
+        
+        // Close modal
+        setShowQuickActionModal(false);
+        setSelectedQuickAction(null);
+        setPropertyId("");
       } else {
         toast.error(response.message || "Failed to complete action");
       }
     } catch (error: any) {
+      console.error("Error spending credits:", error);
       toast.error(error.response?.data?.message || "Failed to complete action");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -224,14 +389,6 @@ const CustomerWallet = () => {
     }
   };
 
-  // Quick spend actions
-  const quickSpendActions = [
-    { type: "property_photo" as WalletActionType, label: "Property Photo", cost: 10 },
-    { type: "agent_number" as WalletActionType, label: "Agent Contact", cost: 25 },
-    { type: "book_appointment" as WalletActionType, label: "Book Appointment", cost: 50 },
-    { type: "unlock_documents" as WalletActionType, label: "Unlock Documents", cost: 30 },
-  ];
-
   if (loading) {
     return (
       <>
@@ -261,7 +418,10 @@ const CustomerWallet = () => {
               </div>
             </div>
             <button
-              onClick={() => loadWalletData()}
+              onClick={() => {
+                loadWalletData();
+                loadQuickActions();
+              }}
               className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors backdrop-blur-sm"
             >
               <RefreshCw className="w-4 h-4" />
@@ -329,35 +489,82 @@ const CustomerWallet = () => {
 
             {/* Quick Actions */}
             <div className="lg:w-96 space-y-4">
-              <h3 className="font-medium text-gray-900 dark:text-white">Quick Actions</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {quickSpendActions.map((action) => (
-                  <button
-                    key={action.type}
-                    onClick={() => handleSpendCredits(action.type)}
-                    disabled={!walletSummary || walletSummary.current_credits < action.cost}
-                    className="p-3 text-center bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <div className="text-sm font-medium text-gray-900 dark:text-white mb-1">
-                      {action.label}
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {action.cost} credits
-                    </div>
-                  </button>
-                ))}
+              <div className="flex items-center justify-between">
+                <h3 className="font-medium text-gray-900 dark:text-white">Quick Actions</h3>
+                {loadingQuickActions && (
+                  <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                )}
               </div>
+              
+              {quickActions.length === 0 ? (
+                <div className="text-center py-4">
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">No actions available</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {quickActions.map((action) => (
+                    <button
+                      key={action.type}
+                      onClick={() => handleQuickActionClick(action)}
+                      disabled={!walletSummary || walletSummary.current_credits < action.cost || isProcessing}
+                      className="p-3 text-center bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed group"
+                    >
+                      <div className="flex flex-col items-center gap-2">
+                        <div className={`p-2 rounded-lg ${
+                          action.type.includes('photo') || action.type.includes('video') 
+                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                            : action.type.includes('agent') || action.type.includes('appointment')
+                            ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
+                            : action.type.includes('location') || action.type.includes('documents')
+                            ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
+                            : action.type.includes('inquiry') || action.type.includes('tour') || action.type.includes('analytics')
+                            ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                        }`}>
+                          {quickActionIcons[action.type] || <FileText className="w-4 h-4" />}
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            {action.label}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {action.cost} credits
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {walletSummary && walletSummary.current_credits < action.cost && (
+                        <div className="mt-2 text-xs text-red-500 dark:text-red-400">
+                          Insufficient credits
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+              
               <button
                 onClick={() => setShowBuyModal(true)}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white rounded-lg transition-all shadow-md hover:shadow-lg font-medium"
+                disabled={isProcessing}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white rounded-lg transition-all shadow-md hover:shadow-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <ShoppingCart className="w-5 h-5" />
-                Buy More Credits
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="animate-spin w-5 h-5" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart className="w-5 h-5" />
+                    Buy More Credits
+                  </>
+                )}
               </button>
             </div>
           </div>
         </div>
 
+        {/* Rest of the component remains the same... */}
         {/* Credit Packages */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-200 dark:border-gray-800 shadow-sm mb-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -646,6 +853,20 @@ const CustomerWallet = () => {
           />
         </Elements>
       )}
+
+      {/* Quick Action Confirmation Modal */}
+      {showQuickActionModal && selectedQuickAction && (
+        <QuickActionModal
+          action={selectedQuickAction}
+          isOpen={showQuickActionModal}
+          setIsOpen={setShowQuickActionModal}
+          propertyId={propertyId}
+          setPropertyId={setPropertyId}
+          onConfirm={() => handleSpendCredits(propertyId ? parseInt(propertyId) : undefined)}
+          isProcessing={isProcessing}
+          walletSummary={walletSummary}
+        />
+      )}
     </>
   );
 };
@@ -825,6 +1046,139 @@ const BuyPackageModal = ({
     </div>
   );
 };
+
+// Quick Action Modal Component
+const QuickActionModal = ({
+  action,
+  isOpen,
+  setIsOpen,
+  propertyId,
+  setPropertyId,
+  onConfirm,
+  isProcessing,
+  walletSummary,
+}: {
+  action: {
+    type: WalletActionType;
+    label: string;
+    cost: number;
+  };
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+  propertyId: string;
+  setPropertyId: (id: string) => void;
+  onConfirm: () => void;
+  isProcessing: boolean;
+  walletSummary: WalletSummary | null;
+}) => {
+  if (!isOpen) return null;
+
+  const needsPropertyId = action.type.includes('property') || 
+                         action.type.includes('photo') || 
+                         action.type.includes('video') ||
+                         action.type === 'unlock_documents' ||
+                         action.type === 'unlock_vr_tour' ||
+                         action.type === 'exact_location';
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-gray-700">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Confirm Action
+            </h3>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+              disabled={isProcessing}
+            >
+              <XCircle className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
+
+        <div className="p-6">
+          {/* Action Details */}
+          <div className="mb-6">
+            <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-emerald-50 dark:from-blue-900/20 dark:to-emerald-900/20 rounded-lg">
+              <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                {quickActionIcons[action.type] || <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />}
+              </div>
+              <div>
+                <h4 className="font-bold text-gray-900 dark:text-white">{action.label}</h4>
+                <p className="text-sm text-gray-500 dark:text-gray-400">This action will cost {action.cost} credits</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Balance Info */}
+          <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Current Balance</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">
+                  {walletSummary?.current_credits?.toLocaleString() || 0} credits
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-600 dark:text-gray-400">After Spending</p>
+                <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                  {(walletSummary ? walletSummary.current_credits - action.cost : 0).toLocaleString()} credits
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Security Note */}
+          <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  This action cannot be undone. Credits will be deducted immediately upon confirmation.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
+              disabled={isProcessing}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={onConfirm}
+              disabled={isProcessing}
+              className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white rounded-lg transition-all font-medium disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="animate-spin w-4 h-4" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4" />
+                  Confirm ({action.cost} credits)
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Add missing AlertTriangle icon import
+import { AlertTriangle } from "lucide-react";
 
 // Format currency helper
 const formatCurrency = (amount: number) => {
