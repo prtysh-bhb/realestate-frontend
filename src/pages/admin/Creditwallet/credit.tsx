@@ -29,7 +29,7 @@ import {
   CreditPackagePayload,
 } from "@/api/admin/credit";
 
-const CreditPackagesList = () => {
+const Credit = () => {
   const [packages, setPackages] = useState<CreditPackage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -892,4 +892,4 @@ const PackageModal = ({
   );
 };
 
-export default CreditPackagesList;
+export default Credit;
