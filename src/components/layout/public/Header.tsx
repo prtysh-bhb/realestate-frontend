@@ -6,7 +6,7 @@
 
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Home as HomeIcon, Building2, ChevronRight } from "lucide-react";
+import { Menu, X, Home as HomeIcon, Building2, ChevronRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import clsx from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,7 +18,7 @@ const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   const location = useLocation();
 
   const isDashboard = location.pathname.startsWith("/dashboard") || location.pathname === "/";
@@ -40,12 +40,12 @@ const Header = () => {
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (menuOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [menuOpen]);
 
@@ -53,8 +53,9 @@ const Header = () => {
     { name: "Home", path: "/", icon: HomeIcon },
     { name: "For Rent", path: "/properties/rent" },
     { name: "For Sale", path: "/properties/sale" },
+    { name: "AI Features", path: "/ai-hub", icon: Sparkles, isNew: true },
     { name: "Contact", path: "/contact" },
-    { name: "Subscription", path: "/package-plan"},
+    { name: "Subscription", path: "/package-plan" },
     { name: "Blog", path: "/blog" },
   ];
 
@@ -82,30 +83,38 @@ const Header = () => {
           </Link>
 
           {/* NAV LINKS (Desktop) */}
-          <nav
-            className={clsx(
-              "hidden md:flex items-center gap-2 font-semibold transition-all"
-            )}
-          >
+          <nav className={clsx("hidden md:flex items-center gap-2 font-semibold transition-all")}>
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 to={link.path}
                 className={clsx(
-                  "relative px-4 py-2 rounded-xl transition-all group",
+                  "relative px-4 py-2 rounded-xl transition-all group flex items-center gap-2",
+                  link.isNew && scrolled
+                    ? "bg-gradient-to-r from-purple-500/10 to-blue-500/10 hover:from-purple-500/20 hover:to-blue-500/20"
+                    : "",
                   scrolled
                     ? isActive(link.path)
                       ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20"
+                      : link.isNew
+                      ? "text-purple-600 dark:text-purple-400"
                       : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800"
                     : isActive(link.path)
-                      ? "text-white bg-white/20 backdrop-blur-sm"
-                      : "text-white/90 hover:text-white hover:bg-white/10 backdrop-blur-sm"
+                    ? "text-white bg-white/20 backdrop-blur-sm"
+                    : "text-white/90 hover:text-white hover:bg-white/10 backdrop-blur-sm"
                 )}
               >
+                {link.icon && <link.icon size={16} className={link.isNew ? "animate-pulse" : ""} />}
                 {link.name}
+                {link.isNew && (
+                  <span className="px-2 py-0.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs rounded-full font-bold">
+                    NEW
+                  </span>
+                )}
                 <span
                   className={clsx(
-                    "absolute left-1/2 -translate-x-1/2 bottom-0 h-0.5 bg-blue-600 transition-all duration-300",
+                    "absolute left-1/2 -translate-x-1/2 bottom-0 h-0.5 transition-all duration-300",
+                    link.isNew ? "bg-gradient-to-r from-purple-600 to-blue-600" : "bg-blue-600",
                     isActive(link.path) ? "w-8" : "w-0 group-hover:w-8"
                   )}
                 />
@@ -204,14 +213,26 @@ const Header = () => {
                           onClick={() => setMenuOpen(false)}
                           className={clsx(
                             "flex items-center justify-between px-4 py-3.5 rounded-xl font-medium transition-all group",
-                            isActive(link.path)
+                            link.isNew
+                              ? "bg-gradient-to-r from-purple-500/10 to-blue-500/10 hover:from-purple-500/20 hover:to-blue-500/20 text-purple-600 dark:text-purple-400"
+                              : "",
+                            isActive(link.path) && !link.isNew
                               ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/30"
-                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 active:scale-[0.98]"
+                              : !link.isNew
+                              ? "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 active:scale-[0.98]"
+                              : "active:scale-[0.98]"
                           )}
                         >
                           <span className="flex items-center gap-3">
-                            {link.icon && <link.icon size={20} />}
+                            {link.icon && (
+                              <link.icon size={20} className={link.isNew ? "animate-pulse" : ""} />
+                            )}
                             {link.name}
+                            {link.isNew && (
+                              <span className="px-2 py-0.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs rounded-full font-bold">
+                                NEW
+                              </span>
+                            )}
                           </span>
                           <ChevronRight
                             size={18}

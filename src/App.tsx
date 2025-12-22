@@ -65,13 +65,14 @@ import PropertyView from "@/pages/customer/PropertyView";
 import ContactPage from "@/pages/customer/ContactPage";
 import Creditwallate from "@/pages/customer/Creditwallate/mywallet";
 import PackagePlan from "@/pages/customer/Creditwallate/packagepage";
-
+import AIHub from "@/pages/customer/AIHub";
 
 // Routing Utils
 import ProtectedRoute from "@/lib/ProtectedRoute";
 import PublicRoute from "@/lib/PublicRoute";
 import { ApiInterceptor } from "./api/ApiInterceptor";
 import ScrollToTop from "@/components/ScrollToTop";
+import FloatingAIChatButton from "@/components/ai/FloatingAIChatButton";
 import AgentAppointments from "./pages/admin/agents/appointment/AgentAppointments";
 import ShowSubscriptionPlan from "./pages/admin/subscriptions/ShowSubscriptionPlan";
 import SubscriptionPlans from "./pages/customer/subscriptions/SubscriptionPlans";
@@ -160,6 +161,8 @@ function App() {
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/package-plan" element={<PackagePlan />} />
             <Route path="/my-wallet" element={<Creditwallate />} />
+            {/* AI Features */}
+            <Route path="/ai-hub" element={<AIHub />} />
 
             {/* Subscriptions */}
             <Route
@@ -655,6 +658,9 @@ function App() {
             style: { fontSize: "15px" },
           }}
         />
+
+        {/* Floating AI Chat Button - Global */}
+        <FloatingAIChatButton />
       </StripeProvider>
     </BrowserRouter>
   );
