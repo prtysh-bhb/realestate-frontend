@@ -87,6 +87,7 @@ export interface PaginatedResponse<T> {
 
 // For /customer/wallet/balance
 export interface WalletBalanceResponse {
+  [x: string]: any;
   success: boolean;
   balance: number;
 }

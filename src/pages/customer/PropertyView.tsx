@@ -55,6 +55,13 @@ import {
   Users,
   CarFront,
   Wrench,
+  Lock,
+  Unlock,
+  Coins,
+  ShoppingCart,
+  AlertTriangle,
+  CheckCircle,
+  Loader2,
 } from "lucide-react";
 import { JSX, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -75,6 +82,15 @@ import {
   CreateReviewPayload,
   submitAgentReview,
 } from "@/api/customer/propertyreview";
+
+// Wallet API imports
+import {
+  WalletActionType,
+  getWalletSummary,
+  spendWalletCredits,
+  getWalletBalance,
+} from "@/api/customer/credit";
+import { getAppSettings } from "@/api/admin/appsetting";
 
 // Swiper imports
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -109,6 +125,84 @@ interface RatingSummary {
     1: number;
   };
 }
+
+// Quick action interface
+interface QuickAction {
+  type: WalletActionType;
+  label: string;
+  cost: number;
+  icon: JSX.Element;
+  description: string;
+  requiresProperty: boolean;
+}
+
+// Icon mapping for quick actions
+const quickActionIcons: Record<string, JSX.Element> = {
+  property_photo: <Image className="w-5 h-5" />,
+  property_video: <Video className="w-5 h-5" />,
+  agent_number: <Phone className="w-5 h-5" />,
+  book_appointment: <Calendar className="w-5 h-5" />,
+  exact_location: <MapPin className="w-5 h-5" />,
+  unlock_documents: <FileText className="w-5 h-5" />,
+  send_inquiry: <MessageCircle className="w-5 h-5" />,
+  unlock_vr_tour: <Eye className="w-5 h-5" />,
+  view_analytics: <BarChart3 className="w-5 h-5" />,
+};
+
+// Add BarChart3 import if not already present
+import { BarChart3 } from "lucide-react";
+
+// Default quick actions (fallback if no settings found)
+const defaultQuickActions: QuickAction[] = [
+  { 
+    type: "property_photo", 
+    label: "Property Photo", 
+    cost: 10, 
+    icon: <Image className="w-5 h-5" />,
+    description: "Unlock high-resolution property photos",
+    requiresProperty: true 
+  },
+  { 
+    type: "agent_number", 
+    label: "Agent Contact", 
+    cost: 25, 
+    icon: <Phone className="w-5 h-5" />,
+    description: "Get direct contact with listing agent",
+    requiresProperty: true 
+  },
+  { 
+    type: "book_appointment", 
+    label: "Book Appointment", 
+    cost: 50, 
+    icon: <Calendar className="w-5 h-5" />,
+    description: "Schedule property viewing appointment",
+    requiresProperty: true 
+  },
+  { 
+    type: "unlock_documents", 
+    label: "Unlock Documents", 
+    cost: 30, 
+    icon: <FileText className="w-5 h-5" />,
+    description: "Access property documents and reports",
+    requiresProperty: true 
+  },
+  { 
+    type: "unlock_vr_tour", 
+    label: "VR Tour", 
+    cost: 40, 
+    icon: <Eye className="w-5 h-5" />,
+    description: "Experience virtual reality property tour",
+    requiresProperty: true 
+  },
+  { 
+    type: "exact_location", 
+    label: "Exact Location", 
+    cost: 15, 
+    icon: <MapPin className="w-5 h-5" />,
+    description: "Get precise property location coordinates",
+    requiresProperty: true 
+  },
+];
 
 const PropertyView = () => {
   const { id } = useParams<{ id: string }>();
@@ -161,6 +255,205 @@ const PropertyView = () => {
   const [agentComment, setAgentComment] = useState("");
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
+  // Wallet and Quick Actions state
+  const [walletBalance, setWalletBalance] = useState<number>(0);
+  const [loadingWallet, setLoadingWallet] = useState(false);
+  const [quickActions, setQuickActions] = useState<QuickAction[]>(defaultQuickActions);
+  const [showQuickActionModal, setShowQuickActionModal] = useState(false);
+  const [selectedQuickAction, setSelectedQuickAction] = useState<QuickAction | null>(null);
+  const [isProcessingSpend, setIsProcessingSpend] = useState(false);
+
+  // Track unlocked features for this property
+  const [unlockedFeatures, setUnlockedFeatures] = useState<Record<string, boolean>>({});
+  const [featureHistory, setFeatureHistory] = useState<string[]>([]);
+
+  // Load wallet balance
+  const loadWalletBalance = async () => {
+    if (!isLogin) return;
+    
+    try {
+      setLoadingWallet(true);
+      const response = await getWalletBalance();
+      if (response.success && response.data) {
+        setWalletBalance(response.data.current_credits || 0);
+      }
+    } catch (error) {
+      console.error("Error loading wallet balance:", error);
+    } finally {
+      setLoadingWallet(false);
+    }
+  };
+
+  // Load quick actions from app settings
+  const loadQuickActions = async () => {
+    try {
+      const response = await getAppSettings();
+      
+      if (response.success && response.data) {
+        let settings: any[] = [];
+        
+        if (Array.isArray(response.data)) {
+          settings = response.data;
+        } else if (typeof response.data === 'object') {
+          // If grouped by category, flatten the object
+          settings = Object.values(response.data).flat();
+        }
+        
+        // Parse quick actions from settings
+        const parsedActions = parseQuickActionsFromSettings(settings);
+        setQuickActions(parsedActions.length > 0 ? parsedActions : defaultQuickActions);
+      } else {
+        setQuickActions(defaultQuickActions);
+      }
+    } catch (error) {
+      console.error("Error loading quick actions:", error);
+      setQuickActions(defaultQuickActions);
+    }
+  };
+
+  // Helper function to parse quick actions from settings
+  const parseQuickActionsFromSettings = (settings: any[]): QuickAction[] => {
+    const actions: QuickAction[] = [];
+
+    // Action type mapping from setting names to WalletActionType
+    const actionTypeMapping: Record<string, WalletActionType> = {
+      'property_photo_cost': 'property_photo',
+      'property_video_cost': 'property_video',
+      'agent_contact_cost': 'agent_number',
+      'appointment_cost': 'book_appointment',
+      'location_cost': 'exact_location',
+      'documents_cost': 'unlock_documents',
+      'inquiry_cost': 'send_inquiry',
+      'vr_tour_cost': 'unlock_vr_tour',
+      'analytics_cost': 'view_analytics',
+    };
+
+    // Action label mapping
+    const actionLabelMapping: Record<string, string> = {
+      'property_photo_cost': 'Property Photo',
+      'property_video_cost': 'Property Video',
+      'agent_contact_cost': 'Agent Contact',
+      'appointment_cost': 'Book Appointment',
+      'location_cost': 'Exact Location',
+      'documents_cost': 'Unlock Documents',
+      'inquiry_cost': 'Send Inquiry',
+      'vr_tour_cost': 'VR Tour',
+      'analytics_cost': 'View Analytics',
+    };
+
+    // Action descriptions
+    const actionDescriptions: Record<string, string> = {
+      'property_photo_cost': 'Unlock high-resolution property photos',
+      'property_video_cost': 'Access property videos and virtual tours',
+      'agent_contact_cost': 'Get direct contact with listing agent',
+      'appointment_cost': 'Schedule property viewing appointment',
+      'location_cost': 'Get precise property location coordinates',
+      'documents_cost': 'Access property documents and reports',
+      'inquiry_cost': 'Send detailed inquiry to property agent',
+      'vr_tour_cost': 'Experience virtual reality property tour',
+      'analytics_cost': 'View detailed property analytics and insights',
+    };
+
+    settings.forEach(setting => {
+      const actionType = actionTypeMapping[setting.name];
+      const label = actionLabelMapping[setting.name] || setting.label || setting.name;
+      const description = actionDescriptions[setting.name] || "Unlock this premium feature";
+      
+      if (actionType && setting.value) {
+        const cost = parseInt(setting.value, 10);
+        if (!isNaN(cost) && cost > 0) {
+          actions.push({
+            type: actionType,
+            label,
+            cost,
+            icon: quickActionIcons[actionType] || <Unlock className="w-5 h-5" />,
+            description,
+            requiresProperty: true
+          });
+        }
+      }
+    });
+
+    return actions.length > 0 ? actions : defaultQuickActions;
+  };
+
+  // Handle quick action click
+  const handleQuickActionClick = (action: QuickAction) => {
+    if (!isLogin) {
+      navigate("/login");
+      return;
+    }
+
+    if (walletBalance < action.cost) {
+      toast.error(`Insufficient credits. Required: ${action.cost}, Available: ${walletBalance}`);
+      return;
+    }
+
+    setSelectedQuickAction(action);
+    setShowQuickActionModal(true);
+  };
+
+  // Handle spending credits for property features
+  const handleSpendCredits = async () => {
+    if (!selectedQuickAction || !property) return;
+
+    setIsProcessingSpend(true);
+    try {
+      const payload = { 
+        action_type: selectedQuickAction.type, 
+        property_id: Number(id) 
+      };
+      
+      const response = await spendWalletCredits(payload);
+      
+      if (response.success) {
+        toast.success(`${selectedQuickAction.label} unlocked successfully!`);
+        
+        // Update unlocked features
+        setUnlockedFeatures(prev => ({
+          ...prev,
+          [selectedQuickAction.type]: true
+        }));
+        
+        // Add to feature history
+        setFeatureHistory(prev => [...prev, selectedQuickAction.type]);
+        
+        // Update wallet balance
+        setWalletBalance(prev => Math.max(0, prev - selectedQuickAction.cost));
+        
+        // Close modal
+        setShowQuickActionModal(false);
+        setSelectedQuickAction(null);
+        
+        // Refresh property data if needed
+        if (selectedQuickAction.type === 'unlock_documents') {
+          // Reload property to get documents
+          const data = await getProperty(Number(id));
+          if (data.success) {
+            setDocuments(data.data.property?.document_urls ?? []);
+          }
+        }
+      } else {
+        toast.error(response.message || "Failed to unlock feature");
+      }
+    } catch (error: any) {
+      console.error("Error spending credits:", error);
+      toast.error(error.response?.data?.message || "Failed to unlock feature");
+    } finally {
+      setIsProcessingSpend(false);
+    }
+  };
+
+  // Check if feature is already unlocked
+  const isFeatureUnlocked = (featureType: string): boolean => {
+    return unlockedFeatures[featureType] || featureHistory.includes(featureType);
+  };
+
+  // Get unlocked features count
+  const getUnlockedFeaturesCount = (): number => {
+    return Object.keys(unlockedFeatures).length + featureHistory.length;
+  };
+
   const fetchPropertyAttributes = async () => {
     try {
       const response = await propertyAttributes();
@@ -186,9 +479,6 @@ const PropertyView = () => {
         setIsAgentReviewModalOpen(false);
         setAgentRating(0);
         setAgentComment("");
-
-        // Optionally, you can fetch updated agent reviews here
-        // await fetchAgentReviews();
       } else {
         toast.error(response.message || "Failed to submit review");
       }
@@ -405,7 +695,7 @@ const PropertyView = () => {
         (rating_distribution[key as 1 | 2 | 3 | 4 | 5] || 0) + 1;
     });
 
-    const recommended_percentage = undefined; // backend doesn't provide recommended flag; keep undefined
+    const recommended_percentage = undefined;
 
     return {
       average_rating,
@@ -427,7 +717,6 @@ const PropertyView = () => {
         return;
       }
 
-      // Map backend Review -> extend with convenience fields for UI (rating/user_name/user_avatar)
       const mapped: ReviewType[] = res.data.map((r: any) => ({
         ...r,
       }));
@@ -446,8 +735,7 @@ const PropertyView = () => {
         prev.map((review) =>
           review.id === reviewId
             ? {
-                ...review, // try to keep shape the same
-                // optional: increment a helpful_count if backend supports it; we don't have that in ReviewType
+                ...review,
               }
             : review
         )
@@ -460,8 +748,6 @@ const PropertyView = () => {
   };
 
   const handleSubmitReview = async () => {
-    // Basic validation: positive_comment required per your UI earlier, but backend doesn't require rating field,
-    // so we validate constructive fields are numbers 1..5 and positive_comment not empty (as in original UI)
     if (!userReview.positive_comment || !userReview.positive_comment.trim()) {
       toast.error("Please enter positives");
       return;
@@ -485,7 +771,6 @@ const PropertyView = () => {
         return;
       }
 
-      // After successful submit, re-fetch reviews to show user-submitted review with backend data
       await fetchReviews();
       setShowReviewForm(false);
 
@@ -512,7 +797,6 @@ const PropertyView = () => {
       case "all":
         return reviews;
       case "negative":
-        // Since backend doesn't provide recommended boolean, treat rating <=3 as negative
         return reviews.filter((r) => {
           const avg =
             (r.construction +
@@ -563,9 +847,18 @@ const PropertyView = () => {
       }
     };
 
-    fetchPropertyAttributes();
-    fetchProperty();
-    fetchReviews();
+    const loadAllData = async () => {
+      await fetchPropertyAttributes();
+      await fetchProperty();
+      await fetchReviews();
+      
+      if (isLogin) {
+        await loadWalletBalance();
+        await loadQuickActions();
+      }
+    };
+
+    loadAllData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
@@ -618,7 +911,7 @@ const PropertyView = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 md:px-8 py-8">
-        {/* Property Header */}
+        {/* Property Header with Wallet Info */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
             <div className="flex-1">
@@ -652,7 +945,7 @@ const PropertyView = () => {
               </div>
             </div>
 
-            {/* Price & Actions */}
+            {/* Price, Wallet & Actions */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="text-left sm:text-right">
                 <p className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent">
@@ -661,6 +954,26 @@ const PropertyView = () => {
                 <p className="text-gray-600 capitalize font-medium mt-1">
                   For {property?.type === "sale" ? "Sale" : "Rent"}
                 </p>
+                
+                {/* Wallet Balance */}
+                {isLogin && (
+                  <div className="mt-3 flex items-center gap-2 bg-gradient-to-r from-blue-50 to-emerald-50 px-3 py-2 rounded-xl">
+                    <Coins className="w-4 h-4 text-amber-600" />
+                    <span className="text-sm font-semibold text-gray-900">
+                      {loadingWallet ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        `${walletBalance.toLocaleString()} credits`
+                      )}
+                    </span>
+                    <Link 
+                      to="/my-wallet" 
+                      className="text-xs text-blue-600 hover:text-blue-800 hover:underline ml-2"
+                    >
+                      Add Credits
+                    </Link>
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons */}
@@ -863,6 +1176,161 @@ const PropertyView = () => {
             </div>
           </div>
         </motion.div>
+
+        {/* Premium Features Section - Locked Features */}
+        {isLogin && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="mb-8"
+          >
+            <div className="bg-gradient-to-r from-blue-600 to-emerald-600 rounded-3xl shadow-xl p-6 sm:p-8">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-2">Premium Features</h2>
+                  <p className="text-blue-100">
+                    Unlock exclusive features for this property using your credits
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2">
+                    <div className="flex items-center gap-2">
+                      <Coins className="w-5 h-5 text-amber-300" />
+                      <span className="text-white font-bold text-lg">
+                        {walletBalance.toLocaleString()} credits
+                      </span>
+                    </div>
+                  </div>
+                  <Link
+                    to="/my-wallet"
+                    className="flex items-center gap-2 px-4 py-2 bg-white text-blue-700 rounded-xl hover:bg-gray-100 transition-all font-semibold"
+                  >
+                    <ShoppingCart className="w-4 h-4" />
+                    Add Credits
+                  </Link>
+                </div>
+              </div>
+
+              {/* Quick Actions Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {quickActions.map((action, index) => {
+                  const isUnlocked = isFeatureUnlocked(action.type);
+                  const canAfford = walletBalance >= action.cost;
+                  
+                  return (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className={`rounded-2xl p-5 transition-all ${
+                        isUnlocked
+                          ? "bg-white/20 backdrop-blur-sm border-2 border-emerald-300"
+                          : "bg-white/10 backdrop-blur-sm border-2 border-transparent hover:border-white/30"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-xl ${
+                            isUnlocked 
+                              ? "bg-emerald-100 text-emerald-600" 
+                              : "bg-white/20 text-white"
+                          }`}>
+                            {action.icon}
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-white">{action.label}</h3>
+                            <p className="text-blue-100 text-sm">{action.description}</p>
+                          </div>
+                        </div>
+                        {isUnlocked ? (
+                          <div className="flex items-center gap-1 bg-emerald-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                            <CheckCircle className="w-3 h-3" />
+                            Unlocked
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 bg-amber-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                            <Lock className="w-3 h-3" />
+                            {action.cost} credits
+                          </div>
+                        )}
+                      </div>
+                      
+                      <button
+                        onClick={() => isUnlocked ? null : handleQuickActionClick(action)}
+                        disabled={isUnlocked || !canAfford}
+                        className={`w-full py-3 rounded-xl font-semibold transition-all ${
+                          isUnlocked
+                            ? "bg-emerald-500 text-white cursor-default"
+                            : canAfford
+                            ? "bg-white text-blue-700 hover:bg-gray-100"
+                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        }`}
+                      >
+                        {isUnlocked ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <CheckCircle className="w-4 h-4" />
+                            Feature Unlocked
+                          </span>
+                        ) : canAfford ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <Unlock className="w-4 h-4" />
+                            Unlock ({action.cost} credits)
+                          </span>
+                        ) : (
+                          <span className="flex items-center justify-center gap-2">
+                            <AlertTriangle className="w-4 h-4" />
+                            Insufficient Credits
+                          </span>
+                        )}
+                      </button>
+                      
+                      {!canAfford && !isUnlocked && (
+                        <div className="mt-2 text-xs text-red-200 text-center">
+                          Need {action.cost - walletBalance} more credits
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              {/* Unlocked Features Summary */}
+              {getUnlockedFeaturesCount() > 0 && (
+                <div className="mt-6 pt-6 border-t border-white/20">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-bold text-white">
+                        Unlocked Features: {getUnlockedFeaturesCount()}/{quickActions.length}
+                      </h3>
+                      <p className="text-blue-100 text-sm">
+                        You have access to premium features for this property
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {featureHistory.slice(-3).map((feature, index) => {
+                        const action = quickActions.find(a => a.type === feature);
+                        if (!action) return null;
+                        return (
+                          <div
+                            key={index}
+                            className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full"
+                          >
+                            <div className="p-1 bg-emerald-500 rounded-full">
+                              {action.icon}
+                            </div>
+                            <span className="text-white text-sm font-medium">{action.label}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -1789,6 +2257,118 @@ const PropertyView = () => {
         </div>
       )}
 
+      {/* Quick Action Confirmation Modal */}
+      {showQuickActionModal && selectedQuickAction && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div
+            className="absolute inset-0"
+            onClick={() => setShowQuickActionModal(false)}
+          />
+          <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-gray-700">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Unlock Feature
+                </h3>
+                <button
+                  onClick={() => setShowQuickActionModal(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+                  disabled={isProcessingSpend}
+                >
+                  <XCircle className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              {/* Action Details */}
+              <div className="mb-6">
+                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-emerald-50 dark:from-blue-900/20 dark:to-emerald-900/20 rounded-lg">
+                  <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                    {selectedQuickAction.icon}
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-900 dark:text-white">{selectedQuickAction.label}</h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{selectedQuickAction.description}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Balance Info */}
+              <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Current Balance</p>
+                    <p className="text-lg font-bold text-gray-900 dark:text-white">
+                      {walletBalance.toLocaleString()} credits
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">After Spending</p>
+                    <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                      {(walletBalance - selectedQuickAction.cost).toLocaleString()} credits
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Property Info */}
+              <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <Home className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">{property?.title}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Property ID: #{property?.id}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Security Note */}
+              <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      This action cannot be undone. Credits will be deducted immediately upon confirmation.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowQuickActionModal(false)}
+                  className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
+                  disabled={isProcessingSpend}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSpendCredits}
+                  disabled={isProcessingSpend || walletBalance < selectedQuickAction.cost}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white rounded-lg transition-all font-medium disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isProcessingSpend ? (
+                    <>
+                      <Loader2 className="animate-spin w-4 h-4" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4" />
+                      Unlock ({selectedQuickAction.cost} credits)
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Review Form Modal */}
       {showReviewForm && (
         <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
@@ -1904,7 +2484,6 @@ const PropertyView = () => {
         </div>
       )}
 
-      {/* Agent Review Modal */}
       {/* Agent Review Modal */}
       <AnimatePresence>
         {isAgentReviewModalOpen && (
@@ -2032,4 +2611,8 @@ const PropertyView = () => {
     </div>
   );
 };
+
+// Add XCircle import
+import { XCircle } from "lucide-react";
+
 export default PropertyView;

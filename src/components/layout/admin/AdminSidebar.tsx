@@ -216,7 +216,7 @@ const menuItems =
           exact: true,
         },
         {
-          name: "Settings*",
+          name: "Settings",
           icon: Settings,
           path: "/admin/settings",
           exact: true,
