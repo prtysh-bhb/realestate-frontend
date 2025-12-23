@@ -573,12 +573,12 @@ const SingleBlogPage = () => {
                   {currentUser ? (
                     currentUser.avatar_url ? (
                       <img
-                        src={currentUser.avatar_url}
+                        src={currentUser.avatar_url || "/default-avatar.png"}
                         alt={currentUser.name}
                         className="w-full h-full rounded-full object-cover"
                       />
                     ) : (
-                      <span>{currentUser.name.charAt(0).toUpperCase()}</span>
+                      <span>{currentUser.avatar_url}</span>
                     )
                   ) : (
                     <User size={20} />

@@ -1130,6 +1130,25 @@ const QuickActionModal = ({
             </div>
           </div>
 
+          {/* Property ID Input (if needed) */}
+          {needsPropertyId && (
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Property ID (Optional)
+              </label>
+              <input
+                type="number"
+                value={propertyId}
+                onChange={(e) => setPropertyId(e.target.value)}
+                placeholder="Enter property ID if applicable"
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Enter the property ID this action is for (if applicable)
+              </p>
+            </div>
+          )}
+
           {/* Security Note */}
           <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
             <div className="flex items-start gap-3">

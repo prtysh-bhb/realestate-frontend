@@ -576,7 +576,7 @@ const AgentCommentsList = () => {
                               <td className="py-4 px-6">
                                 <div className="flex items-start gap-3">
                                   <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-emerald-500 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
-                                    {comment.user?.avatar_url ? (
+                                    {comment.user?.avatar_url ?  (
                                       <img
                                         src={comment.user.avatar_url}
                                         alt={comment.user.name}
