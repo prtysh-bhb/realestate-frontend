@@ -6,6 +6,10 @@ import api from "@/api/axios";
 ============================ */
 
 export interface AIRecommendationRequest {
+  bathrooms_min: number;
+  bathrooms_max: number;
+  bedrooms_min: number;
+  bedrooms_max: number;
   bedrooms?: number;
   bathrooms?: number;
   area_min?: number;
@@ -41,6 +45,7 @@ export interface AIRecommendation {
 ============================ */
 
 export interface ApiSuccessResponse<T> {
+  id: null;
   recommendation_id: null;
   recommanations: boolean;
   success: true;

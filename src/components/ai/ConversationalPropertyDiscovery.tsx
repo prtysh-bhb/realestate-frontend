@@ -6,7 +6,7 @@
  * Advanced AI chat interface for natural property search and discovery
  */
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   Send,
@@ -33,16 +33,13 @@ import {
   Loader2,
 } from "lucide-react";
 import { sendAIChatMessage, getAIChatHistory } from "@/api/customer/aichat";
+import type { AIChatMessage as ApiChatMessage } from "@/api/customer/aichat";
 import {
   recommendProperty,
   getRecommendationHistory,
   getRecommendationById,
 } from "@/api/customer/aidevelop";
-import type {
-  AIChatSession,
-  AIChatMessage as ApiChatMessage,
-  AIRecommendationRequest,
-} from "@/api/customer/aidevelop";
+import type { AIRecommendationRequest } from "@/api/customer/aidevelop";
 
 /* ============================
    Component Types
@@ -56,7 +53,7 @@ interface ChatMessage {
   properties?: PropertyCard[];
   suggestions?: string[];
   typing?: boolean;
-  recommendationId?: number; // Store recommendation ID for future reference
+  recommendationId?: number;
 }
 
 interface PropertyCard {
@@ -67,13 +64,15 @@ interface PropertyCard {
   beds: number;
   baths: number;
   sqft: number;
-  image: string;
+  primary_image_url: string;
   matchScore: number;
   propertyId?: string;
   description?: string;
   propertyType?: string;
   yearBuilt?: number;
   status?: string;
+  imageLoaded?: boolean;
+  imageError?: boolean;
 }
 
 /* ============================
@@ -101,99 +100,243 @@ const ConversationalPropertyDiscovery = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [propertyCache, setPropertyCache] = useState<Map<number, PropertyCard>>(new Map());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   // Parse natural language to extract property requirements
-  const parsePropertyRequirements = (text: string): AIRecommendationRequest => {
-    const requirements: AIRecommendationRequest = {};
+  const parsePropertyRequirements = useCallback(
+  (text: string): AIRecommendationRequest => {
+    const requirements: AIRecommendationRequest = {
+      bathrooms_min: 0,
+      bathrooms_max: 0,
+      bedrooms_min: 0,
+      bedrooms_max: 0
+    };
+    const lower = text.toLowerCase();
 
-    // Parse bedrooms
-    const bedroomMatch = text.match(/(\d+)\s*(?:bedroom|bed|bdr|br)/i);
-    if (bedroomMatch) {
-      requirements.bedrooms = parseInt(bedroomMatch[1]);
+    /* =========================
+       BEDROOMS
+    ========================= */
+    const bedBetween = lower.match(
+      /between\s+(\d+)\s*(?:and|to)\s*(\d+)\s*(?:bedroom|bed|br)/i
+    );
+    const bedMoreThan = lower.match(
+      /(?:more than|over|greater than)\s+(\d+)\s*(?:bedroom|bed|br)/i
+    );
+    const bedAtLeast = lower.match(
+      /(?:at least|min(?:imum)?)\s+(\d+)\s*(?:bedroom|bed|br)/i
+    );
+    const bedPlus = lower.match(
+      /(\d+)\s*\+\s*(?:bedroom|bed|br)/i
+    );
+    const bedLessThan = lower.match(
+      /(?:less than|under|below)\s+(\d+)\s*(?:bedroom|bed|br)/i
+    );
+    const bedExact = lower.match(
+      /(\d+)\s*(?:bedroom|bed|br)/i
+    );
+
+    if (bedBetween) {
+      requirements.bedrooms_min = +bedBetween[1];
+      requirements.bedrooms_max = +bedBetween[2];
+    } else if (bedMoreThan) {
+      requirements.bedrooms_min = +bedMoreThan[1] + 1;
+    } else if (bedAtLeast || bedPlus) {
+      // Use nullish coalescing to ensure we never pass undefined to Number()
+      requirements.bedrooms_min = Number(bedAtLeast?.[1] ?? bedPlus?.[1] ?? 0);
+    } else if (bedLessThan) {
+      requirements.bedrooms_max = +bedLessThan[1] - 1;
+    } else if (bedExact) {
+      requirements.bedrooms = +bedExact[1];
     }
 
-    // Parse bathrooms
-    const bathroomMatch = text.match(/(\d+\.?\d*)\s*(?:bathroom|bath|ba)/i);
-    if (bathroomMatch) {
-      requirements.bathrooms = parseFloat(bathroomMatch[1]);
+    /* =========================
+       BATHROOMS
+    ========================= */
+    const bathBetween = lower.match(
+      /between\s+(\d+)\s*(?:and|to)\s*(\d+)\s*(?:bathroom|bath|ba)/i
+    );
+    const bathMoreThan = lower.match(
+      /(?:more than|over)\s+(\d+)\s*(?:bathroom|bath|ba)/i
+    );
+    const bathAtLeast = lower.match(
+      /(?:at least|min(?:imum)?)\s+(\d+)\s*(?:bathroom|bath|ba)/i
+    );
+    const bathExact = lower.match(
+      /(\d+)\s*(?:bathroom|bath|ba)/i
+    );
+
+    if (bathBetween) {
+      requirements.bathrooms_min = +bathBetween[1];
+      requirements.bathrooms_max = +bathBetween[2];
+    } else if (bathMoreThan) {
+      requirements.bathrooms_min = +bathMoreThan[1] + 1;
+    } else if (bathAtLeast) {
+      requirements.bathrooms_min = +bathAtLeast[1];
+    } else if (bathExact) {
+      requirements.bathrooms = +bathExact[1];
     }
 
-    // Parse budget
-    const budgetMatch =
-      text.match(/(?:under|less than|below)\s*\$?(\d+[kK]?)/i) ||
-      text.match(/\$?(\d+[kK]?)\s*(?:budget|price|cost)/i);
-    if (budgetMatch) {
-      let budget = budgetMatch[1];
-      if (budget.toLowerCase().includes("k")) {
-        requirements.budget_max = parseInt(budget) * 1000;
-      } else {
-        requirements.budget_max = parseInt(budget);
-      }
-    }
+    /* =========================
+    BUDGET (USD ONLY)
+    ========================= */
 
-    // Parse location keywords
-    const locationKeywords = ["downtown", "suburbs", "city", "urban", "rural", "near", "close to"];
+const parseUSD = (value: string) => {
+  const num = parseFloat(value.replace("$", ""));
+  if (value.toLowerCase().includes("k")) return num * 1000;
+  return num;
+};
+
+const budgetBetween = lower.match(
+  /between\s+\$?([\d.]+k?)\s*(?:and|to)\s*\$?([\d.]+k?)/i
+);
+
+const budgetUnder = lower.match(
+  /(?:under|below|less than)\s+\$?([\d.]+k?)/i
+);
+
+const budgetOver = lower.match(
+  /(?:over|above|more than|at least)\s+\$?([\d.]+k?)/i
+);
+
+const budgetExact = lower.match(
+  /\$([\d.]+k?)/i
+);
+
+if (budgetBetween) {
+  requirements.budget_min = parseUSD(budgetBetween[1]);
+  requirements.budget_max = parseUSD(budgetBetween[2]);
+} else if (budgetUnder) {
+  requirements.budget_max = parseUSD(budgetUnder[1]);
+} else if (budgetOver) {
+  requirements.budget_min = parseUSD(budgetOver[1]);
+} else if (budgetExact) {
+  requirements.budget_max = parseUSD(budgetExact[1]);
+}
+
+
+    /* =========================
+       LOCATION
+    ========================= */
     const locationMatch =
-      text.match(new RegExp(`(${locationKeywords.join("|")})\\s+([^.,]+)`, "i")) ||
-      text.match(/in\s+([^.,]+)/i);
+      lower.match(/(?:in|near|around|close to)\s+([^,.]+)/i);
+
     if (locationMatch) {
-      requirements.location = locationMatch[1] || locationMatch[2];
+      requirements.location = locationMatch[1].trim();
     }
 
-    // Parse property type
-    const propertyTypes = ["house", "apartment", "condo", "villa", "townhouse", "studio"];
-    propertyTypes.forEach((type) => {
-      if (text.toLowerCase().includes(type)) {
-        requirements.property_type = type;
+    /* =========================
+       PROPERTY TYPE
+    ========================= */
+    const propertyTypeMap: Record<string, string> = {
+      apartment: "apartment",
+      flat: "apartment",
+      house: "house",
+      villa: "villa",
+      bungalow: "house",
+      condo: "condo",
+      studio: "studio",
+      townhouse: "townhouse"
+    };
+
+    Object.keys(propertyTypeMap).forEach((key) => {
+      if (lower.includes(key)) {
+        requirements.property_type = propertyTypeMap[key];
       }
     });
 
     return requirements;
-  };
+  },
+  []
+);
 
-  // Convert API property data to PropertyCard format
-  const apiPropertyToPropertyCard = (apiProperty: any, index: number): PropertyCard => {
-    return {
-      id: apiProperty.id ?? index + 1,
-      title: apiProperty.title ?? `Property ${index + 1}`,
+  // Optimized property conversion with caching
+  const apiPropertyToPropertyCard = useCallback((apiProperty: any, index: number): PropertyCard => {
+    const propertyId = apiProperty.id ?? index + 1;
+    
+    // Check cache first
+    if (propertyCache.has(propertyId)) {
+      return propertyCache.get(propertyId)!;
+    }
+
+    const propertyCard: PropertyCard = {
+      id: propertyId,
+      title: apiProperty.title ?? apiProperty.name ?? `Property ${propertyId}`,
       price: apiProperty.price
-        ? `₹${Number(apiProperty.price).toLocaleString()}`
-        : "Price not available",
-      location: apiProperty.location ?? apiProperty.city ?? "Location not specified",
-      beds: Number(apiProperty.bedrooms ?? 0),
-      baths: Number(apiProperty.bathrooms ?? 0),
-      sqft: Number(apiProperty.area ?? 0),
-      image: apiProperty.image_url || "/api/placeholder/400/300?text=Property",
+  ? `$${Number(apiProperty.price).toLocaleString("en-US")}`
+  : "Price not available",
+      location: apiProperty.location ?? apiProperty.address ?? apiProperty.city ?? "Location not specified",
+      beds: Number(apiProperty.bedrooms ?? apiProperty.beds ?? 0),
+      baths: Number(apiProperty.bathrooms ?? apiProperty.baths ?? 0),
+      sqft: Number(apiProperty.area ?? apiProperty.sqft ?? apiProperty.size ?? 0),
+      primary_image_url: apiProperty.primary_image_url || apiProperty.image || "/api/placeholder/400/300",
       matchScore: Math.floor(Math.random() * 20) + 80,
-      propertyType: apiProperty.property_type,
+      propertyType: apiProperty.property_type || apiProperty.type,
       description: apiProperty.description,
       status: apiProperty.status,
+      imageLoaded: false,
+      imageError: false,
     };
-  };
+
+    // Preload image to prevent flickering
+    if (propertyCard.primary_image_url && propertyCard.primary_image_url !== "/api/placeholder/400/300") {
+      const img = new Image();
+      img.src = propertyCard.primary_image_url;
+      img.onload = () => {
+        setPropertyCache(prev => {
+          const newCache = new Map(prev);
+          newCache.set(propertyId, { ...propertyCard, imageLoaded: true });
+          return newCache;
+        });
+      };
+      img.onerror = () => {
+        setPropertyCache(prev => {
+          const newCache = new Map(prev);
+          newCache.set(propertyId, { 
+            ...propertyCard, 
+            primary_image_url: "/api/placeholder/400/300",
+            imageError: true 
+          });
+          return newCache;
+        });
+      };
+    }
+
+    // Cache the property
+    setPropertyCache(prev => new Map(prev).set(propertyId, propertyCard));
+    
+    return propertyCard;
+  }, [propertyCache]);
 
   // Extract properties from AI recommendation response
-  const extractPropertiesFromResponse = (responseData: any): PropertyCard[] => {
-  if (!responseData) return [];
+  const extractPropertiesFromResponse = useCallback((responseData: any): PropertyCard[] => {
+    if (!responseData) return [];
 
-  let properties: any[] = [];
+    let properties: any[] = [];
 
-  if (Array.isArray(responseData.recommendations)) {
-    properties = responseData.recommendations
-      .map((rec: any) => rec.property)
-      .filter(Boolean);
-  }
+    // Handle different response structures
+    if (Array.isArray(responseData.recommendations)) {
+      properties = responseData.recommendations
+        .map((rec: any) => rec.property)
+        .filter(Boolean);
+    } else if (Array.isArray(responseData.properties)) {
+      properties = responseData.properties;
+    } else if (Array.isArray(responseData.data)) {
+      properties = responseData.data;
+    }
 
-  return properties.map((prop, index) =>
-    apiPropertyToPropertyCard(prop, index)
-  );
-};
-
+    // Limit to prevent UI hanging with too many properties
+    const limitedProperties = properties.slice(0, 5);
+    
+    return limitedProperties.map((prop, index) =>
+      apiPropertyToPropertyCard(prop, index)
+    );
+  }, [apiPropertyToPropertyCard]);
 
   // Extract suggestions from AI response
-  const extractSuggestionsFromResponse = (content: string): string[] => {
-    // Default suggestions
+  const extractSuggestionsFromResponse = useCallback((content: string): string[] => {
     const defaultSuggestions = [
       "Tell me more about the first one",
       "What's the neighborhood like?",
@@ -201,7 +344,6 @@ const ConversationalPropertyDiscovery = () => {
       "Schedule a viewing",
     ];
 
-    // Check for specific property types in response to customize suggestions
     if (content.toLowerCase().includes("apartment") || content.toLowerCase().includes("condo")) {
       return [
         "Show me more apartments",
@@ -219,22 +361,21 @@ const ConversationalPropertyDiscovery = () => {
     }
 
     return defaultSuggestions;
-  };
+  }, []);
 
   // Convert API message to component message
-  const apiMessageToComponentMessage = (apiMessage: ApiChatMessage): ChatMessage => {
+  const apiMessageToComponentMessage = useCallback((apiMessage: ApiChatMessage): ChatMessage => {
     return {
       id: `api-${Date.now()}-${Math.random()}`,
-      type: apiMessage.role,
+      type: apiMessage.role as "user" | "assistant",
       content: apiMessage.content,
       timestamp: apiMessage.created_at ? new Date(apiMessage.created_at) : new Date(),
-      // Note: Chat API doesn't return properties directly
       suggestions: extractSuggestionsFromResponse(apiMessage.content),
     };
-  };
+  }, [extractSuggestionsFromResponse]);
 
   // Load chat history from API
-  const loadChatHistory = async (sessionId: string) => {
+  const loadChatHistory = useCallback(async (sessionId: string) => {
     setIsLoadingHistory(true);
     try {
       const response = await getAIChatHistory(sessionId);
@@ -245,7 +386,6 @@ const ConversationalPropertyDiscovery = () => {
           apiMessageToComponentMessage(msg)
         );
 
-        // Add welcome message if no messages
         if (componentMessages.length === 0) {
           componentMessages.push({
             id: "welcome",
@@ -262,11 +402,11 @@ const ConversationalPropertyDiscovery = () => {
           });
         }
 
-        setMessages(componentMessages);
+       setMessages(() => componentMessages);
+
       }
     } catch (error) {
       console.error("Failed to load chat history:", error);
-      // Show error message
       setMessages((prev) => [
         ...prev,
         {
@@ -279,90 +419,103 @@ const ConversationalPropertyDiscovery = () => {
     } finally {
       setIsLoadingHistory(false);
     }
-  };
+  }, [apiMessageToComponentMessage]);
 
-  // Get AI property recommendations
-  const getPropertyRecommendations = async (
-  requirements: AIRecommendationRequest
-) => {
-  try {
-    const response = await recommendProperty(requirements);
+  // Optimized property recommendation with debouncing
+  const getPropertyRecommendations = useCallback(async (
+    requirements: AIRecommendationRequest
+  ) => {
+    try {
+      const response = await recommendProperty(requirements);
 
-    if (!response?.success) {
+      if (!response?.success) {
+        return {
+          description:
+            "I searched but couldn't find properties matching your exact criteria.",
+          properties: [],
+          recommendationId: null,
+        };
+      }
+
+      // Use requestAnimationFrame to prevent UI blocking
+      return await new Promise<{ description: string; properties: PropertyCard[]; recommendationId: number | null }>((resolve) => {
+        requestAnimationFrame(() => {
+          const properties = extractPropertiesFromResponse(response);
+
+          if (properties.length === 0) {
+            resolve({
+              description:
+                "I searched but couldn't find properties matching your exact criteria. Try adjusting your requirements.",
+              properties: [],
+              recommendationId: null,
+            });
+            return;
+          }
+
+          resolve({
+            description: `I found ${properties.length} property${properties.length > 1 ? 's' : ''} that match${properties.length > 1 ? '' : 'es'} your criteria.`,
+            properties,
+            recommendationId: response.recommendation_id ?? response.id ?? null,
+          });
+        });
+      });
+
+    } catch (error) {
+      console.error("Recommendation API error:", error);
       return {
         description:
-          "I searched but couldn't find properties matching your exact criteria.",
+          "I'm having trouble finding properties right now. Please try again later.",
         properties: [],
         recommendationId: null,
       };
     }
-
-    const properties = extractPropertiesFromResponse(response);
-
-    if (properties.length === 0) {
-      return {
-        description:
-          "I searched but couldn't find properties matching your exact criteria. Try adjusting your requirements.",
-        properties: [],
-        recommendationId: null,
-      };
-    }
-
-    return {
-      description: `I found ${properties.length} property that matches your criteria.`,
-      properties,
-      recommendationId: response.recommendation_id ?? null,
-    };
-  } catch (error) {
-    console.error("Recommendation API error:", error);
-    return {
-      description:
-        "I'm having trouble finding properties right now. Please try again later.",
-      properties: [],
-      recommendationId: null,
-    };
-  }
-};
-
+  }, [extractPropertiesFromResponse]);
 
   // Load recommendation history
-  const loadRecommendationHistory = async () => {
+  const loadRecommendationHistory = useCallback(async () => {
     try {
       const response = await getRecommendationHistory(1);
       if (response.success && response.data.data.length > 0) {
-        // You could show recent recommendations here
         console.log("Recent recommendations:", response.data.data);
       }
     } catch (error) {
       console.error("Failed to load recommendation history:", error);
     }
-  };
+  }, []);
 
-  // Initialize or load session
+  // Initialize or load session - FIXED: Added proper dependencies
   useEffect(() => {
-    // Check if there's a saved session ID in localStorage
     const savedSessionId = localStorage.getItem("ai_chat_session_id");
     if (savedSessionId) {
       setSessionId(savedSessionId);
       loadChatHistory(savedSessionId);
     }
 
-    // Load recent recommendations
     loadRecommendationHistory();
-  }, []);
+  }, [loadChatHistory, loadRecommendationHistory]); // Added dependencies
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const scrollToBottom = useCallback(() => {
+    if (messagesEndRef.current && chatContainerRef.current) {
+      const isScrolledToBottom = 
+        chatContainerRef.current.scrollHeight - chatContainerRef.current.clientHeight <= 
+        chatContainerRef.current.scrollTop + 100;
+      
+      if (isScrolledToBottom) {
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, scrollToBottom]);
 
-  const handleSend = async () => {
+  // Optimized send handler with proper error handling
+  const handleSend = useCallback(async () => {
+    if (isTyping) return;
     if (!inputValue.trim()) return;
 
-    const userText = inputValue;
+    const userText = inputValue.trim();
 
     // Add user message immediately
     const userMessage: ChatMessage = {
@@ -377,115 +530,99 @@ const ConversationalPropertyDiscovery = () => {
     setIsTyping(true);
 
     try {
-      // First, parse requirements and get property recommendations
+      // Parse requirements and get recommendations in parallel
       const requirements = parsePropertyRequirements(userText);
-      const recommendationResult = await getPropertyRecommendations(requirements);
+      const [chatResponse, recommendationResult] = await Promise.allSettled([
+        sendAIChatMessage({
+          message: userText,
+          session_id: sessionId,
+        }),
+        getPropertyRecommendations(requirements)
+      ]);
 
-      // Then, get AI chat response for natural conversation
-      const chatResponse = await sendAIChatMessage({
-        message: userText,
-        session_id: sessionId,
-      });
-
-      if (!chatResponse.success || !chatResponse.data) {
-        throw new Error("Invalid AI chat response");
-      }
-
-      // Save session ID (first message)
-      if (!sessionId && chatResponse.data.session_id) {
-        setSessionId(chatResponse.data.session_id);
-        localStorage.setItem("ai_chat_session_id", chatResponse.data.session_id);
-      }
-
-      // Combine chat response with property recommendations
-      const latestAssistantMessage = chatResponse.data.messages
-        .filter((msg: ApiChatMessage) => msg.role === "assistant")
-        .pop();
-
+      // Handle chat response
       let aiContent = "";
-      if (latestAssistantMessage) {
-        aiContent = latestAssistantMessage.content;
+      let newSessionId = sessionId;
+
+      if (chatResponse.status === 'fulfilled' && chatResponse.value.success && chatResponse.value.data) {
+        const chatData = chatResponse.value.data;
+        
+        if (!sessionId && chatData.session_id) {
+          newSessionId = chatData.session_id;
+          setSessionId(newSessionId);
+          localStorage.setItem("ai_chat_session_id", newSessionId);
+        }
+
+        const latestAssistantMessage = chatData.messages
+          ?.filter((msg: ApiChatMessage) => msg.role === "assistant")
+          .pop();
+
+        if (latestAssistantMessage) {
+          aiContent = latestAssistantMessage.content;
+        }
       }
 
-      // If we have properties, append property information
-      if (recommendationResult.properties.length > 0) {
-        aiContent += "\n\n" + recommendationResult.description;
+      // Handle recommendation result
+      let properties: PropertyCard[] = [];
+      let recommendationId: number | null = null;
+      let recommendationDescription = "";
+
+      if (recommendationResult.status === 'fulfilled') {
+        properties = recommendationResult.value.properties;
+        recommendationId = recommendationResult.value.recommendationId;
+        recommendationDescription = recommendationResult.value.description;
       }
 
-      // Add assistant message with properties
+      // Combine content
+      if (properties.length > 0) {
+        aiContent = aiContent ? `${aiContent}\n\n${recommendationDescription}` : recommendationDescription;
+      }
+
+      // Add assistant message
       const aiMessage: ChatMessage = {
         id: `ai-${Date.now()}`,
         type: "assistant",
-        content: aiContent,
+        content: aiContent || "I found some properties for you!",
         timestamp: new Date(),
-        properties: recommendationResult.properties,
+        properties,
         suggestions: extractSuggestionsFromResponse(aiContent),
-        recommendationId: recommendationResult.recommendationId || undefined,
+        recommendationId: recommendationId || undefined,
       };
 
       setMessages((prev) => [...prev, aiMessage]);
+      
     } catch (error) {
-      console.error("Chat API error:", error);
-
-      // Fallback: try to get properties anyway
-      try {
-        const requirements = parsePropertyRequirements(userText);
-        const recommendationResult = await getPropertyRecommendations(requirements);
-
-        const fallbackMessage: ChatMessage = {
-          id: `ai-${Date.now()}`,
-          type: "assistant",
-          content:
-            recommendationResult.description || "I'll help you find properties. Let me search...",
-          timestamp: new Date(),
-          properties: recommendationResult.properties,
-          suggestions: [
-            "Search for different criteria",
-            "Adjust budget range",
-            "Change location",
-            "Modify property type",
-          ],
-        };
-
-        setMessages((prev) => [...prev, fallbackMessage]);
-      } catch (fallbackError) {
-        console.error("Fallback error:", fallbackError);
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `error-${Date.now()}`,
-            type: "system",
-            content: "Sorry, I encountered an error. Please try again.",
-            timestamp: new Date(),
-          },
-        ]);
-      }
+      console.error("Chat error:", error);
+      
+      const errorMessage: ChatMessage = {
+        id: `error-${Date.now()}`,
+        type: "system",
+        content: "Sorry, I encountered an error. Please try again.",
+        timestamp: new Date(),
+      };
+      
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsTyping(false);
     }
-  };
+  }, [inputValue, isTyping, sessionId, parsePropertyRequirements, getPropertyRecommendations, extractSuggestionsFromResponse]);
 
-  const handleSuggestionClick = (suggestion: string) => {
+  const handleSuggestionClick = useCallback((suggestion: string) => {
     setInputValue(suggestion);
     inputRef.current?.focus();
-  };
+  }, []);
 
-  const handleVoiceInput = () => {
+  const handleVoiceInput = useCallback(() => {
     setIsRecording(!isRecording);
-    // Implement voice recognition here
-  };
+  }, [isRecording]);
 
-  const handlePropertyAction = async (propertyId: number, action: "favorite" | "schedule") => {
+  const handlePropertyAction = useCallback(async (propertyId: number, action: "favorite" | "schedule") => {
     const actionMessages = {
       favorite: "Property added to your favorites! 💙",
       schedule: "Great choice! When would you like to schedule a viewing?",
     };
 
-    // You could make API calls here to save favorite or schedule viewing
     try {
-      // Example: Save favorite property
-      // await api.post('/customer/properties/favorite', { propertyId });
-
       const systemMessage: ChatMessage = {
         id: `action-${Date.now()}`,
         type: "system",
@@ -508,11 +645,12 @@ const ConversationalPropertyDiscovery = () => {
       };
       setMessages((prev) => [...prev, errorMessage]);
     }
-  };
+  }, []);
 
-  const handleStartNewChat = () => {
+  const handleStartNewChat = useCallback(() => {
     localStorage.removeItem("ai_chat_session_id");
     setSessionId(null);
+    setPropertyCache(new Map());
     setMessages([
       {
         id: "welcome",
@@ -528,19 +666,17 @@ const ConversationalPropertyDiscovery = () => {
         ],
       },
     ]);
-  };
+  }, []);
 
-  const handleRegenerateResponse = async (messageId: string) => {
-    // Find the user message that this AI response is based on
+  const handleRegenerateResponse = useCallback(async (messageId: string) => {
     const messageIndex = messages.findIndex((msg) => msg.id === messageId);
     if (messageIndex > 0 && messages[messageIndex - 1].type === "user") {
       const userMessage = messages[messageIndex - 1];
       setInputValue(userMessage.content);
       handleSend();
     }
-  };
+  }, [messages, handleSend]);
 
-  // Quick action queries with structured requirements
   const quickActions = [
     {
       icon: Home,
@@ -572,7 +708,6 @@ const ConversationalPropertyDiscovery = () => {
     <div className="flex flex-col h-[800px] max-w-5xl mx-auto bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-900/20 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
       {/* Header */}
       <div className="relative bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 p-6 text-white">
-        {/* Animated Background */}
         <div className="absolute inset-0 opacity-20">
           <div
             className="absolute inset-0"
@@ -601,7 +736,6 @@ const ConversationalPropertyDiscovery = () => {
             </div>
           </div>
 
-          {/* Session Actions */}
           <div className="flex gap-2">
             {sessionId && (
               <button
@@ -624,7 +758,10 @@ const ConversationalPropertyDiscovery = () => {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700">
+      <div 
+        ref={chatContainerRef}
+        className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700"
+      >
         {isLoadingHistory ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -644,7 +781,6 @@ const ConversationalPropertyDiscovery = () => {
               />
             ))}
 
-            {/* Typing Indicator */}
             {isTyping && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -677,7 +813,6 @@ const ConversationalPropertyDiscovery = () => {
 
       {/* Input Area */}
       <div className="p-6 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-        {/* Quick Actions Bar */}
         <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300">
           {quickActions.map((action) => (
             <button
@@ -692,7 +827,6 @@ const ConversationalPropertyDiscovery = () => {
           ))}
         </div>
 
-        {/* Input Field */}
         <div className="flex gap-3 items-end">
           <div className="flex-1 relative">
             <input
@@ -700,13 +834,17 @@ const ConversationalPropertyDiscovery = () => {
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSend()}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
               placeholder="Describe your dream property in natural language..."
               className="w-full px-6 py-4 pr-32 rounded-2xl bg-gray-100 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 text-gray-900 dark:text-white placeholder:text-gray-500 transition-all text-base disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isTyping || isLoadingHistory}
             />
 
-            {/* Input Actions */}
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-2">
               <button
                 onClick={handleVoiceInput}
@@ -734,7 +872,6 @@ const ConversationalPropertyDiscovery = () => {
             </div>
           </div>
 
-          {/* Send Button */}
           <motion.button
             onClick={handleSend}
             disabled={!inputValue.trim() || isTyping || isLoadingHistory}
@@ -750,7 +887,6 @@ const ConversationalPropertyDiscovery = () => {
           </motion.button>
         </div>
 
-        {/* Helper Text */}
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
           💡 Tip: Be specific! Try "3-bedroom house with a pool near downtown under $600k"
         </p>
@@ -795,7 +931,6 @@ const MessageBubble = ({
       animate={{ opacity: 1, y: 0 }}
       className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"}`}
     >
-      {/* Avatar */}
       <div
         className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
           isUser ? "bg-gray-300 dark:bg-gray-700" : "bg-gradient-to-br from-purple-600 to-blue-600"
@@ -808,9 +943,7 @@ const MessageBubble = ({
         )}
       </div>
 
-      {/* Message Content */}
       <div className={`flex-1 max-w-[80%] ${isUser ? "items-end" : "items-start"} flex flex-col`}>
-        {/* Message Bubble */}
         <div
           className={`rounded-2xl px-5 py-3 ${
             isUser
@@ -819,8 +952,6 @@ const MessageBubble = ({
           }`}
         >
           <p className="text-base leading-relaxed whitespace-pre-line">{message.content}</p>
-
-          {/* Timestamp */}
           <p
             className={`text-xs mt-2 ${
               isUser ? "text-purple-200" : "text-gray-500 dark:text-gray-400"
@@ -833,7 +964,6 @@ const MessageBubble = ({
           </p>
         </div>
 
-        {/* Property Cards */}
         {message.properties && message.properties.length > 0 && (
           <div className="mt-4 space-y-3 w-full">
             {message.properties.map((property) => (
@@ -846,7 +976,6 @@ const MessageBubble = ({
           </div>
         )}
 
-        {/* Suggestions */}
         {message.suggestions && message.suggestions.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-3">
             {message.suggestions.map((suggestion, index) => (
@@ -861,7 +990,6 @@ const MessageBubble = ({
           </div>
         )}
 
-        {/* Message Actions (for AI messages) */}
         {isAssistant && (
           <div className="flex gap-2 mt-2">
             <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all">
@@ -886,7 +1014,7 @@ const MessageBubble = ({
   );
 };
 
-// Property Card Component (Inline in Chat)
+// Optimized Property Card Component with image handling
 const PropertyCardComponent = ({
   property,
   onAction,
@@ -894,6 +1022,23 @@ const PropertyCardComponent = ({
   property: PropertyCard;
   onAction: (propertyId: number, action: "favorite" | "schedule") => void;
 }) => {
+  const [imageLoaded, setImageLoaded] = useState(property.imageLoaded || false);
+  const [imageError, setImageError] = useState(property.imageError || false);
+
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+    setImageError(false);
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
+    setImageLoaded(false);
+  };
+
+  const imageSrc = imageError 
+    ? "/api/placeholder/400/300" 
+    : property.primary_image_url;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -901,32 +1046,34 @@ const PropertyCardComponent = ({
       className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all border border-gray-200 dark:border-gray-700 group"
     >
       <div className="flex gap-4 p-4">
-        {/* Property Image */}
-        <div className="relative w-32 h-32 flex-shrink-0 rounded-xl overflow-hidden">
+        <div className="relative w-40 h-38 flex-shrink-0 rounded-xl overflow-hidden">
+          {!imageLoaded && !imageError && (
+            <div className="absolute inset-0 bg-gray-200 dark:bg-gray-700 animate-pulse" />
+          )}
           <img
-            src={property.image}
+            src={property.primary_image_url}
             alt={property.title}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-            onError={(e) => {
-              e.currentTarget.src = `/api/placeholder/400/300?text=${encodeURIComponent(
-                property.title
-              )}`;
-            }}
+            className={`w-full h-full object-cover transition-transform duration-500 ${
+              imageLoaded ? 'group-hover:scale-110' : 'opacity-0'
+            }`}
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+            loading="lazy"
+            decoding="async"
           />
-          {/* Match Score Badge */}
+          <div className="grid ">
           <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
             <Zap className="w-3 h-3" />
             {property.matchScore}%
           </div>
-          {/* Property Type Badge */}
           {property.propertyType && (
             <div className="absolute top-2 left-2 bg-purple-600 text-white px-2 py-1 rounded-lg text-xs font-bold">
               {property.propertyType}
             </div>
           )}
+          </div>
         </div>
 
-        {/* Property Details */}
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-start mb-1">
             <h4 className="font-bold text-lg text-gray-900 dark:text-white truncate">
@@ -953,7 +1100,6 @@ const PropertyCardComponent = ({
             <span className="truncate">{property.location}</span>
           </div>
 
-          {/* Property Features */}
           <div className="flex gap-4 text-sm text-gray-700 dark:text-gray-300">
             <div className="flex items-center gap-1">
               <Bed className="w-4 h-4" />
@@ -969,7 +1115,6 @@ const PropertyCardComponent = ({
             </div>
           </div>
 
-          {/* Additional Info */}
           {property.yearBuilt && (
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
               Built: {property.yearBuilt}
@@ -983,7 +1128,6 @@ const PropertyCardComponent = ({
         </div>
       </div>
 
-      {/* Action Buttons */}
       <div className="flex gap-2 p-4 pt-0">
         <button
           onClick={() => onAction(property.id, "favorite")}
