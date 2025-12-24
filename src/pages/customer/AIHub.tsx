@@ -192,7 +192,7 @@ const AIHub = () => {
             </motion.div>
 
             {/* Heading */}
-            <h1 className="text-6xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent">
+            <h1 className="text-6xl md:text-7xl font-bold mb-6 leading-22 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent">
               AI-Powered Property Intelligence
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8">
