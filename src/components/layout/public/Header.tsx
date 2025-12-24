@@ -71,7 +71,7 @@ const Header = () => {
             : "bg-transparent"
         )}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-4 flex justify-between items-center py-4">
           {/* LOGO */}
           <Link to="/" className="inline-block group">
             <div className="flex items-center gap-3 backdrop-blur-sm px-3 py-2 rounded-2xl transition-all duration-300 group-hover:scale-105">
